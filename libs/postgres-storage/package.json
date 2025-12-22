@@ -1,0 +1,66 @@
+{
+  "name": "@dismissible/nestjs-postgres-storage",
+  "version": "0.0.1",
+  "description": "PostgreSQL storage adapter for Dismissible using Prisma",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "bin": {
+    "dismissible-prisma": "./bin/dismissible-prisma.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.js",
+      "types": "./src/index.d.ts"
+    },
+    "./prisma/schema.prisma": "./prisma/schema.prisma",
+    "./prisma.config": "./prisma.config.mjs"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
+  "files": [
+    "src",
+    "bin",
+    "prisma",
+    "prisma.config.mjs",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": false
+    }
+  },
+  "dependencies": {
+    "@dismissible/nestjs-storage": "^0.0.1",
+    "@dismissible/nestjs-dismissible-item": "^0.0.1",
+    "@dismissible/nestjs-logger": "^0.0.1",
+    "prisma": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "@prisma/adapter-pg": "^7.2.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.16.0"
+  },
+  "keywords": [
+    "nestjs",
+    "dismissible",
+    "storage",
+    "postgres",
+    "prisma",
+    "adapter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DismissibleIo/dismissible-api"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

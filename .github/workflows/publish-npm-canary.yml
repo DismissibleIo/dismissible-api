@@ -1,0 +1,123 @@
+name: NPM Canary Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      preid:
+        description: 'Pre-release identifier (e.g., canary, alpha, beta)'
+        required: false
+        default: 'canary'
+
+# Prevent concurrent canary releases
+concurrency:
+  group: npm-canary-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canary-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dismissible
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: npm ci
+
+      - name: Prisma generate
+        run: npm run prisma:generate
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dismissible
+          DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/dismissible
+        run: npm run prisma:push
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        env:
+          DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/dismissible
+        run: npm run validate
+
+      - name: Generate canary preid
+        id: canary
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          PREID="${{ github.event.inputs.preid || 'canary' }}"
+          CANARY_PREID="${PREID}.${SHORT_SHA}"
+
+          echo "preid=$CANARY_PREID" >> $GITHUB_OUTPUT
+          echo "Canary pre-release identifier: $CANARY_PREID"
+
+      - name: Version canary packages (no commit/tag)
+        env:
+          PREID: ${{ steps.canary.outputs.preid }}
+        run: npx nx release version prerelease --preid=${PREID} --git-commit=false --git-tag=false
+
+      - name: Remove caret from dependencies in dist package.json files
+        run: node scripts/fix-canary-deps.js
+
+      - name: Get canary version
+        id: version
+        run: |
+          CANARY_VERSION=$(node -p "require('./dist/libs/dismissible/package.json').version")
+          echo "canary_version=$CANARY_VERSION" >> $GITHUB_OUTPUT
+          echo "Canary version: $CANARY_VERSION"
+
+      - name: Publish canary packages to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx nx release publish --tag canary
+
+      - name: Output install commands
+        run: |
+          VERSION=${{ steps.version.outputs.canary_version }}
+          echo ""
+          echo "📦 Canary Release Published!"
+          echo ""
+          echo "Version: ${VERSION}"
+          echo ""
+          echo "Install commands:"
+          echo "  npm install @dismissible/nestjs-api@${VERSION}"
+          echo "  npm install @dismissible/nestjs-dismissible@${VERSION}"
+          echo "  npm install @dismissible/nestjs-dismissible-hooks@${VERSION}"
+          echo "  npm install @dismissible/nestjs-dismissible-item@${VERSION}"
+          echo "  npm install @dismissible/nestjs-dismissible-request@${VERSION}"
+          echo "  npm install @dismissible/nestjs-logger@${VERSION}"
+          echo "  npm install @dismissible/nestjs-postgres-storage@${VERSION}"
+          echo "  npm install @dismissible/nestjs-storage@${VERSION}"
+          echo "  npm install @dismissible/nestjs-validation@${VERSION}"
+          echo ""
+          echo "Or use the canary tag:"
+          echo "  npm install @dismissible/nestjs-api@canary"
+          echo "  npm install @dismissible/nestjs-dismissible@canary"

@@ -1,0 +1,37 @@
+{
+  "name": "@dismissible/nestjs-dismissible-hooks",
+  "version": "0.0.1",
+  "description": "Lifecycle hooks interfaces for Dismissible applications",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "dependencies": {
+    "@dismissible/nestjs-dismissible-item": "^0.0.1",
+    "@dismissible/nestjs-dismissible-request": "^0.0.1"
+  },
+  "keywords": [
+    "nestjs",
+    "dismissible",
+    "hooks",
+    "lifecycle"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DismissibleIo/dismissible-api"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

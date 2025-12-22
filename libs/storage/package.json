@@ -1,0 +1,46 @@
+{
+  "name": "@dismissible/nestjs-storage",
+  "version": "0.0.1",
+  "description": "In-memory storage adapter for Dismissible",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "dependencies": {
+    "@dismissible/nestjs-logger": "^0.0.1",
+    "@dismissible/nestjs-dismissible-item": "^0.0.1"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": false
+    }
+  },
+  "keywords": [
+    "nestjs",
+    "dismissible",
+    "storage",
+    "storage",
+    "adapter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DismissibleIo/dismissible-api"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

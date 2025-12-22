@@ -1,0 +1,69 @@
+{
+  "name": "nestjs-nx-monorepo",
+  "version": "0.0.1",
+  "description": "NestJS Nx Monorepo with API and Health Library",
+  "private": true,
+  "workspaces": [
+    "api",
+    "libs/*"
+  ],
+  "scripts": {
+    "build": "nx run-many --target=build --projects=libs/*,api",
+    "build:libs": "nx run-many --target=build --projects=libs/*",
+    "serve": "nx serve api",
+    "prisma:generate": "nx run api:prisma:generate",
+    "prisma:push": "nx run api:prisma:push",
+    "prisma:migrate:dev": "nx run api:prisma:migrate:dev",
+    "start": "node dist/api/src/main.js",
+    "format": "npm run prettier:fix && npm run lint:fix",
+    "lint": "nx run-many --target=lint --all",
+    "lint:fix": "nx run-many --target=lint --all --fix",
+    "commitlint": "commitlint --from=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD) --to=HEAD",
+    "test": "nx run-many --target=test --all",
+    "test:e2e": "NODE_ENV=local-test nx run api:test-e2e",
+    "test:perf": "ts-node api/scripts/performance-test.ts",
+    "prettier": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,mjs}\"",
+    "prettier:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,mjs}\"",
+    "validate": "npm run prettier && npm run lint && npm run commitlint && npm run test && npm run test:e2e",
+    "nx:reset": "nx reset",
+    "db:start": "docker-compose up dismissible-postgres -d ",
+    "db:stop": "docker-compose down",
+    "commit": "cz"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
+    "@nestjs/cli": "^11.0.14",
+    "@nestjs/schematics": "^11.0.9",
+    "@nestjs/testing": "^11.1.10",
+    "@nx/eslint-plugin": "^22.3.3",
+    "@nx/js": "^22.3.3",
+    "@nx/nest": "^22.3.3",
+    "@nx/node": "^22.3.3",
+    "@nx/webpack": "^22.3.3",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.4",
+    "@types/supertest": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
+    "autocannon": "^8.0.0",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.2.0",
+    "nx": "^22.3.3",
+    "prettier": "^3.7.4",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.6",
+    "ts-jest-mocker": "^1.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  }
+}

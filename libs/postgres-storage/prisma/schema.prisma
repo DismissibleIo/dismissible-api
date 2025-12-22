@@ -1,0 +1,23 @@
+// Prisma schema for Dismissible PostgreSQL storage
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model DismissibleItem {
+  id String
+  userId String @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  dismissedAt DateTime? @map("dismissed_at")
+
+  @@id([userId, id])
+  @@index([userId])
+  @@map("dismissible_items")
+}
+
