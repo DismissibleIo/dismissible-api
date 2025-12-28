@@ -49,7 +49,18 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
+      - name: Check if version already exists
+        id: check-version
+        run: |
+          if docker buildx imagetools inspect "${{ secrets.DOCKERHUB_USERNAME }}/dismissible-api:${{ steps.version.outputs.version }}" > /dev/null 2>&1; then
+            echo "Version ${{ steps.version.outputs.version }} already exists, skipping build"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
+        if: steps.check-version.outputs.skip != 'true'
         uses: docker/build-push-action@v6
         with:
           context: .

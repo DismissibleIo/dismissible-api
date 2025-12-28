@@ -36,6 +36,12 @@ jobs:
         run: npm install
         shell: bash
 
+      - name: Prisma generate
+        run: npm run prisma:generate
+
+      - name: Build
+        run: npm run build
+
       - name: Print Environment Info
         run: npx nx report
         shell: bash
@@ -46,3 +52,4 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+          SHELL: /bin/bash

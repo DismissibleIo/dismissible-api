@@ -15,6 +15,7 @@ COPY package*.json ./
 COPY api/package.json ./api/
 COPY libs/dismissible/package.json ./libs/dismissible/
 COPY libs/dismissible-item/package.json ./libs/dismissible-item/
+COPY libs/jwt-auth-hook/package.json ./libs/jwt-auth-hook/
 COPY libs/logger/package.json ./libs/logger/
 COPY libs/postgres-storage/package.json ./libs/postgres-storage/
 COPY libs/storage/package.json ./libs/storage/
