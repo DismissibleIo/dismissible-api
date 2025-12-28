@@ -1,4 +1,4 @@
-name: Docker Canary Release
+name: Publish - Docker Canary
 
 on:
   workflow_dispatch:
