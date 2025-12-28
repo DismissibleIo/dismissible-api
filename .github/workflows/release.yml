@@ -75,6 +75,11 @@ jobs:
           DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/dismissible
         run: npm run validate
 
+      - name: Configure Git
+        run: |
+          git config user.email "dismissible[bot]@users.noreply.github.com"
+          git config user.name "dismissible[bot]"
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
