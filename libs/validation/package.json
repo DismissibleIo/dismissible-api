@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-validation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Validation service module for NestJS applications using class-validator and class-transformer",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
