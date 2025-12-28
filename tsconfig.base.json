@@ -1,0 +1,30 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2021",
+    "module": "commonjs",
+    "lib": ["ES2021"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@dismissible-api/dismissible": ["libs/dismissible/src/index.ts"],
+      "@dismissible/nestjs-dismissible": ["libs/dismissible/src/index.ts"],
+      "@dismissible/nestjs-dismissible-hooks": ["libs/dismissible-hooks/src/index.ts"],
+      "@dismissible/nestjs-dismissible-item": ["libs/dismissible-item/src/index.ts"],
+      "@dismissible/nestjs-dismissible-request": ["libs/dismissible-request/src/index.ts"],
+      "@dismissible/nestjs-jwt-auth-hook": ["libs/jwt-auth-hook/src/index.ts"],
+      "@dismissible/nestjs-logger": ["libs/logger/src/index.ts"],
+      "@dismissible/nestjs-postgres-storage": ["libs/postgres-storage/src/index.ts"],
+      "@dismissible/nestjs-storage": ["libs/storage/src/index.ts"],
+      "@dismissible/nestjs-validation": ["libs/validation/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

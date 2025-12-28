@@ -1,0 +1,54 @@
+services:
+  dismissible-api:
+    build: .
+    container_name: dismissible-api
+    restart: unless-stopped
+    depends_on:
+      - dismissible-postgres
+    environment:
+      # Server
+      DISMISSIBLE_PORT: 3001
+      DISMISSIBLE_SWAGGER_ENABLED: true
+      DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+
+      # JWT Authentication (disabled for local development)
+      DISMISSIBLE_JWT_AUTH_ENABLED: false
+      # Uncomment and configure for production with your OIDC provider:
+      # DISMISSIBLE_JWT_AUTH_ENABLED: true
+      # DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL: https://your-tenant.auth0.com/.well-known/openid-configuration
+      # DISMISSIBLE_JWT_AUTH_ISSUER: https://your-tenant.auth0.com/
+      # DISMISSIBLE_JWT_AUTH_AUDIENCE: your-api-identifier
+
+      # Security Headers (Helmet)
+      DISMISSIBLE_HELMET_ENABLED: true
+      DISMISSIBLE_HELMET_CSP: false
+      DISMISSIBLE_HELMET_COEP: false
+      DISMISSIBLE_HELMET_HSTS_MAX_AGE: 31536000
+      DISMISSIBLE_HELMET_HSTS_INCLUDE_SUBDOMAINS: true
+      DISMISSIBLE_HELMET_HSTS_PRELOAD: false
+
+      # CORS
+      DISMISSIBLE_CORS_ENABLED: true
+      DISMISSIBLE_CORS_ORIGINS: http://localhost:3000
+      DISMISSIBLE_CORS_METHODS: GET,POST,DELETE,OPTIONS
+      DISMISSIBLE_CORS_ALLOWED_HEADERS: Content-Type,Authorization,x-request-id
+      DISMISSIBLE_CORS_CREDENTIALS: true
+      DISMISSIBLE_CORS_MAX_AGE: 86400
+    ports:
+      - '3001:3001'
+
+  dismissible-postgres:
+    image: postgres:latest
+    container_name: dismissible-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dismissible
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:

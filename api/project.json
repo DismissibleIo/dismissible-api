@@ -1,0 +1,101 @@
+{
+  "name": "api",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "api/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build"],
+      "options": {
+        "outputPath": "dist/api",
+        "main": "api/src/index.ts",
+        "tsConfig": "api/tsconfig.app.json",
+        "assets": [
+          {
+            "input": "api/config",
+            "glob": "**/*.yaml",
+            "output": "config"
+          }
+        ],
+        "generatePackageJson": true
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "api:build",
+        "runBuildTargetDependencies": true,
+        "watch": true
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "api:build"
+        },
+        "production": {
+          "buildTarget": "api:build"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["api/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/api"],
+      "options": {
+        "jestConfig": "api/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "test-e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/api-e2e"],
+      "options": {
+        "jestConfig": "api/jest.e2e-config.ts"
+      }
+    },
+    "prisma:generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run prisma:generate",
+        "cwd": "api"
+      }
+    },
+    "prisma:migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run prisma:migrate:dev",
+        "cwd": "api"
+      }
+    },
+    "prisma:push": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run prisma:db:push",
+        "cwd": "api"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/api"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/api"
+      }
+    }
+  }
+}

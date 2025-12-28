@@ -1,0 +1,81 @@
+{
+  "name": "postgres-storage",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/postgres-storage/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/postgres-storage",
+        "main": "libs/postgres-storage/src/index.ts",
+        "tsConfig": "libs/postgres-storage/tsconfig.lib.json",
+        "assets": [
+          "libs/postgres-storage/package.json",
+          "libs/postgres-storage/README.md",
+          "libs/postgres-storage/prisma.config.mjs",
+          {
+            "input": "libs/postgres-storage/prisma",
+            "glob": "**/*",
+            "output": "prisma"
+          },
+          {
+            "input": "libs/postgres-storage/bin",
+            "glob": "**/*",
+            "output": "bin"
+          }
+        ],
+        "generatePackageJson": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/postgres-storage/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/postgres-storage"],
+      "options": {
+        "jestConfig": "libs/postgres-storage/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "prisma:generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx prisma generate --schema=libs/postgres-storage/prisma/schema.prisma"
+      }
+    },
+    "prisma:migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx prisma migrate dev --schema=libs/postgres-storage/prisma/schema.prisma"
+      }
+    },
+    "prisma:push": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx prisma db push --schema=libs/postgres-storage/prisma/schema.prisma"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/postgres-storage"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/postgres-storage"
+      }
+    }
+  }
+}

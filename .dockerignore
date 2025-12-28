@@ -1,0 +1,44 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+tmp
+.nx
+
+# Coverage
+coverage
+
+# IDE and Editor
+.idea
+.vscode
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Testing
+*.spec.ts
+*.test.ts
+*.e2e-spec.ts
+jest.config.ts
+jest.e2e-config.ts
+jest.preset.js
+
+# Misc
+.env*
+*.log
+.DS_Store
+

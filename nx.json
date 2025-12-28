@@ -1,0 +1,76 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/.eslintrc.json"
+    ],
+    "sharedGlobals": []
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "cache": true
+    },
+    "lint": {
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
+      "cache": true
+    },
+    "test": {
+      "inputs": ["default", "^production"],
+      "cache": true
+    }
+  },
+  "workspaceLayout": {
+    "appsDir": "api",
+    "libsDir": "libs"
+  },
+  "tui": {
+    "enabled": false
+  },
+  "release": {
+    "releaseTagPattern": "v{version}",
+    "projects": [
+      "api",
+      "dismissible",
+      "dismissible-hooks",
+      "dismissible-item",
+      "dismissible-request",
+      "jwt-auth-hook",
+      "logger",
+      "postgres-storage",
+      "storage",
+      "validation"
+    ],
+    "projectsRelationship": "fixed",
+    "version": {
+      "preVersionCommand": "npx nx run-many -t build",
+      "conventionalCommits": true,
+      "manifestRootsToUpdate": [
+        "{projectRoot}",
+        {
+          "path": "dist/{projectRoot}",
+          "preserveLocalDependencyProtocols": false
+        }
+      ],
+      "git": {
+        "commit": true,
+        "commitMessage": "chore(release): publish {projectName} {version} [skip ci]"
+      },
+      "fallbackCurrentVersionResolver": "disk",
+      "preserveMatchingDependencyRanges": false
+    },
+    "changelog": {
+      "automaticFromRef": true,
+      "workspaceChangelog": true,
+      "projectChangelogs": {
+        "createRelease": "github"
+      }
+    }
+  }
+}

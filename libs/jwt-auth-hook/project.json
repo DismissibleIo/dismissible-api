@@ -1,0 +1,49 @@
+{
+  "name": "jwt-auth-hook",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/jwt-auth-hook/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/jwt-auth-hook",
+        "main": "libs/jwt-auth-hook/src/index.ts",
+        "tsConfig": "libs/jwt-auth-hook/tsconfig.lib.json",
+        "assets": ["libs/jwt-auth-hook/package.json", "libs/jwt-auth-hook/README.md"],
+        "generatePackageJson": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/jwt-auth-hook/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/jwt-auth-hook"],
+      "options": {
+        "jestConfig": "libs/jwt-auth-hook/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/jwt-auth-hook"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/jwt-auth-hook"
+      }
+    }
+  }
+}

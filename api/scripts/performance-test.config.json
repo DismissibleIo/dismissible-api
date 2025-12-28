@@ -1,0 +1,29 @@
+{
+  "presets": {
+    "light": {
+      "createCount": 50,
+      "getCount": 50,
+      "connections": 5,
+      "duration": 5
+    },
+    "medium": {
+      "createCount": 100,
+      "getCount": 100,
+      "connections": 10,
+      "duration": 10
+    },
+    "heavy": {
+      "createCount": 500,
+      "getCount": 500,
+      "connections": 25,
+      "duration": 30
+    },
+    "stress": {
+      "createCount": 1000,
+      "getCount": 1000,
+      "connections": 50,
+      "duration": 60
+    }
+  },
+  "default": "medium"
+}

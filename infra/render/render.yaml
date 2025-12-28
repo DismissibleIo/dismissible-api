@@ -1,0 +1,96 @@
+# Render Blueprint for Dismissible API
+# https://render.com/docs/infrastructure-as-code
+#
+# To deploy:
+# 1. Copy this file to the root of your repo as render.yaml
+# 2. Connect the repo to Render via Dashboard > New > Blueprint
+# 3. Render will automatically deploy on pushes to your linked branch
+
+services:
+  - type: web
+    name: dismissible-api
+    runtime: image
+    plan: starter
+    region: oregon
+    healthCheckPath: /health
+    image:
+      url: docker.io/dismissibleio/dismissible-api:latest # Official prebuilt image - easiest way to get started
+    # Alternative: Build from local Dockerfile
+    # runtime: docker
+    # dockerfilePath: ./Dockerfile
+    # dockerContext: .
+    envVars:
+      # Server Configuration
+      - key: DISMISSIBLE_PORT
+        value: '10000'
+      - key: PORT
+        value: '10000'
+
+      # Database - connection string from Render Postgres
+      - key: DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING
+        fromDatabase:
+          name: dismissible-db
+          property: connectionString
+
+      # Database Migrations - set to "true" to run migrations automatically on startup
+      # Alternatively, run migrations manually before deploying
+      - key: DISMISSIBLE_RUN_MIGRATION
+        value: 'false'
+
+      # Swagger - disabled in production for security
+      - key: DISMISSIBLE_SWAGGER_ENABLED
+        value: 'false'
+
+      # Helmet Security Headers
+      - key: DISMISSIBLE_HELMET_ENABLED
+        value: 'true'
+      - key: DISMISSIBLE_HELMET_CSP
+        value: 'true'
+      - key: DISMISSIBLE_HELMET_COEP
+        value: 'true'
+      - key: DISMISSIBLE_HELMET_HSTS_MAX_AGE
+        value: '31536000'
+      - key: DISMISSIBLE_HELMET_HSTS_INCLUDE_SUBDOMAINS
+        value: 'true'
+      - key: DISMISSIBLE_HELMET_HSTS_PRELOAD
+        value: 'false'
+
+      # CORS Configuration
+      # Update DISMISSIBLE_CORS_ORIGINS with your frontend domain(s)
+      - key: DISMISSIBLE_CORS_ENABLED
+        value: 'true'
+      - key: DISMISSIBLE_CORS_ORIGINS
+        sync: false
+      - key: DISMISSIBLE_CORS_METHODS
+        value: 'GET,POST,DELETE,OPTIONS'
+      - key: DISMISSIBLE_CORS_ALLOWED_HEADERS
+        value: 'Content-Type,Authorization,x-request-id'
+      - key: DISMISSIBLE_CORS_CREDENTIALS
+        value: 'true'
+      - key: DISMISSIBLE_CORS_MAX_AGE
+        value: '86400'
+
+      # JWT Authentication
+      # Set to "false" to disable authentication, or configure your OIDC provider
+      - key: DISMISSIBLE_JWT_AUTH_ENABLED
+        value: 'false'
+      # Uncomment and configure for production with your OIDC provider:
+      # - key: DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL
+      #   sync: false  # Set in Render dashboard
+      # - key: DISMISSIBLE_JWT_AUTH_ISSUER
+      #   sync: false  # Set in Render dashboard
+      # - key: DISMISSIBLE_JWT_AUTH_AUDIENCE
+      #   sync: false  # Set in Render dashboard
+
+      # Node environment
+      - key: NODE_ENV
+        value: 'production'
+
+databases:
+  - name: dismissible-db
+    plan: starter
+    region: oregon
+    databaseName: dismissible
+    user: dismissible
+    ipAllowList: [] # Only allow connections from Render services
+

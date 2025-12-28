@@ -1,0 +1,9 @@
+node_modules
+dist
+tmp
+*.log
+coverage
+.nyc_output
+build
+
+libs/postgres-storage/prisma/generated

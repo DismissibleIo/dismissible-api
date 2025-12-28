@@ -1,0 +1,36 @@
+export default {
+  displayName: 'api',
+  preset: '../jest.preset.js',
+  testEnvironment: 'node',
+  transform: {
+    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+  },
+  moduleFileExtensions: ['ts', 'js', 'html'],
+  coverageDirectory: '../coverage/api',
+  testMatch: ['**/*.spec.ts'],
+  testPathIgnorePatterns: ['\\.e2e-spec\\.ts$'],
+  transformIgnorePatterns: ['node_modules/(?!(nest-typed-config|uuid)/)'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.spec.ts',
+    '!src/**/*.e2e-spec.ts',
+    '!src/**/*.interface.ts',
+    '!src/**/*.dto.ts',
+    '!src/**/*.enum.ts',
+    '!src/**/index.ts',
+    '!src/**/*.module.ts',
+    '!src/main.ts',
+    '!src/bootstrap.ts',
+    '!src/app.setup.ts',
+    '!src/app-test.factory.ts',
+    '!src/dismissible-nest-factory.ts',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+};
