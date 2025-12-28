@@ -60,7 +60,7 @@
       ],
       "git": {
         "commit": true,
-        "commitMessage": "chore(release): publish {projectName} {version} [skip ci]"
+        "commitMessage": "chore(release): publish v{version} [skip ci]"
       },
       "fallbackCurrentVersionResolver": "disk",
       "preserveMatchingDependencyRanges": false

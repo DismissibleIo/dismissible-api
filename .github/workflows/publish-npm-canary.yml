@@ -1,4 +1,4 @@
-name: NPM Canary Release
+name: Publish - NPM Canary
 
 on:
   workflow_dispatch:
