@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-dismissible-hooks",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Lifecycle hooks interfaces for Dismissible applications",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -16,8 +16,8 @@
     "README.md"
   ],
   "dependencies": {
-    "@dismissible/nestjs-dismissible-item": "^0.0.1",
-    "@dismissible/nestjs-dismissible-request": "^0.0.1"
+    "@dismissible/nestjs-dismissible-item": "^1.0.0",
+    "@dismissible/nestjs-dismissible-request": "^1.0.0"
   },
   "keywords": [
     "nestjs",

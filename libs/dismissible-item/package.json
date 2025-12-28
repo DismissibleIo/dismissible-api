@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-dismissible-item",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Dismissible item library",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",

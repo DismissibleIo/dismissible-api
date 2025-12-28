@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-logger",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Console logger module for Dismissible applications",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
