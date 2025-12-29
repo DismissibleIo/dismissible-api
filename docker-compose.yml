@@ -5,11 +5,19 @@ services:
     restart: unless-stopped
     depends_on:
       - dismissible-postgres
+      - localstack
     environment:
       # Server
       DISMISSIBLE_PORT: 3001
       DISMISSIBLE_SWAGGER_ENABLED: true
       DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+
+      # DynamoDB Storage (LocalStack)
+      DISMISSIBLE_DYNAMODB_TABLE_NAME: dismissible-items
+      DISMISSIBLE_DYNAMODB_AWS_REGION: us-east-1
+      DISMISSIBLE_DYNAMODB_LOCALSTACK_ENDPOINT: http://localstack:4566
+      DISMISSIBLE_DYNAMODB_AWS_ACCESS_KEY_ID: test
+      DISMISSIBLE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
 
       # JWT Authentication (disabled for local development)
       DISMISSIBLE_JWT_AUTH_ENABLED: false
@@ -50,5 +58,31 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    restart: unless-stopped
+    environment:
+      # Enable specific LocalStack services
+      SERVICES: dynamodb
+      # AWS region configuration
+      AWS_DEFAULT_REGION: us-east-1
+      # LocalStack configuration
+      DEBUG: 1
+      # Persistence mode (optional - data persists across restarts)
+      # PERSISTENCE: 1
+    ports:
+      - '4566:4566'
+    volumes:
+      - localstack_data:/var/lib/localstack
+      # Share a Docker network for inter-container communication
+    networks:
+      - default
+
+networks:
+  default:
+    name: dismissible-network
+
 volumes:
   postgres_data:
+  localstack_data:

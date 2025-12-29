@@ -113,6 +113,7 @@ jobs:
           echo "  npm install @dismissible/nestjs-dismissible-hooks@${VERSION}"
           echo "  npm install @dismissible/nestjs-dismissible-item@${VERSION}"
           echo "  npm install @dismissible/nestjs-dismissible-request@${VERSION}"
+          echo "  npm install @dismissible/nestjs-dynamodb-storage@${VERSION}"
           echo "  npm install @dismissible/nestjs-logger@${VERSION}"
           echo "  npm install @dismissible/nestjs-postgres-storage@${VERSION}"
           echo "  npm install @dismissible/nestjs-storage@${VERSION}"

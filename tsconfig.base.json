@@ -22,6 +22,7 @@
       "@dismissible/nestjs-jwt-auth-hook": ["libs/jwt-auth-hook/src/index.ts"],
       "@dismissible/nestjs-logger": ["libs/logger/src/index.ts"],
       "@dismissible/nestjs-postgres-storage": ["libs/postgres-storage/src/index.ts"],
+      "@dismissible/nestjs-dynamodb-storage": ["libs/dynamodb-storage/src/index.ts"],
       "@dismissible/nestjs-storage": ["libs/storage/src/index.ts"],
       "@dismissible/nestjs-validation": ["libs/validation/src/index.ts"]
     }

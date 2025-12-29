@@ -6,7 +6,7 @@ import { join } from 'path';
 import { DismissibleModule } from '@dismissible/nestjs-dismissible';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { DefaultAppConfig } from './config/default-app.config';
-import { PostgresStorageConfig, PostgresStorageModule } from '@dismissible/nestjs-postgres-storage';
+import { StorageModule } from './storage/storage.module';
 import {
   JwtAuthHookModule,
   JwtAuthHook,
@@ -45,14 +45,7 @@ export class AppModule {
         DismissibleModule.forRoot({
           logger: options?.logger,
           hooks: [JwtAuthHook],
-          storage: PostgresStorageModule.forRootAsync({
-            useFactory(config: PostgresStorageConfig) {
-              return {
-                connectionString: config.connectionString,
-              };
-            },
-            inject: [PostgresStorageConfig],
-          }),
+          storage: StorageModule.forRootAsync(),
         }),
       ],
     };

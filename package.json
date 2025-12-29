@@ -26,8 +26,12 @@
     "prettier:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,mjs}\"",
     "validate": "npm run prettier && npm run lint && npm run commitlint && npm run test && npm run test:e2e",
     "nx:reset": "nx reset",
-    "db:start": "docker-compose up dismissible-postgres -d ",
+    "db:start": "docker-compose up -d dismissible-postgres localstack",
     "db:stop": "docker-compose down",
+    "db:start:postgres": "docker-compose up dismissible-postgres -d",
+    "db:stop:postgres": "docker-compose stop dismissible-postgres",
+    "db:start:dynamo": "docker-compose up localstack -d",
+    "db:stop:dynamo": "docker-compose stop localstack",
     "commit": "cz"
   },
   "devDependencies": {
