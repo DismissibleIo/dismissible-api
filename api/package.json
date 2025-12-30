@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-api",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Dismissible API application",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -23,12 +23,12 @@
     "prisma:studio": "npx dismissible-prisma studio"
   },
   "dependencies": {
-    "@dismissible/nestjs-dismissible": "^1.0.1",
-    "@dismissible/nestjs-dismissible-item": "^1.0.1",
-    "@dismissible/nestjs-jwt-auth-hook": "^1.0.1",
-    "@dismissible/nestjs-storage": "^1.0.1",
-    "@dismissible/nestjs-postgres-storage": "^1.0.1",
-    "@dismissible/nestjs-logger": "^1.0.1",
+    "@dismissible/nestjs-dismissible": "^1.0.2",
+    "@dismissible/nestjs-dismissible-item": "^1.0.2",
+    "@dismissible/nestjs-jwt-auth-hook": "^1.0.2",
+    "@dismissible/nestjs-storage": "^1.0.2",
+    "@dismissible/nestjs-postgres-storage": "^1.0.2",
+    "@dismissible/nestjs-logger": "^1.0.2",
     "@nestjs/common": "^11.1.10",
     "@nestjs/core": "^11.1.10",
     "@nestjs/platform-fastify": "^11.1.10",
