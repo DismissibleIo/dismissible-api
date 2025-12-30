@@ -31,6 +31,13 @@
         "passWithNoTests": true
       }
     },
+    "test-e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/dismissible-e2e"],
+      "options": {
+        "jestConfig": "libs/dismissible/jest.e2e-config.ts"
+      }
+    },
     "publish": {
       "executor": "nx:run-commands",
       "options": {

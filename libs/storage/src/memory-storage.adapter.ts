@@ -1,17 +1,27 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { LRUCache } from 'lru-cache';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { IDismissibleStorage } from './storage.interface';
 import { DismissibleItemDto } from '@dismissible/nestjs-dismissible-item';
 
 /**
- * In-memory storage provider for dismissible items.
+ * In-memory storage provider for dismissible items with LRU eviction.
  * Suitable for development and testing; not for production use.
+ *
+ * Automatically evicts items when:
+ * - The cache exceeds the maximum number of items (default: 5000)
+ * - Items are older than the maximum age (default: 6 hours)
  */
 @Injectable()
 export class MemoryStorageAdapter implements IDismissibleStorage {
-  private readonly storage = new Map<string, DismissibleItemDto>();
+  private readonly storage: LRUCache<string, DismissibleItemDto>;
 
-  constructor(@Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger) {}
+  constructor(@Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger) {
+    this.storage = new LRUCache<string, DismissibleItemDto>({
+      max: 5000,
+      ttl: 6 * 60 * 60 * 1000, // 6 hours
+    });
+  }
 
   /**
    * Create a storage key from userId and itemId.
