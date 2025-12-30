@@ -16,8 +16,9 @@
     "README.md"
   ],
   "dependencies": {
+    "@dismissible/nestjs-dismissible-item": "^1.0.1",
     "@dismissible/nestjs-logger": "^1.0.1",
-    "@dismissible/nestjs-dismissible-item": "^1.0.1"
+    "lru-cache": "^11.2.4"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0"
