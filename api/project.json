@@ -27,6 +27,9 @@
       "executor": "@nx/js:node",
       "options": {
         "buildTarget": "api:build",
+        "buildTargetOptions": {
+          "main": "api/src/main.ts"
+        },
         "runBuildTargetDependencies": true,
         "watch": true
       },
