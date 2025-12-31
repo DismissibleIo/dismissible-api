@@ -60,6 +60,9 @@ COPY --from=builder /app/dist ./dist
 # (npm workspaces create symlinks from node_modules/@dismissible/* -> ../../libs/*)
 COPY --from=builder /app/dist/libs ./libs
 
+# Copy built libs node_modules due to conflicting versions
+COPY --from=builder /app/libs/storage/node_modules ./libs/storage/node_modules
+
 # Copy Prisma schema and migrations (needed for migrations)
 COPY --from=builder /app/libs/postgres-storage/prisma ./libs/postgres-storage/prisma
 

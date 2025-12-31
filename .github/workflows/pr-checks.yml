@@ -63,6 +63,10 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
+          load: true
           tags: dismissible-api:pr-check
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: ./scripts/test-docker-image.sh dismissible-api:pr-check
