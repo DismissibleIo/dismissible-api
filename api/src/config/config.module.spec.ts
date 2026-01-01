@@ -32,6 +32,7 @@ describe('ConfigModule', () => {
       expect(result.module).toBe(ConfigModule);
       expect(result.exports).toContain(TypedConfigModule);
       expect(fileLoader).toHaveBeenCalledWith({
+        basename: '.env',
         searchFrom: expect.stringContaining('config'),
         ignoreEnvironmentVariableSubstitution: false,
       });
@@ -55,6 +56,7 @@ describe('ConfigModule', () => {
 
       expect(result.module).toBe(ConfigModule);
       expect(fileLoader).toHaveBeenCalledWith({
+        basename: '.env',
         searchFrom: customPath,
         ignoreEnvironmentVariableSubstitution: false,
       });
@@ -72,6 +74,7 @@ describe('ConfigModule', () => {
       });
 
       expect(fileLoader).toHaveBeenCalledWith({
+        basename: '.env',
         searchFrom: expect.any(String),
         ignoreEnvironmentVariableSubstitution: true,
       });

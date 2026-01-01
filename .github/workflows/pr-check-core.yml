@@ -1,0 +1,59 @@
+name: PR Checks - Core
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dismissible
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      dismissible-dynamodb:
+        image: localstack/localstack:latest
+        env:
+          SERVICES: dynamodb
+          AWS_DEFAULT_REGION: us-east-1
+          DEBUG: 0
+        ports:
+          - 4566:4566
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Storage init
+        run: npm run storage:init
+
+      - name: Run storage setup
+        run: npm run storage:setup
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run validate

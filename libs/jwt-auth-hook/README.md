@@ -1,10 +1,25 @@
+<p align="center">
+  <a href="https://dismissible.io" target="_blank"><img src="../../docs/images/dismissible_logo.png" width="120" alt="Dismissible" /></a>
+</p>
+
+<p align="center">Never Show The Same Thing Twice!</p>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-jwt-auth-hook" target="_blank"><img src="https://img.shields.io/npm/v/@dismissible/nestjs-jwt-auth-hook.svg" alt="NPM Version" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/npm/l/@dismissible/nestjs-jwt-auth-hook.svg" alt="Package License" /></a>
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-jwt-auth-hook" target="_blank"><img src="https://img.shields.io/npm/dm/@dismissible/nestjs-jwt-auth-hook.svg" alt="NPM Downloads" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api" target="_blank"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/dismissibleio/dismissible-api/release.yml"></a>
+  <a href="https://paypal.me/joshstuartx" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+</p>
+
+Dismissible manages the state of your UI elements across sessions, so your users see what matters, once! No more onboarding messages reappearing on every tab, no more notifications haunting users across devices. Dismissible syncs dismissal state everywhere, so every message is intentional, never repetitive.
+
 # @dismissible/nestjs-jwt-auth-hook
 
 JWT authentication hook for Dismissible applications using OpenID Connect (OIDC) well-known discovery.
 
 ## Overview
 
-This library provides a lifecycle hook that integrates with the `@dismissible/nestjs-dismissible` module to authenticate requests using JWT bearer tokens. It validates tokens using JWKS (JSON Web Key Set) fetched from an OIDC well-known endpoint.
+This library provides a lifecycle hook that integrates with the `@dismissible/nestjs-core` module to authenticate requests using JWT bearer tokens. It validates tokens using JWKS (JSON Web Key Set) fetched from an OIDC well-known endpoint.
 
 ## Installation
 
@@ -18,7 +33,7 @@ npm install @dismissible/nestjs-jwt-auth-hook @nestjs/axios axios
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { DismissibleModule } from '@dismissible/nestjs-dismissible';
+import { DismissibleModule } from '@dismissible/nestjs-core';
 import { JwtAuthHookModule, JwtAuthHook } from '@dismissible/nestjs-jwt-auth-hook';
 
 @Module({
@@ -47,7 +62,7 @@ When configuration values come from environment variables or other async sources
 ```typescript
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DismissibleModule } from '@dismissible/nestjs-dismissible';
+import { DismissibleModule } from '@dismissible/nestjs-core';
 import { JwtAuthHookModule, JwtAuthHook } from '@dismissible/nestjs-jwt-auth-hook';
 
 @Module({
@@ -104,7 +119,7 @@ When using the Dismissible API Docker image or the standalone API, these environ
 ```bash
 docker run -p 3001:3001 \
   -e DISMISSIBLE_JWT_AUTH_ENABLED=false \
-  -e DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING="postgresql://..." \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://..." \
   dismissibleio/dismissible-api:latest
 ```
 
@@ -116,7 +131,7 @@ docker run -p 3001:3001 \
   -e DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL="https://your-tenant.auth0.com/.well-known/openid-configuration" \
   -e DISMISSIBLE_JWT_AUTH_ISSUER="https://your-tenant.auth0.com/" \
   -e DISMISSIBLE_JWT_AUTH_AUDIENCE="your-api-identifier" \
-  -e DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING="postgresql://..." \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://..." \
   dismissibleio/dismissible-api:latest
 ```
 

@@ -1,6 +1,6 @@
 import { Injectable, Inject, UnauthorizedException, ForbiddenException } from '@nestjs/common';
-import { IDismissibleLifecycleHook, IHookResult } from '@dismissible/nestjs-dismissible-hooks';
-import { IRequestContext } from '@dismissible/nestjs-dismissible-request';
+import { IDismissibleLifecycleHook, IHookResult } from '@dismissible/nestjs-hooks';
+import { IRequestContext } from '@dismissible/nestjs-request';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { JwtAuthService } from './jwt-auth.service';
 import { JWT_AUTH_HOOK_CONFIG, JwtAuthHookConfig } from './jwt-auth-hook.config';

@@ -12,7 +12,11 @@ Dismissible manages the state of your UI elements across sessions, so your users
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Running the Container](#running-the-container)
-  - [Database Migrations](#database-migrations)
+  - [Storage Setup](#storage-setup)
+- [Storage Backends](#storage-backends)
+  - [PostgreSQL](#postgresql)
+  - [DynamoDB](#dynamodb)
+  - [In-Memory](#memory)
 - [Configuration](#configuration)
 - [Docker Compose](#docker-compose)
 
@@ -20,9 +24,12 @@ Dismissible manages the state of your UI elements across sessions, so your users
 
 ## Quick Start
 
+### PostgreSQL (Default)
+
 ```bash
 docker run -p 3001:3001 \
-  -e DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING="postgresql://user:password@host:5432/dismissible" \
+  -e DISMISSIBLE_STORAGE_TYPE=postgres \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://user:password@host:5432/dismissible" \
   dismissibleio/dismissible-api:latest
 ```
 
@@ -46,107 +53,127 @@ A swagger version can be found at: [https://api.dismissible.io/docs](https://api
 
 ### Prerequisites
 
-- PostgreSQL database (version 12 or higher) running and accessible
+Depending on your chosen storage backend, you'll need:
+
+- **PostgreSQL**: PostgreSQL database (version 12 or higher) running and accessible
+- **DynamoDB**: AWS account with DynamoDB access, or a local DynamoDB instance
+- **In-Memory**: No prerequisites (data stored in process memory)
 
 ### Running the Container
 
-Pull and run the official image:
+The fastest way to get started is by using the public [Docker image](https://hub.docker.com/r/dismissibleio/dismissible-api) which contains the Dismissible API and storage adapters.
 
 ```bash
-docker run -d \
-  --name dismissible-api \
-  -p 3001:3001 \
-  -e DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING="postgresql://user:password@host:5432/dismissible" \
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_STORAGE_TYPE=memory \
   dismissibleio/dismissible-api:latest
 ```
 
-**Note**: [Database migrations](#database-migrations) run automatically on startup by default.
+This will launch the API using the memory storage, and will now be available at `http://localhost:3001`.
 
-### Database Migrations
+## Storage Backends
 
-The API uses Prisma for database setup (eg. table creation) and migrations. By default, Prismamigrations are run automatically when the container starts.
+The Dismissible API supports multiple storage backends and is determined by the following config:
 
-If you would like better control over database setup and migrations, you can disable them from running when the container starts:
+| Variable                   | Description                                               | Default    |
+| -------------------------- | --------------------------------------------------------- | ---------- |
+| `DISMISSIBLE_STORAGE_TYPE` | Storage backend type eg. `postgres`, `dynamodb`, `memory` | `postgres` |
+
+### PostgreSQL
+
+The default and most production-ready option. Uses Prisma ORM for database operations.
+
+**Environment Variables:**
+
+| Variable                                         | Description                  | Default    |
+| ------------------------------------------------ | ---------------------------- | ---------- |
+| `DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING` | PostgreSQL connection string | _required_ |
+
+**Example:**
 
 ```bash
--e DISMISSIBLE_RUN_MIGRATION=false
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_STORAGE_TYPE=postgres \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://user:password@host:5432/dismissible" \
+  -e DISMISSIBLE_RUN_STORAGE_SETUP=true \
+  dismissibleio/dismissible-api:latest
 ```
 
-Then you can run the migrations and database setup manually by:
+### DynamoDB
+
+AWS DynamoDB storage backend for serverless or AWS-native deployments.
+
+**Environment Variables:**
+
+| Variable                                             | Description                            | Default             |
+| ---------------------------------------------------- | -------------------------------------- | ------------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                    | `dismissible-items` |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                             | `us-east-1`         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                      | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                      | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack/DynamoDB Local endpoint URL | -                   |
+
+**Example:**
+
+This example would be similar to a production deployment
 
 ```bash
-docker run --rm \
-  -e DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING="postgresql://user:password@host:5432/dismissible" \
-  dismissibleio/dismissible-api:latest \
-  sh -c "cd /app/api && npm run prisma:migrate:deploy"
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_STORAGE_TYPE=dynamodb \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME="items" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_REGION="us-east-1" \
+  -e AWS_ACCESS_KEY_ID="your-access-key" \
+  -e AWS_SECRET_ACCESS_KEY="your-secret-key" \
+  dismissibleio/dismissible-api:latest
 ```
 
-For more information about Prisma migrations, see the [Prisma documentation](https://www.prisma.io/docs/orm/prisma-migrations).
+**Local DynamoDB:**
+
+To use a local DynamoDB instance (e.g., Dockerized DynamoDB):
+
+```bash
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_STORAGE_TYPE=dynamodb \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME="items" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_REGION="localhost" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT="http://localhost:8000" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_ACCESS_KEY="local" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_SECRET_KEY="local" \
+  dismissibleio/dismissible-api:latest
+```
+
+### In-Memory
+
+In-process memory storage for development, testing, or single-instance deployments.
+
+**Environment Variables:**
+
+| Variable                   | Description                     | Default |
+| -------------------------- | ------------------------------- | ------- |
+| `DISMISSIBLE_STORAGE_TYPE` | Storage backend type (`memory`) | -       |
+
+**Example:**
+
+```bash
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_STORAGE_TYPE=memory \
+  dismissibleio/dismissible-api:latest
+```
+
+**Warning**: Data stored memory will be lost when the container restarts. Do not use in production or for multi-instance deployments.
 
 ---
 
 ## Configuration
 
-The dismissible docker image is highly configurable. The following environement variables can be set to control certain aspects of the app.
+The dismissible docker image is highly configurable. The following environment variables can be set to control certain aspects of the app.
 
-### Core Settings
-
-| Variable                                         | Description                        | Default |
-| ------------------------------------------------ | ---------------------------------- | ------- |
-| `DISMISSIBLE_PORT`                               | Port the API listens on            | `3001`  |
-| `DISMISSIBLE_SWAGGER_ENABLED`                    | Enable Swagger documentation       | `false` |
-| `DISMISSIBLE_SWAGGER_PATH`                       | Swagger documentation path         | `""`    |
-| `DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING` | PostgreSQL connection string       | `""`    |
-| `DISMISSIBLE_RUN_MIGRATION`                      | Run database migrations on startup | `true`  |
-
-### JWT Authentication
-
-| Variable                                    | Description                            | Default  |
-| ------------------------------------------- | -------------------------------------- | -------- |
-| `DISMISSIBLE_JWT_AUTH_ENABLED`              | Enable JWT authentication              | `false`  |
-| `DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`       | OIDC well-known URL for JWKS discovery | `""`     |
-| `DISMISSIBLE_JWT_AUTH_ISSUER`               | Expected issuer claim                  | `""`     |
-| `DISMISSIBLE_JWT_AUTH_AUDIENCE`             | Expected audience claim                | `""`     |
-| `DISMISSIBLE_JWT_AUTH_ALGORITHMS`           | Allowed algorithms (comma-separated)   | `RS256`  |
-| `DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION`  | JWKS cache duration in ms              | `600000` |
-| `DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT`      | Request timeout in ms                  | `30000`  |
-| `DISMISSIBLE_JWT_AUTH_PRIORITY`             | Hook priority (lower runs first)       | `-100`   |
-| `DISMISSIBLE_JWT_AUTH_VERIFY_USER_ID_MATCH` | Verify userId matches JWT sub claim    | `true`   |
-
-### Security (Helmet)
-
-| Variable                                     | Description                         | Default    |
-| -------------------------------------------- | ----------------------------------- | ---------- |
-| `DISMISSIBLE_HELMET_ENABLED`                 | Enable Helmet security headers      | `true`     |
-| `DISMISSIBLE_HELMET_CSP`                     | Enable Content Security Policy      | `true`     |
-| `DISMISSIBLE_HELMET_COEP`                    | Enable Cross-Origin Embedder Policy | `true`     |
-| `DISMISSIBLE_HELMET_HSTS_MAX_AGE`            | HSTS max age in seconds             | `31536000` |
-| `DISMISSIBLE_HELMET_HSTS_INCLUDE_SUBDOMAINS` | Include subdomains in HSTS          | `true`     |
-| `DISMISSIBLE_HELMET_HSTS_PRELOAD`            | Enable HSTS preload                 | `false`    |
-
-### CORS Settings
-
-| Variable                           | Description                        | Default                                   |
-| ---------------------------------- | ---------------------------------- | ----------------------------------------- |
-| `DISMISSIBLE_CORS_ENABLED`         | Enable CORS                        | `true`                                    |
-| `DISMISSIBLE_CORS_ORIGINS`         | Allowed origins (comma-separated)  | `http://localhost:3000`                   |
-| `DISMISSIBLE_CORS_METHODS`         | Allowed HTTP methods               | `GET,POST,DELETE,OPTIONS`                 |
-| `DISMISSIBLE_CORS_ALLOWED_HEADERS` | Allowed headers                    | `Content-Type,Authorization,x-request-id` |
-| `DISMISSIBLE_CORS_CREDENTIALS`     | Allow credentials                  | `true`                                    |
-| `DISMISSIBLE_CORS_MAX_AGE`         | Preflight cache duration (seconds) | `86400`                                   |
-
-### Validation Settings
-
-| Variable                                        | Description                      | Default |
-| ----------------------------------------------- | -------------------------------- | ------- |
-| `DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES` | Disable detailed error messages  | `true`  |
-| `DISMISSIBLE_VALIDATION_WHITELIST`              | Strip non-whitelisted properties | `true`  |
-| `DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED` | Throw error on non-whitelisted   | `true`  |
-| `DISMISSIBLE_VALIDATION_TRANSFORM`              | Auto-transform payloads          | `true`  |
-
----
+For a full list of all configuration, see the [documentation here](./CONFIGURATION.md).
 
 ## Docker Compose
+
+### PostgreSQL Setup
 
 A simple setup with PostgreSQL:
 
@@ -157,7 +184,9 @@ services:
     ports:
       - '3001:3001'
     environment:
-      DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_TYPE: postgres
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_RUN_STORAGE_SETUP: 'true'
     depends_on:
       - postgres
 
@@ -172,6 +201,54 @@ services:
 
 volumes:
   postgres_data:
+```
+
+### DynamoDB Setup
+
+A setup with local DynamoDB:
+
+```yaml
+services:
+  api:
+    image: dismissibleio/dismissible-api:latest
+    ports:
+      - '3001:3001'
+    environment:
+      DISMISSIBLE_STORAGE_TYPE: dynamodb
+      DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME: dismissible-items
+      DISMISSIBLE_STORAGE_DYNAMODB_REGION: us-east-1
+      DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
+      DISMISSIBLE_STORAGE_DYNAMODB_ACCESS_KEY: test
+      DISMISSIBLE_STORAGE_DYNAMODB_SECRET_KEY: test
+    depends_on:
+      - dismissible-dynamodb
+
+  dismissible-dynamodb:
+    image: localstack/localstack:latest
+    container_name: dismissible-dynamodb
+    restart: unless-stopped
+    environment:
+      SERVICES: dynamodb
+      AWS_DEFAULT_REGION: us-east-1
+      DEBUG: 0
+      # Persistence mode (optional - data persists across restarts)
+      # PERSISTENCE: 1
+    ports:
+      - '4566:4566'
+```
+
+### In-Memory Setup
+
+A simple setup with memory storage:
+
+```yaml
+services:
+  api:
+    image: dismissibleio/dismissible-api:latest
+    ports:
+      - '3001:3001'
+    environment:
+      DISMISSIBLE_STORAGE_TYPE: memory
 ```
 
 Start the services:

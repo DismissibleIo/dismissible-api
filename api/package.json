@@ -11,20 +11,27 @@
       "types": "./src/index.d.ts"
     }
   },
+  "files": [
+    "src",
+    "bin",
+    "config",
+    "README.md"
+  ],
   "bin": {
-    "dismissible-api": "./src/main.js"
+    "dismissible-api": "./src/main.js",
+    "dismissible-storage-setup": "./bin/dismissible-storage-setup.js"
   },
   "scripts": {
     "start": "node src/main.js",
-    "prisma:generate": "npx dismissible-prisma generate",
-    "prisma:migrate:deploy": "npx dismissible-prisma migrate deploy",
-    "prisma:migrate:dev": "npx dismissible-prisma migrate dev",
-    "prisma:db:push": "npx dismissible-prisma db push",
-    "prisma:studio": "npx dismissible-prisma studio"
+    "storage:init": "npm run storage:postgres:init",
+    "storage:postgres:init": "npx dismissible-prisma generate",
+    "storage:setup": "npm run storage:setup:postgres && npm run storage:setup:dynamodb",
+    "storage:setup:postgres": "npx dismissible-prisma migrate deploy",
+    "storage:setup:dynamodb": "npx dismissible-dynamodb-setup"
   },
   "dependencies": {
-    "@dismissible/nestjs-dismissible": "^1.0.2",
-    "@dismissible/nestjs-dismissible-item": "^1.0.2",
+    "@dismissible/nestjs-core": "^1.0.2",
+    "@dismissible/nestjs-item": "^1.0.2",
     "@dismissible/nestjs-jwt-auth-hook": "^1.0.2",
     "@dismissible/nestjs-storage": "^1.0.2",
     "@dismissible/nestjs-postgres-storage": "^1.0.2",

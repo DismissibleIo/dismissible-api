@@ -1,0 +1,50 @@
+{
+  "name": "request",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/request/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/request",
+        "main": "libs/request/src/index.ts",
+        "tsConfig": "libs/request/tsconfig.lib.json",
+        "assets": ["libs/request/package.json", "libs/request/README.md"],
+        "generatePackageJson": true,
+        "includeNodeModules": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/request/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/request"],
+      "options": {
+        "jestConfig": "libs/request/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/request"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/request"
+      }
+    }
+  }
+}

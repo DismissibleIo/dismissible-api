@@ -24,7 +24,7 @@ module.exports = {
       [
         'api',
         'dismissible',
-        'dismissible-item',
+        'item',
         'logger',
         'postgres-storage',
         'storage',

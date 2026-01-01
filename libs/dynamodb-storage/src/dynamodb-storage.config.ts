@@ -1,6 +1,6 @@
 import { IsString, IsOptional } from 'class-validator';
 
-export const DISMISSIBLE_DYNAMODB_STORAGE_CONFIG = Symbol('DISMISSIBLE_DYNAMODB_STORAGE_CONFIG');
+export const DISMISSIBLE_STORAGE_DYNAMODB_CONFIG = Symbol('DISMISSIBLE_STORAGE_DYNAMODB_CONFIG');
 
 export class DynamoDBStorageConfig {
   @IsString()

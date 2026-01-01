@@ -14,10 +14,17 @@
         "main": "api/src/index.ts",
         "tsConfig": "api/tsconfig.app.json",
         "assets": [
+          "api/package.json",
+          "api/README.md",
           {
             "input": "api/config",
             "glob": "**/*.yaml",
             "output": "config"
+          },
+          {
+            "input": "api/bin",
+            "glob": "**/*",
+            "output": "bin"
           }
         ],
         "generatePackageJson": true
@@ -32,16 +39,7 @@
         },
         "runBuildTargetDependencies": true,
         "watch": true
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "api:build"
-        },
-        "production": {
-          "buildTarget": "api:build"
-        }
-      },
-      "defaultConfiguration": "development"
+      }
     },
     "lint": {
       "executor": "@nx/eslint:lint",
@@ -58,32 +56,55 @@
         "passWithNoTests": true
       }
     },
-    "test-e2e": {
+    "test-e2e:all": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx test-e2e:memory api",
+          "nx test-e2e:postgres api",
+          "nx test-e2e:dynamodb api",
+          "nx test-e2e:other api"
+        ],
+        "parallel": false
+      },
+      "cache": true
+    },
+    "test-e2e:other": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/api-e2e"],
+      "outputs": ["{workspaceRoot}/coverage/api-e2e-other"],
       "options": {
         "jestConfig": "api/jest.e2e-config.ts"
+      },
+      "testMatch": ["**/other/*.e2e-spec.ts"]
+    },
+    "test-e2e:memory": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/api-e2e-dynamodb"],
+      "options": {
+        "command": "jest --config api/jest.e2e-config.ts --testMatch '**/dismissible/*.e2e-spec.ts'",
+        "env": {
+          "DISMISSIBLE_STORAGE_TYPE": "memory"
+        }
       }
     },
-    "prisma:generate": {
+    "test-e2e:postgres": {
       "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/api-e2e-dynamodb"],
       "options": {
-        "command": "npm run prisma:generate",
-        "cwd": "api"
+        "command": "jest --config api/jest.e2e-config.ts --testMatch '**/dismissible/*.e2e-spec.ts'",
+        "env": {
+          "DISMISSIBLE_STORAGE_TYPE": "postgres"
+        }
       }
     },
-    "prisma:migrate": {
+    "test-e2e:dynamodb": {
       "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/api-e2e-dynamodb"],
       "options": {
-        "command": "npm run prisma:migrate:dev",
-        "cwd": "api"
-      }
-    },
-    "prisma:push": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "npm run prisma:db:push",
-        "cwd": "api"
+        "command": "jest --config api/jest.e2e-config.ts --testMatch '**/dismissible/*.e2e-spec.ts'",
+        "env": {
+          "DISMISSIBLE_STORAGE_TYPE": "dynamodb"
+        }
       }
     },
     "publish": {

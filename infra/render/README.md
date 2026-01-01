@@ -113,7 +113,7 @@ The blueprint automatically configures:
 
 ### Database
 
-- `DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING`: Automatically injected from the database
+- `DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING`: Automatically injected from the database
 
 ### Security
 

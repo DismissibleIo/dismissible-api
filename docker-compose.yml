@@ -5,19 +5,24 @@ services:
     restart: unless-stopped
     depends_on:
       - dismissible-postgres
-      - localstack
+      - dismissible-dynamodb
     environment:
       # Server
       DISMISSIBLE_PORT: 3001
       DISMISSIBLE_SWAGGER_ENABLED: true
-      DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+
+      # Storage Type
+      DISMISSIBLE_STORAGE_TYPE: dynamodb
+
+      # Postgres Storage
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
 
       # DynamoDB Storage (LocalStack)
-      DISMISSIBLE_DYNAMODB_TABLE_NAME: dismissible-items
-      DISMISSIBLE_DYNAMODB_AWS_REGION: us-east-1
-      DISMISSIBLE_DYNAMODB_LOCALSTACK_ENDPOINT: http://localstack:4566
-      DISMISSIBLE_DYNAMODB_AWS_ACCESS_KEY_ID: test
-      DISMISSIBLE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
+      DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME: dismissible-items
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION: us-east-1
+      DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID: test
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
 
       # JWT Authentication (disabled for local development)
       DISMISSIBLE_JWT_AUTH_ENABLED: false
@@ -58,9 +63,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
-  localstack:
+  dismissible-dynamodb:
     image: localstack/localstack:latest
-    container_name: localstack
+    container_name: dismissible-dynamodb
     restart: unless-stopped
     environment:
       # Enable specific LocalStack services
@@ -74,7 +79,7 @@ services:
     ports:
       - '4566:4566'
     volumes:
-      - localstack_data:/var/lib/localstack
+      - dismissible_dynamodb_data:/var/lib/localstack
       # Share a Docker network for inter-container communication
     networks:
       - default
@@ -85,4 +90,4 @@ networks:
 
 volumes:
   postgres_data:
-  localstack_data:
+  dismissible_dynamodb_data:

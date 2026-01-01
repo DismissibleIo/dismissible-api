@@ -13,7 +13,8 @@
   },
   "files": [
     "src",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "dependencies": {},
   "peerDependencies": {

@@ -91,7 +91,7 @@ describe('PrismaService', () => {
       (service as any).$queryRaw.mockRejectedValue(new Error('Query failed'));
 
       await expect(service.onModuleInit()).rejects.toThrow(
-        'Database connection failed: Query failed. Ensure PostgreSQL is running and DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING is configured correctly.',
+        'Database connection failed: Query failed. Ensure PostgreSQL is running and DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING is configured correctly.',
       );
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Failed to connect to PostgreSQL database',
@@ -105,7 +105,7 @@ describe('PrismaService', () => {
       (service as any).$queryRaw.mockRejectedValue('String error');
 
       await expect(service.onModuleInit()).rejects.toThrow(
-        'Database connection failed: Unknown error. Ensure PostgreSQL is running and DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING is configured correctly.',
+        'Database connection failed: Unknown error. Ensure PostgreSQL is running and DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING is configured correctly.',
       );
     });
   });

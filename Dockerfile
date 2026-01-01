@@ -10,28 +10,15 @@ WORKDIR /app
 # Triggers for build dependencies (python3, make, g++) are not critical for the build process
 RUN apk add --no-cache --no-scripts python3 make g++
 
-# Copy package files first for better layer caching
 COPY package*.json ./
-COPY api/package.json ./api/
-COPY libs/dismissible/package.json ./libs/dismissible/
-COPY libs/dismissible-item/package.json ./libs/dismissible-item/
-COPY libs/jwt-auth-hook/package.json ./libs/jwt-auth-hook/
-COPY libs/logger/package.json ./libs/logger/
-COPY libs/postgres-storage/package.json ./libs/postgres-storage/
-COPY libs/storage/package.json ./libs/storage/
-COPY libs/validation/package.json ./libs/validation/
-
-# Install all dependencies (including dev) for building
-# Note: Using npm install instead of npm ci for workspace compatibility
-RUN npm install
-
-# Copy source files
 COPY tsconfig.base.json nx.json ./
 COPY api/ ./api/
 COPY libs/ ./libs/
 
-# Generate Prisma client
-RUN npx prisma generate --schema=libs/postgres-storage/prisma/schema.prisma
+RUN npm install
+
+# Init storage eg. prisma client generation etc
+RUN npm run storage:init
 
 # Build the application
 RUN npm run build
@@ -56,11 +43,11 @@ COPY --from=builder /app/node_modules ./node_modules
 # Copy built application
 COPY --from=builder /app/dist ./dist
 
-# Copy built libs to where workspace symlinks expect them
-# (npm workspaces create symlinks from node_modules/@dismissible/* -> ../../libs/*)
+# Copy built libs to the symlinks created by npm workspaces (@dismissible/* -> ../../libs/*)
 COPY --from=builder /app/dist/libs ./libs
 
 # Copy built libs node_modules due to conflicting versions
+COPY --from=builder /app/libs/request/node_modules ./libs/request/node_modules
 COPY --from=builder /app/libs/storage/node_modules ./libs/storage/node_modules
 
 # Copy Prisma schema and migrations (needed for migrations)
@@ -90,32 +77,53 @@ ENV NODE_ENV=production
 ENV DISMISSIBLE_PORT=3001
 ENV DISMISSIBLE_SWAGGER_ENABLED=false
 ENV DISMISSIBLE_SWAGGER_PATH="docs"
-ENV DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING=""
+
+# Storage Configuration
+ENV DISMISSIBLE_RUN_STORAGE_SETUP=true
+ENV DISMISSIBLE_STORAGE_TYPE="postgres"
+
+# Postgres Storage Connection String
+ENV DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING=""
+
+# DynamoDB Storage
+ENV DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME="dismissible-items"
+ENV DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION="us-east-1"
+ENV DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT=""
+ENV DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID=""
+ENV DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY=""
+ENV DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN=""
+
+# JWT Authentication
 ENV DISMISSIBLE_JWT_AUTH_ENABLED=false
 ENV DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL=""
 ENV DISMISSIBLE_JWT_AUTH_ISSUER=""
 ENV DISMISSIBLE_JWT_AUTH_AUDIENCE=""
-ENV DISMISSIBLE_JWT_AUTH_ALGORITHMS=RS256
+ENV DISMISSIBLE_JWT_AUTH_ALGORITHMS="RS256"
 ENV DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION=600000
 ENV DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT=30000
 ENV DISMISSIBLE_JWT_AUTH_PRIORITY=-100
+
+# Security Headers (Helmet)
 ENV DISMISSIBLE_HELMET_ENABLED=true
 ENV DISMISSIBLE_HELMET_CSP=true
 ENV DISMISSIBLE_HELMET_COEP=true
 ENV DISMISSIBLE_HELMET_HSTS_MAX_AGE=31536000
 ENV DISMISSIBLE_HELMET_HSTS_INCLUDE_SUBDOMAINS=true
 ENV DISMISSIBLE_HELMET_HSTS_PRELOAD=false
+
+# CORS
 ENV DISMISSIBLE_CORS_ENABLED=true
-ENV DISMISSIBLE_CORS_ORIGINS=http://localhost:3000
-ENV DISMISSIBLE_CORS_METHODS=GET,POST,DELETE,OPTIONS
-ENV DISMISSIBLE_CORS_ALLOWED_HEADERS=Content-Type,Authorization,x-request-id
+ENV DISMISSIBLE_CORS_ORIGINS=""
+ENV DISMISSIBLE_CORS_METHODS="GET,POST,DELETE,OPTIONS"
+ENV DISMISSIBLE_CORS_ALLOWED_HEADERS="Content-Type,Authorization,x-request-id"
 ENV DISMISSIBLE_CORS_CREDENTIALS=true
 ENV DISMISSIBLE_CORS_MAX_AGE=86400
+
+# Validation Settings
 ENV DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES=true
 ENV DISMISSIBLE_VALIDATION_WHITELIST=true
 ENV DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED=true
 ENV DISMISSIBLE_VALIDATION_TRANSFORM=true
-ENV DISMISSIBLE_RUN_MIGRATION=true
 
 # Expose the port
 EXPOSE ${DISMISSIBLE_PORT}

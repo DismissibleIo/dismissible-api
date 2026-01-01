@@ -38,6 +38,7 @@ export class ConfigModule {
           schema: options.schema,
           load: [
             fileLoader({
+              basename: process.env.NODE_ENV ? '.env' : `.env.${process.env.NODE_ENV}`,
               searchFrom: configPath,
               ignoreEnvironmentVariableSubstitution: ignoreEnvSubstitution,
             }),

@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { LRUCache } from 'lru-cache';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { IDismissibleStorage } from './storage.interface';
-import { DismissibleItemDto } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemDto } from '@dismissible/nestjs-item';
 
 /**
  * In-memory storage provider for dismissible items with LRU eviction.
@@ -59,12 +59,14 @@ export class MemoryStorageAdapter implements IDismissibleStorage {
     return item;
   }
 
-  /**
-   * Clear all stored items.
-   * Useful for testing.
-   */
-  clear(): void {
-    this.logger.debug(`Storage clear`, { previousSize: this.storage.size });
+  async delete(userId: string, itemId: string): Promise<void> {
+    const key = this.createKey(userId, itemId);
+    this.logger.debug(`Storage delete`, { userId, itemId, key });
+    this.storage.delete(key);
+  }
+
+  async deleteAll(): Promise<void> {
+    this.logger.debug(`Storage deleteAll`, { previousSize: this.storage.size });
     this.storage.clear();
   }
 

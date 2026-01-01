@@ -2,11 +2,11 @@ import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
 import { DISMISSIBLE_STORAGE_ADAPTER } from '@dismissible/nestjs-storage';
 import { DynamoDBStorageAdapter } from './dynamodb-storage.adapter';
 import { DynamoDBClientService } from './dynamodb-client.service';
-import { DismissibleItemModule } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemModule } from '@dismissible/nestjs-item';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import {
   DynamoDBStorageConfig,
-  DISMISSIBLE_DYNAMODB_STORAGE_CONFIG,
+  DISMISSIBLE_STORAGE_DYNAMODB_CONFIG,
 } from './dynamodb-storage.config';
 
 export interface DynamoDBStorageModuleOptions {
@@ -33,7 +33,7 @@ export class DynamoDBStorageModule {
       imports: [DismissibleItemModule],
       providers: [
         {
-          provide: DISMISSIBLE_DYNAMODB_STORAGE_CONFIG,
+          provide: DISMISSIBLE_STORAGE_DYNAMODB_CONFIG,
           useValue: {
             tableName: options.tableName,
             region: options.region,
@@ -48,7 +48,7 @@ export class DynamoDBStorageModule {
           useFactory(config: DynamoDBStorageConfig, logger: IDismissibleLogger) {
             return new DynamoDBClientService(config, logger);
           },
-          inject: [DISMISSIBLE_DYNAMODB_STORAGE_CONFIG, DISMISSIBLE_LOGGER],
+          inject: [DISMISSIBLE_STORAGE_DYNAMODB_CONFIG, DISMISSIBLE_LOGGER],
         },
         DynamoDBStorageAdapter,
         {
@@ -66,7 +66,7 @@ export class DynamoDBStorageModule {
       imports: [...(options.imports || []), DismissibleItemModule],
       providers: [
         {
-          provide: DISMISSIBLE_DYNAMODB_STORAGE_CONFIG,
+          provide: DISMISSIBLE_STORAGE_DYNAMODB_CONFIG,
           useFactory: options.useFactory,
           inject: options.inject || [],
         },
@@ -75,7 +75,7 @@ export class DynamoDBStorageModule {
           useFactory(config: DynamoDBStorageConfig, logger: IDismissibleLogger) {
             return new DynamoDBClientService(config, logger);
           },
-          inject: [DISMISSIBLE_DYNAMODB_STORAGE_CONFIG, DISMISSIBLE_LOGGER],
+          inject: [DISMISSIBLE_STORAGE_DYNAMODB_CONFIG, DISMISSIBLE_LOGGER],
         },
         DynamoDBStorageAdapter,
         {

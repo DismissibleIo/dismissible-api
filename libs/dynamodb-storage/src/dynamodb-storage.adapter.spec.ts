@@ -2,7 +2,7 @@ import { mock, Mock } from 'ts-jest-mocker';
 import { DynamoDBStorageAdapter } from './dynamodb-storage.adapter';
 import { DynamoDBClientService } from './dynamodb-client.service';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-item';
 
 describe('DynamoDBStorageAdapter', () => {
   let adapter: DynamoDBStorageAdapter;
@@ -123,6 +123,31 @@ describe('DynamoDBStorageAdapter', () => {
         userId: 'user-123',
         itemId: 'item-456',
       });
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete an item', async () => {
+      mockDynamoDBClientService.delete.mockResolvedValue();
+
+      await adapter.delete('user-123', 'item-456');
+
+      expect(mockDynamoDBClientService.delete).toHaveBeenCalledWith('user-123', 'item-456');
+      expect(mockLogger.debug).toHaveBeenCalledWith('DynamoDB storage delete', {
+        userId: 'user-123',
+        itemId: 'item-456',
+      });
+    });
+  });
+
+  describe('deleteAll', () => {
+    it('should delete all items', async () => {
+      mockDynamoDBClientService.deleteAll.mockResolvedValue();
+
+      await adapter.deleteAll();
+
+      expect(mockDynamoDBClientService.deleteAll).toHaveBeenCalled();
+      expect(mockLogger.debug).toHaveBeenCalledWith('DynamoDB storage deleteAll');
     });
   });
 });

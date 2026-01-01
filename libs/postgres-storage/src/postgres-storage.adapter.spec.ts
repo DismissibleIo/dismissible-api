@@ -2,7 +2,7 @@ import { mock } from 'ts-jest-mocker';
 import { PostgresStorageAdapter } from './postgres-storage.adapter';
 import { PrismaService } from './prisma.service';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-item';
 
 describe('PostgresStorageAdapter', () => {
   let adapter: PostgresStorageAdapter;

@@ -6,7 +6,7 @@ describe('DynamoDBStorageConfig', () => {
   describe('validation', () => {
     it('should pass with valid required fields', async () => {
       const config = plainToInstance(DynamoDBStorageConfig, {
-        tableName: 'dismissible-items',
+        tableName: 'items',
       });
 
       const errors = await validate(config);
@@ -15,7 +15,7 @@ describe('DynamoDBStorageConfig', () => {
 
     it('should pass with all optional fields', async () => {
       const config = plainToInstance(DynamoDBStorageConfig, {
-        tableName: 'dismissible-items',
+        tableName: 'items',
         region: 'us-east-1',
         endpoint: 'http://localhost:4566',
         accessKeyId: 'test-key',
@@ -49,7 +49,7 @@ describe('DynamoDBStorageConfig', () => {
 
     it('should allow optional fields to be undefined', async () => {
       const config = plainToInstance(DynamoDBStorageConfig, {
-        tableName: 'dismissible-items',
+        tableName: 'items',
         region: undefined,
         endpoint: undefined,
         accessKeyId: undefined,

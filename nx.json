@@ -37,10 +37,10 @@
     "releaseTagPattern": "v{version}",
     "projects": [
       "api",
-      "dismissible",
-      "dismissible-hooks",
-      "dismissible-item",
-      "dismissible-request",
+      "core",
+      "hooks",
+      "item",
+      "request",
       "dynamodb-storage",
       "jwt-auth-hook",
       "logger",
@@ -52,6 +52,9 @@
     "version": {
       "preVersionCommand": "npx nx run-many -t build",
       "conventionalCommits": true,
+      "versionActionsOptions": {
+        "skipLockFileUpdate": true
+      },
       "manifestRootsToUpdate": [
         "{projectRoot}",
         {

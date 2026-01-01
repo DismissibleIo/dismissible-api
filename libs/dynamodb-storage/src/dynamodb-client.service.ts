@@ -1,10 +1,17 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Inject } from '@nestjs/common';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  GetCommand,
+  PutCommand,
+  UpdateCommand,
+  DeleteCommand,
+  ScanCommand,
+  BatchWriteCommand,
+} from '@aws-sdk/lib-dynamodb';
 import {
   DynamoDBStorageConfig,
-  DISMISSIBLE_DYNAMODB_STORAGE_CONFIG,
+  DISMISSIBLE_STORAGE_DYNAMODB_CONFIG,
 } from './dynamodb-storage.config';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 
@@ -14,7 +21,7 @@ export class DynamoDBClientService implements OnModuleInit, OnModuleDestroy {
   private readonly documentClient: DynamoDBDocumentClient;
 
   constructor(
-    @Inject(DISMISSIBLE_DYNAMODB_STORAGE_CONFIG) private readonly config: DynamoDBStorageConfig,
+    @Inject(DISMISSIBLE_STORAGE_DYNAMODB_CONFIG) private readonly config: DynamoDBStorageConfig,
     @Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger,
   ) {
     this.client = new DynamoDBClient({
@@ -80,5 +87,59 @@ export class DynamoDBClientService implements OnModuleInit, OnModuleDestroy {
         },
       }),
     );
+  }
+
+  async delete(userId: string, itemId: string): Promise<void> {
+    await this.documentClient.send(
+      new DeleteCommand({
+        TableName: this.config.tableName,
+        Key: { userId, id: itemId },
+      }),
+    );
+  }
+
+  async deleteAll(): Promise<void> {
+    let lastEvaluatedKey: Record<string, any> | undefined;
+    do {
+      const response = await this.documentClient.send(
+        new ScanCommand({
+          TableName: this.config.tableName,
+          ExclusiveStartKey: lastEvaluatedKey,
+        }),
+      );
+
+      if (response.Items && response.Items.length > 0) {
+        const batches = this.chunkArray(response.Items, 25);
+        for (const batch of batches) {
+          await this.batchDeleteItems(batch);
+        }
+      }
+
+      lastEvaluatedKey = response.LastEvaluatedKey;
+    } while (lastEvaluatedKey);
+  }
+
+  private async batchDeleteItems(items: Record<string, any>[]): Promise<void> {
+    const deleteRequests = items.map((item) => ({
+      DeleteRequest: {
+        Key: { userId: item.userId, id: item.id },
+      },
+    }));
+
+    await this.documentClient.send(
+      new BatchWriteCommand({
+        RequestItems: {
+          [this.config.tableName]: deleteRequests,
+        },
+      }),
+    );
+  }
+
+  private chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
   }
 }

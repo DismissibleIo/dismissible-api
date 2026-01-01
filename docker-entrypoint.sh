@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
-# Run migrations if DISMISSIBLE_RUN_MIGRATION is enabled
-if [ "$DISMISSIBLE_RUN_MIGRATION" = "true" ]; then
+# Run migrations if DISMISSIBLE_RUN_STORAGE_SETUP is enabled
+if [ "$DISMISSIBLE_RUN_STORAGE_SETUP" = "true" ]; then
   echo "Running database migrations..."
   cd /app/dist/api
-  npm run prisma:migrate:deploy
+  npx dismissible-storage-setup
   echo "Migrations completed successfully!"
   cd /app
 fi

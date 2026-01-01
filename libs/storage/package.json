@@ -13,10 +13,11 @@
   },
   "files": [
     "src",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "dependencies": {
-    "@dismissible/nestjs-dismissible-item": "^1.0.2",
+    "@dismissible/nestjs-item": "^1.0.2",
     "@dismissible/nestjs-logger": "^1.0.2",
     "lru-cache": "^11.2.4"
   },

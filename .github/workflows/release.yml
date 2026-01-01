@@ -36,6 +36,15 @@ jobs:
         ports:
           - 5432:5432
 
+      dismissible-dynamodb:
+        image: localstack/localstack:latest
+        env:
+          SERVICES: dynamodb
+          AWS_DEFAULT_REGION: us-east-1
+          DEBUG: 0
+        ports:
+          - 4566:4566
+
     steps:
       - name: Generate Token
         id: generate_token
@@ -60,21 +69,16 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Prisma generate
-        run: npm run prisma:generate
+      - name: Storage init
+        run: npm run storage:init
 
-      - name: Run database migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dismissible
-          DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/dismissible
-        run: npm run prisma:push
+      - name: Run storage setup
+        run: npm run storage:setup
 
       - name: Build
         run: npm run build
 
       - name: Test
-        env:
-          DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/dismissible
         run: npm run validate
 
       - name: Configure Git

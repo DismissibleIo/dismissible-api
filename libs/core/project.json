@@ -1,0 +1,56 @@
+{
+  "name": "core",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/core/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/core",
+        "main": "libs/core/src/index.ts",
+        "tsConfig": "libs/core/tsconfig.lib.json",
+        "assets": ["libs/core/package.json", "libs/core/README.md"],
+        "generatePackageJson": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/core/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/core"],
+      "options": {
+        "jestConfig": "libs/core/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "test-e2e:all": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/core-e2e"],
+      "options": {
+        "jestConfig": "libs/core/jest.e2e-config.ts"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/core"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/core"
+      }
+    }
+  }
+}

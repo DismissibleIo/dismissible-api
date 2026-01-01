@@ -4,7 +4,7 @@ import { JwtAuthHook } from './jwt-auth.hook';
 import { JwtAuthService, IJwtValidationResult } from './jwt-auth.service';
 import { JwtAuthHookConfig } from './jwt-auth-hook.config';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { IRequestContext } from '@dismissible/nestjs-dismissible-request';
+import { IRequestContext } from '@dismissible/nestjs-request';
 
 function createMinimalContext(overrides: Partial<IRequestContext> = {}): IRequestContext {
   return {

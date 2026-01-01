@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { IDismissibleStorage } from '@dismissible/nestjs-storage';
-import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-item';
 import { DynamoDBClientService } from './dynamodb-client.service';
 
 @Injectable()
@@ -45,6 +45,16 @@ export class DynamoDBStorageAdapter implements IDismissibleStorage {
     await this.dynamoDB.update(item.userId, item.id, item.dismissedAt?.toISOString() ?? null);
 
     return item;
+  }
+
+  async delete(userId: string, itemId: string): Promise<void> {
+    this.logger.debug('DynamoDB storage delete', { userId, itemId });
+    await this.dynamoDB.delete(userId, itemId);
+  }
+
+  async deleteAll(): Promise<void> {
+    this.logger.debug('DynamoDB storage deleteAll');
+    await this.dynamoDB.deleteAll();
   }
 
   private mapToDto(item: Record<string, any>): DismissibleItemDto {

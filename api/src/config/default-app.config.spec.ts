@@ -5,6 +5,7 @@ import { DefaultAppConfig } from './default-app.config';
 import { ServerConfig } from '../server/server.config';
 import { CorsConfig } from '../cors/cors.config';
 import { HelmetConfig } from '../helmet/helmet.config';
+import { ValidationConfig } from '../validation/validation.config';
 
 describe('DefaultAppConfig', () => {
   describe('transformation', () => {
@@ -13,6 +14,7 @@ describe('DefaultAppConfig', () => {
         server: { port: 3001 },
         cors: { enabled: true },
         helmet: { enabled: true },
+        validation: { disableErrorMessages: true },
       });
 
       expect(config.server).toBeInstanceOf(ServerConfig);
@@ -21,6 +23,8 @@ describe('DefaultAppConfig', () => {
       expect(config.cors.enabled).toBe(true);
       expect(config.helmet).toBeInstanceOf(HelmetConfig);
       expect(config.helmet.enabled).toBe(true);
+      expect(config.validation).toBeInstanceOf(ValidationConfig);
+      expect(config.validation.disableErrorMessages).toBe(true);
     });
   });
 
@@ -30,6 +34,7 @@ describe('DefaultAppConfig', () => {
         server: { port: 3001 },
         cors: { enabled: true },
         helmet: { enabled: true },
+        validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);
       expect(errors).toHaveLength(0);
@@ -40,6 +45,7 @@ describe('DefaultAppConfig', () => {
         server: { port: 'not-a-number' },
         cors: { enabled: true },
         helmet: { enabled: true },
+        validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);
       expect(errors.length).toBeGreaterThan(0);
@@ -52,6 +58,7 @@ describe('DefaultAppConfig', () => {
         server: { port: 3001 },
         cors: { enabled: true, maxAge: 'not-a-number' },
         helmet: { enabled: true },
+        validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);
       expect(errors.length).toBeGreaterThan(0);
@@ -64,6 +71,7 @@ describe('DefaultAppConfig', () => {
         server: { port: 3001 },
         cors: { enabled: true },
         helmet: { enabled: true, hstsMaxAge: 'not-a-number' },
+        validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);
       expect(errors.length).toBeGreaterThan(0);
