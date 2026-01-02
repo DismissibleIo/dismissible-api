@@ -96,8 +96,14 @@ export class AppModule {}
 | `jwksCacheDuration` | `number`   | No       | `600000`    | JWKS cache duration in milliseconds (10 minutes)                                            |
 | `requestTimeout`    | `number`   | No       | `30000`     | Request timeout in milliseconds (30 seconds)                                                |
 | `priority`          | `number`   | No       | `-100`      | Hook priority (lower numbers run first)                                                     |
+| `matchUserId`       | `boolean`  | No       | `true`      | Enable user ID matching against JWT claim                                                   |
+| `userIdClaim`       | `string`   | No       | `'sub'`     | The JWT claim key to use for user ID matching                                               |
+| `userIdMatchType`   | `string`   | No       | `'exact'`   | Match method: `exact`, `substring`, or `regex`                                              |
+| `userIdMatchRegex`  | `string`   | No\*\*   | -           | Regex pattern for user ID matching (required when type is `regex`)                          |
 
 \* `wellKnownUrl` is only required when `enabled` is `true`.
+
+\*\* `userIdMatchRegex` is required when `userIdMatchType` is `regex`.
 
 ## Environment Variables
 
@@ -113,6 +119,10 @@ When using the Dismissible API Docker image or the standalone API, these environ
 | `DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION` | JWKS cache duration in ms              | `600000` |
 | `DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT`     | Request timeout in ms                  | `30000`  |
 | `DISMISSIBLE_JWT_AUTH_PRIORITY`            | Hook priority (lower runs first)       | `-100`   |
+| `DISMISSIBLE_JWT_AUTH_MATCH_USER_ID`       | Enable user ID matching                | `true`   |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM`       | JWT claim key for user ID matching     | `sub`    |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE`  | User ID match method                   | `exact`  |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX` | Regex pattern for user ID matching     | `""`     |
 
 ### Example: Disabling JWT Auth for Development
 

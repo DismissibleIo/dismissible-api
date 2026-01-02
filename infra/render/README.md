@@ -138,6 +138,10 @@ JWT authentication is enabled by default. Configure these in the Render dashboar
 - `DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`: Your OIDC provider's well-known URL
 - `DISMISSIBLE_JWT_AUTH_ISSUER`: Expected issuer claim
 - `DISMISSIBLE_JWT_AUTH_AUDIENCE`: Expected audience claim
+- `DISMISSIBLE_JWT_AUTH_MATCH_USER_ID`: Enable user ID matching (defaults to `true`)
+- `DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM`: JWT claim key for user ID matching (defaults to `sub`)
+- `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE`: Match method: `exact`, `substring`, or `regex` (defaults to `exact`)
+- `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX`: Regex pattern (required when type is `regex`)
 
 Example for Auth0:
 

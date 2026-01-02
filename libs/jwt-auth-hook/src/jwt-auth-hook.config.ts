@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsBoolean,
   ValidateIf,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TransformBoolean, TransformCommaSeparated } from '@dismissible/nestjs-validation';
@@ -14,6 +15,18 @@ import { TransformBoolean, TransformCommaSeparated } from '@dismissible/nestjs-v
  * Injection token for JWT auth hook configuration.
  */
 export const JWT_AUTH_HOOK_CONFIG = Symbol('JWT_AUTH_HOOK_CONFIG');
+
+/**
+ * User ID match type for comparing JWT claim against request userId.
+ */
+export enum UserIdMatchType {
+  /** Exact string match (default) */
+  EXACT = 'exact',
+  /** Substring match - either value contains the other */
+  SUBSTRING = 'substring',
+  /** Regex match - tokenUserId is tested against a regex pattern */
+  REGEX = 'regex',
+}
 
 /**
  * Configuration options for JWT authentication hook.
@@ -90,11 +103,36 @@ export class JwtAuthHookConfig {
   public readonly priority?: number;
 
   /**
-   * Optional: Verify that the userId parameter matches the JWT subject (sub) claim.
+   * Optional: Match the userId parameter against the JWT claim set in userIdClaim.
    * Defaults to true for security. Set to false for service-to-service scenarios.
    */
   @IsOptional()
   @IsBoolean()
   @TransformBoolean(true) // Default to true if not provided
-  public readonly verifyUserIdMatch?: boolean;
+  public readonly matchUserId?: boolean;
+
+  /**
+   * Optional: The JWT claim key to use for user ID matching.
+   * Defaults to 'sub' (the standard JWT subject claim).
+   */
+  @IsOptional()
+  @IsString()
+  public readonly userIdClaim?: string;
+
+  /**
+   * Optional: The type of matching to use for user ID comparison.
+   * Defaults to 'exact' for strict equality matching.
+   */
+  @IsOptional()
+  @IsEnum(UserIdMatchType)
+  public readonly userIdMatchType?: UserIdMatchType;
+
+  /**
+   * Optional: Regex pattern for user ID matching.
+   * Required when userIdMatchType is 'regex'.
+   * The pattern is tested against the tokenUserId from the JWT claim.
+   */
+  @ValidateIf((o) => o.userIdMatchType === UserIdMatchType.REGEX)
+  @IsString()
+  public readonly userIdMatchRegex?: string;
 }

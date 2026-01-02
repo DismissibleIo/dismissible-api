@@ -42,6 +42,15 @@
     "nx:reset": "nx reset",
     "commit": "cz"
   },
+  "overrides": {
+    "lru-cache": "^10.4.3",
+    "@babel/helper-compilation-targets": {
+      "lru-cache": "5.1.1"
+    },
+    "lru-memoizer": {
+      "lru-cache": "6.0.0"
+    }
+  },
   "devDependencies": {
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",

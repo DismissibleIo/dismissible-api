@@ -110,7 +110,7 @@ docker run -p 3001:3001 \
   dismissible-api
 
 
-docker run -p 3001:3001 \
+docker run --rm -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_TYPE="memory" \
   dismissible-api
 ```
@@ -266,16 +266,20 @@ See configuration.
 
 ### JWT Authentication
 
-| Variable                                   | Description                            | Default  |
-| ------------------------------------------ | -------------------------------------- | -------- |
-| `DISMISSIBLE_JWT_AUTH_ENABLED`             | Enable JWT authentication              | `false`  |
-| `DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`      | OIDC well-known URL for JWKS discovery | `""`     |
-| `DISMISSIBLE_JWT_AUTH_ISSUER`              | Expected issuer claim                  | `""`     |
-| `DISMISSIBLE_JWT_AUTH_AUDIENCE`            | Expected audience claim                | `""`     |
-| `DISMISSIBLE_JWT_AUTH_ALGORITHMS`          | Allowed algorithms (comma-separated)   | `RS256`  |
-| `DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION` | JWKS cache duration in ms              | `600000` |
-| `DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT`     | Request timeout in ms                  | `30000`  |
-| `DISMISSIBLE_JWT_AUTH_PRIORITY`            | Hook priority (lower runs first)       | `-100`   |
+| Variable                                   | Description                                 | Default  |
+| ------------------------------------------ | ------------------------------------------- | -------- |
+| `DISMISSIBLE_JWT_AUTH_ENABLED`             | Enable JWT authentication                   | `false`  |
+| `DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`      | OIDC well-known URL for JWKS discovery      | `""`     |
+| `DISMISSIBLE_JWT_AUTH_ISSUER`              | Expected issuer claim                       | `""`     |
+| `DISMISSIBLE_JWT_AUTH_AUDIENCE`            | Expected audience claim                     | `""`     |
+| `DISMISSIBLE_JWT_AUTH_ALGORITHMS`          | Allowed algorithms (comma-separated)        | `RS256`  |
+| `DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION` | JWKS cache duration in ms                   | `600000` |
+| `DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT`     | Request timeout in ms                       | `30000`  |
+| `DISMISSIBLE_JWT_AUTH_PRIORITY`            | Hook priority (lower runs first)            | `-100`   |
+| `DISMISSIBLE_JWT_AUTH_MATCH_USER_ID`       | Enable user ID matching                     | `true`   |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM`       | JWT claim key for user ID matching          | `sub`    |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE`  | Match method: `exact`, `substring`, `regex` | `exact`  |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX` | Regex pattern (required if type=regex)      | `""`     |
 
 ### Security Headers (Helmet)
 

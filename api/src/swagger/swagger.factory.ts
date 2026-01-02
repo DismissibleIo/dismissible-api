@@ -1,13 +1,19 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './swagger.config';
+import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 
 const swaggerDocumentOptions: SwaggerDocumentOptions = {
   operationIdFactory: (_controllerKey: string, methodKey: string) => methodKey,
 };
 
-export function configureAppWithSwagger(app: INestApplication, swaggerConfig: SwaggerConfig) {
+export function configureAppWithSwagger(app: INestApplication) {
+  const logger = app.get<IDismissibleLogger>(DISMISSIBLE_LOGGER);
+  logger.setContext('Swagger');
+  const swaggerConfig = app.get(SwaggerConfig);
+
   if (swaggerConfig.enabled) {
+    logger.info('Swagger is enabled', { swaggerConfig });
     const { path = 'docs' } = swaggerConfig;
 
     const config = new DocumentBuilder()
@@ -20,5 +26,7 @@ export function configureAppWithSwagger(app: INestApplication, swaggerConfig: Sw
     SwaggerModule.setup(path, app, documentFactory, {
       useGlobalPrefix: true,
     });
+  } else {
+    logger.info('Swagger is disabled');
   }
 }

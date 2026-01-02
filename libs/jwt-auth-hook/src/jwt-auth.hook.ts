@@ -3,7 +3,7 @@ import { IDismissibleLifecycleHook, IHookResult } from '@dismissible/nestjs-hook
 import { IRequestContext } from '@dismissible/nestjs-request';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { JwtAuthService } from './jwt-auth.service';
-import { JWT_AUTH_HOOK_CONFIG, JwtAuthHookConfig } from './jwt-auth-hook.config';
+import { JWT_AUTH_HOOK_CONFIG, JwtAuthHookConfig, UserIdMatchType } from './jwt-auth-hook.config';
 
 /**
  * JWT authentication hook that validates bearer tokens on every request.
@@ -63,14 +63,16 @@ export class JwtAuthHook implements IDismissibleLifecycleHook {
       throw new UnauthorizedException(result.error);
     }
 
-    const verifyUserIdMatch = this.config.verifyUserIdMatch ?? true;
-    if (verifyUserIdMatch && result.payload?.sub) {
-      if (result.payload.sub !== userId) {
+    const matchUserId = this.config.matchUserId ?? true;
+    const userIdClaim = this.config.userIdClaim ?? 'sub';
+    const tokenUserId = result.payload?.[userIdClaim] as string | undefined;
+    if (matchUserId && tokenUserId) {
+      if (!this.matchUserIdValue(tokenUserId, userId)) {
         this.logger.debug('JWT auth hook: User ID mismatch', {
           itemId,
           userId,
           requestId: context?.requestId,
-          tokenSubject: result.payload.sub,
+          tokenSubject: tokenUserId,
         });
 
         throw new ForbiddenException('User ID in request does not match authenticated user');
@@ -81,11 +83,29 @@ export class JwtAuthHook implements IDismissibleLifecycleHook {
       itemId,
       userId,
       requestId: context?.requestId,
-      subject: result.payload?.sub,
+      subject: tokenUserId,
     });
 
     return {
       proceed: true,
     };
+  }
+
+  /**
+   * Matches the token user ID against the request user ID based on the configured match type.
+   */
+  private matchUserIdValue(tokenUserId: string, userId: string): boolean {
+    const matchType = this.config.userIdMatchType ?? UserIdMatchType.EXACT;
+
+    switch (matchType) {
+      case UserIdMatchType.EXACT:
+        return tokenUserId === userId;
+      case UserIdMatchType.SUBSTRING:
+        return tokenUserId.includes(userId) || userId.includes(tokenUserId);
+      case UserIdMatchType.REGEX: {
+        const regex = new RegExp(this.config.userIdMatchRegex as string);
+        return regex.test(tokenUserId);
+      }
+    }
   }
 }

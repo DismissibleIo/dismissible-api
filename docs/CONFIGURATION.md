@@ -63,16 +63,20 @@ When enabled, Swagger documentation is published to the path specified by `DISMI
 
 You can secure your API with any OIDC-compliant provider (Auth0, Okta, Keycloak, etc.). This ensures that no one can fill your dismissible service with junk.
 
-| Variable                                   | Description                          | Default               |
-| ------------------------------------------ | ------------------------------------ | --------------------- |
-| `DISMISSIBLE_JWT_AUTH_ENABLED`             | Enable JWT authentication            | `false`               |
-| `DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`      | OIDC discovery URL                   | _required_ if enabled |
-| `DISMISSIBLE_JWT_AUTH_ISSUER`              | Expected JWT issuer                  | _-_                   |
-| `DISMISSIBLE_JWT_AUTH_AUDIENCE`            | Expected JWT audience                | _-_                   |
-| `DISMISSIBLE_JWT_AUTH_ALGORITHMS`          | Allowed algorithms (comma-separated) | `RS256`               |
-| `DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION` | JWKS cache duration (ms)             | `600000`              |
-| `DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT`     | Request timeout (ms)                 | `30000`               |
-| `DISMISSIBLE_JWT_AUTH_PRIORITY`            | Hook priority (lower runs first)     | `-100`                |
+| Variable                                   | Description                                 | Default               |
+| ------------------------------------------ | ------------------------------------------- | --------------------- |
+| `DISMISSIBLE_JWT_AUTH_ENABLED`             | Enable JWT authentication                   | `false`               |
+| `DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`      | OIDC discovery URL                          | _required_ if enabled |
+| `DISMISSIBLE_JWT_AUTH_ISSUER`              | Expected JWT issuer                         | _-_                   |
+| `DISMISSIBLE_JWT_AUTH_AUDIENCE`            | Expected JWT audience                       | _-_                   |
+| `DISMISSIBLE_JWT_AUTH_ALGORITHMS`          | Allowed algorithms (comma-separated)        | `RS256`               |
+| `DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION` | JWKS cache duration (ms)                    | `600000`              |
+| `DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT`     | Request timeout (ms)                        | `30000`               |
+| `DISMISSIBLE_JWT_AUTH_PRIORITY`            | Hook priority (lower runs first)            | `-100`                |
+| `DISMISSIBLE_JWT_AUTH_MATCH_USER_ID`       | Enable user ID matching                     | `true`                |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM`       | JWT claim key for user ID matching          | `sub`                 |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE`  | Match method: `exact`, `substring`, `regex` | `exact`               |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX` | Regex pattern (required if type=regex)      | _-_                   |
 
 ### CORS Settings
 
@@ -169,6 +173,10 @@ jwtAuth:
   jwksCacheDuration: ${DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION:-600000}
   requestTimeout: ${DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT:-30000}
   priority: ${DISMISSIBLE_JWT_AUTH_PRIORITY:--100}
+  matchUserId: ${DISMISSIBLE_JWT_AUTH_MATCH_USER_ID:-true}
+  userIdClaim: ${DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM:-sub}
+  userIdMatchType: ${DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE:-exact}
+  userIdMatchRegex: ${DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX:-}
 
 validation:
   disableErrorMessages: ${DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES:-true}

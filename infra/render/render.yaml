@@ -112,6 +112,14 @@ services:
       #   value: '30000'
       # - key: DISMISSIBLE_JWT_AUTH_PRIORITY
       #   value: '-100'
+      # - key: DISMISSIBLE_JWT_AUTH_MATCH_USER_ID
+      #   value: 'true'
+      # - key: DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM
+      #   value: 'sub'
+      # - key: DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE
+      #   value: 'exact'
+      # - key: DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX
+      #   value: ''
 
       # Node environment
       - key: NODE_ENV
