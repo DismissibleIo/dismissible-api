@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder } from '@nestjs/swagger';
+import { Mock } from 'ts-jest-mocker';
 import { configureAppWithSwagger } from './swagger.factory';
 import { SwaggerConfig } from './swagger.config';
 
@@ -24,7 +25,7 @@ jest.mock('@nestjs/swagger', () => ({
 }));
 
 describe('configureAppWithSwagger', () => {
-  let mockApp: jest.Mocked<INestApplication>;
+  let mockApp: Mock<INestApplication>;
 
   beforeEach(() => {
     jest.clearAllMocks();

@@ -1,4 +1,4 @@
-import { mock } from 'ts-jest-mocker';
+import { mock, Mock } from 'ts-jest-mocker';
 import { RestoreController } from './restore.controller';
 import { DismissibleService } from '../../../core/dismissible.service';
 import { DismissibleItemMapper } from '../../dismissible-item.mapper';
@@ -7,8 +7,8 @@ import { ResponseService } from '../../../response';
 
 describe('RestoreController', () => {
   let controller: RestoreController;
-  let mockService: jest.Mocked<DismissibleService>;
-  let mockResponseService: jest.Mocked<ResponseService>;
+  let mockService: Mock<DismissibleService>;
+  let mockResponseService: Mock<ResponseService>;
   let mapper: DismissibleItemMapper;
 
   beforeEach(() => {

@@ -93,14 +93,67 @@ describe('JwtAuthHookConfig', () => {
   });
 
   describe('optional properties', () => {
-    it('should accept optional issuer', async () => {
-      const config = plainToInstance(JwtAuthHookConfig, {
-        enabled: true,
-        wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
-        issuer: 'https://auth.example.com',
+    describe('issuer property', () => {
+      it('should accept optional issuer as array', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          issuer: ['https://auth.example.com'],
+        });
+
+        expect(config.issuer).toEqual(['https://auth.example.com']);
       });
 
-      expect(config.issuer).toBe('https://auth.example.com');
+      it('should transform comma-separated string to array', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          issuer: 'https://auth.example.com,https://auth2.example.com,https://auth3.example.com',
+        });
+
+        expect(config.issuer).toEqual([
+          'https://auth.example.com',
+          'https://auth2.example.com',
+          'https://auth3.example.com',
+        ]);
+      });
+
+      it('should trim whitespace from comma-separated values', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          issuer:
+            'https://auth.example.com , https://auth2.example.com , https://auth3.example.com',
+        });
+
+        expect(config.issuer).toEqual([
+          'https://auth.example.com',
+          'https://auth2.example.com',
+          'https://auth3.example.com',
+        ]);
+      });
+
+      it('should accept multiple issuers as array', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          issuer: ['https://auth.example.com', 'https://auth2.example.com'],
+        });
+
+        expect(config.issuer).toEqual(['https://auth.example.com', 'https://auth2.example.com']);
+      });
+
+      it('should validate issuer array contains only strings', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          issuer: ['https://auth.example.com', 123],
+        });
+
+        const errors = await validate(config);
+        expect(errors.length).toBeGreaterThan(0);
+        expect(errors.some((e) => e.property === 'issuer')).toBe(true);
+      });
     });
 
     it('should accept optional audience', async () => {
@@ -113,14 +166,58 @@ describe('JwtAuthHookConfig', () => {
       expect(config.audience).toBe('my-api');
     });
 
-    it('should accept optional algorithms array', async () => {
-      const config = plainToInstance(JwtAuthHookConfig, {
-        enabled: true,
-        wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
-        algorithms: ['RS256', 'RS384'],
+    describe('algorithms property', () => {
+      it('should accept optional algorithms as array', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          algorithms: ['RS256'],
+        });
+
+        expect(config.algorithms).toEqual(['RS256']);
       });
 
-      expect(config.algorithms).toEqual(['RS256', 'RS384']);
+      it('should transform comma-separated string to array', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          algorithms: 'RS256,RS384,RS512',
+        });
+
+        expect(config.algorithms).toEqual(['RS256', 'RS384', 'RS512']);
+      });
+
+      it('should trim whitespace from comma-separated values', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          algorithms: 'RS256 , RS384 , RS512',
+        });
+
+        expect(config.algorithms).toEqual(['RS256', 'RS384', 'RS512']);
+      });
+
+      it('should accept multiple algorithms as array', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          algorithms: ['RS256', 'RS384'],
+        });
+
+        expect(config.algorithms).toEqual(['RS256', 'RS384']);
+      });
+
+      it('should validate algorithms array contains only strings', async () => {
+        const config = plainToInstance(JwtAuthHookConfig, {
+          enabled: true,
+          wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+          algorithms: ['RS256', 123],
+        });
+
+        const errors = await validate(config);
+        expect(errors.length).toBeGreaterThan(0);
+        expect(errors.some((e) => e.property === 'algorithms')).toBe(true);
+      });
     });
 
     it('should transform jwksCacheDuration to number', async () => {

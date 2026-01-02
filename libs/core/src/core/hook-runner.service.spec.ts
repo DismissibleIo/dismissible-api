@@ -1,4 +1,4 @@
-import { mock } from 'ts-jest-mocker';
+import { mock, Mock } from 'ts-jest-mocker';
 import { ForbiddenException } from '@nestjs/common';
 import { HookRunner } from './hook-runner.service';
 import { IDismissibleLifecycleHook } from '@dismissible/nestjs-hooks';
@@ -7,7 +7,7 @@ import { IDismissibleLogger } from '@dismissible/nestjs-logger';
 
 describe('HookRunner', () => {
   let hookRunner: HookRunner;
-  let mockLogger: jest.Mocked<IDismissibleLogger>;
+  let mockLogger: Mock<IDismissibleLogger>;
 
   const testUserId = 'test-user-id';
 

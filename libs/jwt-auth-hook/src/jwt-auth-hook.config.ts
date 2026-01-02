@@ -8,7 +8,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TransformBoolean } from '@dismissible/nestjs-validation';
+import { TransformBoolean, TransformCommaSeparated } from '@dismissible/nestjs-validation';
 
 /**
  * Injection token for JWT auth hook configuration.
@@ -33,11 +33,15 @@ export class JwtAuthHookConfig {
 
   /**
    * Optional: Expected issuer claim (iss) to validate.
+   * Can be a comma-separated string or array of issuers.
    * If not provided, issuer validation is skipped.
+   * The token's issuer must match at least one of the provided issuers.
    */
   @IsOptional()
-  @IsString()
-  public readonly issuer?: string;
+  @IsArray()
+  @IsString({ each: true })
+  @TransformCommaSeparated()
+  public readonly issuer?: string[];
 
   /**
    * Optional: Expected audience claim (aud) to validate.
@@ -49,11 +53,13 @@ export class JwtAuthHookConfig {
 
   /**
    * Optional: Allowed algorithms for JWT verification.
+   * Can be a comma-separated string or array of algorithms.
    * Defaults to ['RS256'].
    */
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @TransformCommaSeparated()
   public readonly algorithms?: string[];
 
   /**

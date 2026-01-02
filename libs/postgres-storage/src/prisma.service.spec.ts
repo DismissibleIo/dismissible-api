@@ -1,4 +1,4 @@
-import { mock } from 'ts-jest-mocker';
+import { mock, Mock } from 'ts-jest-mocker';
 import { PrismaService } from './prisma.service';
 import { PostgresStorageConfig } from './postgres-storage.config';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
@@ -34,7 +34,7 @@ jest.mock('../prisma/generated/prisma/client', () => {
 describe('PrismaService', () => {
   let service: PrismaService;
   let mockConfig: PostgresStorageConfig;
-  let mockLogger: jest.Mocked<IDismissibleLogger>;
+  let mockLogger: Mock<IDismissibleLogger>;
 
   beforeEach(() => {
     mockConfig = {

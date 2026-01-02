@@ -1,17 +1,17 @@
-import { mock } from 'ts-jest-mocker';
+import { mock, Mock } from 'ts-jest-mocker';
 import { HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { HttpExceptionFilter } from './http-exception-filter';
 
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
-  let mockArgumentsHost: jest.Mocked<ArgumentsHost>;
+  let mockArgumentsHost: Mock<ArgumentsHost>;
   let mockHttpArgumentsHost: {
     getResponse: jest.Mock;
     getRequest: jest.Mock;
     getNext: jest.Mock;
   };
-  let mockResponse: jest.Mocked<FastifyReply>;
+  let mockResponse: Mock<FastifyReply>;
 
   beforeEach(() => {
     filter = new HttpExceptionFilter();

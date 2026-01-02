@@ -7,7 +7,7 @@ import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-
 describe('DynamoDBStorageAdapter', () => {
   let adapter: DynamoDBStorageAdapter;
   let mockDynamoDBClientService: Mock<DynamoDBClientService>;
-  let mockLogger: jest.Mocked<IDismissibleLogger>;
+  let mockLogger: Mock<IDismissibleLogger>;
   let mockItemFactory: DismissibleItemFactory;
 
   beforeEach(() => {

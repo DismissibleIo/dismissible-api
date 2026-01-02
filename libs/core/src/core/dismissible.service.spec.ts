@@ -1,4 +1,4 @@
-import { mock } from 'ts-jest-mocker';
+import { mock, Mock } from 'ts-jest-mocker';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DismissibleService } from './dismissible.service';
 import { DismissibleCoreService } from './dismissible-core.service';
@@ -10,11 +10,11 @@ import { createTestItem, createTestContext } from '../testing/factories';
 
 describe('DismissibleService', () => {
   let service: DismissibleService;
-  let mockCoreService: jest.Mocked<DismissibleCoreService>;
-  let mockHookRunner: jest.Mocked<HookRunner>;
-  let mockEventEmitter: jest.Mocked<EventEmitter2>;
-  let mockLogger: jest.Mocked<IDismissibleLogger>;
-  let mockValidationService: jest.Mocked<ValidationService>;
+  let mockCoreService: Mock<DismissibleCoreService>;
+  let mockHookRunner: Mock<HookRunner>;
+  let mockEventEmitter: Mock<EventEmitter2>;
+  let mockLogger: Mock<IDismissibleLogger>;
+  let mockValidationService: Mock<ValidationService>;
 
   const testUserId = 'test-user-id';
 

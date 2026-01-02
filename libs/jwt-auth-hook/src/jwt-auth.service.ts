@@ -153,8 +153,11 @@ export class JwtAuthService implements OnModuleInit {
         algorithms: (this.config.algorithms as jwt.Algorithm[]) ?? ['RS256'],
       };
 
-      if (this.config.issuer) {
-        verifyOptions.issuer = this.config.issuer;
+      if (this.config.issuer && this.config.issuer.length > 0) {
+        verifyOptions.issuer =
+          this.config.issuer.length === 1
+            ? this.config.issuer[0]
+            : (this.config.issuer as [string, ...string[]]);
       }
 
       if (this.config.audience) {

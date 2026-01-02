@@ -1,5 +1,5 @@
 import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
-import { mock } from 'ts-jest-mocker';
+import { mock, Mock } from 'ts-jest-mocker';
 import { JwtAuthHook } from './jwt-auth.hook';
 import { JwtAuthService, IJwtValidationResult } from './jwt-auth.service';
 import { JwtAuthHookConfig } from './jwt-auth-hook.config';
@@ -33,8 +33,8 @@ function createMinimalContext(overrides: Partial<IRequestContext> = {}): IReques
 
 describe('JwtAuthHook', () => {
   let hook: JwtAuthHook;
-  let mockJwtAuthService: jest.Mocked<JwtAuthService>;
-  let mockLogger: jest.Mocked<IDismissibleLogger>;
+  let mockJwtAuthService: Mock<JwtAuthService>;
+  let mockLogger: Mock<IDismissibleLogger>;
   let mockConfig: JwtAuthHookConfig;
 
   const testItemId = 'test-item-id';
@@ -46,7 +46,7 @@ describe('JwtAuthHook', () => {
     mockConfig = {
       enabled: true,
       wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
-      issuer: 'https://auth.example.com',
+      issuer: ['https://auth.example.com'],
     };
 
     hook = new JwtAuthHook(mockJwtAuthService, mockConfig, mockLogger);
