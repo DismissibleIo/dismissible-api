@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-jwt-auth-hook",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "JWT authentication hook for Dismissible applications using OIDC well-known discovery",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -18,10 +18,10 @@
   ],
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
-    "@dismissible/nestjs-hooks": "^2.0.0",
-    "@dismissible/nestjs-request": "^2.0.0",
-    "@dismissible/nestjs-logger": "^2.0.0",
-    "@dismissible/nestjs-validation": "^2.0.0",
+    "@dismissible/nestjs-hooks": "^2.0.1",
+    "@dismissible/nestjs-request": "^2.0.1",
+    "@dismissible/nestjs-logger": "^2.0.1",
+    "@dismissible/nestjs-validation": "^2.0.1",
     "jwks-rsa": "^3.2.0",
     "jsonwebtoken": "^9.0.3"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-storage",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "In-memory storage adapter for Dismissible",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -17,8 +17,8 @@
     "LICENSE.md"
   ],
   "dependencies": {
-    "@dismissible/nestjs-item": "^2.0.0",
-    "@dismissible/nestjs-logger": "^2.0.0",
+    "@dismissible/nestjs-item": "^2.0.1",
+    "@dismissible/nestjs-logger": "^2.0.1",
     "lru-cache": "^10.4.3"
   },
   "peerDependencies": {

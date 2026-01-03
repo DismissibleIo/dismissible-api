@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-postgres-storage",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "PostgreSQL storage adapter for Dismissible using Prisma",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -36,9 +36,9 @@
     }
   },
   "dependencies": {
-    "@dismissible/nestjs-storage": "^2.0.0",
-    "@dismissible/nestjs-item": "^2.0.0",
-    "@dismissible/nestjs-logger": "^2.0.0",
+    "@dismissible/nestjs-storage": "^2.0.1",
+    "@dismissible/nestjs-item": "^2.0.1",
+    "@dismissible/nestjs-logger": "^2.0.1",
     "prisma": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "@prisma/adapter-pg": "^7.2.0",
