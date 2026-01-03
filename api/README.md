@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://dismissible.io" target="_blank"><img src="../docs/images/dismissible_logo.png" width="120" alt="Dismissible" /></a>
+  <a href="https://dismissible.io" target="_blank"><img src="https://raw.githubusercontent.com/DismissibleIo/dismissible-api/main/docs/images/dismissible_logo.png" width="120" alt="Dismissible" /></a>
 </p>
 
 <p align="center">Never Show The Same Thing Twice!</p>
