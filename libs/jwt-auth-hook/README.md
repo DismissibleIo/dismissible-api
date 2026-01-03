@@ -1,10 +1,25 @@
+<p align="center">
+  <a href="https://dismissible.io" target="_blank"><img src="../../docs/images/dismissible_logo.png" width="120" alt="Dismissible" /></a>
+</p>
+
+<p align="center">Never Show The Same Thing Twice!</p>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-jwt-auth-hook" target="_blank"><img src="https://img.shields.io/npm/v/@dismissible/nestjs-jwt-auth-hook.svg" alt="NPM Version" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/npm/l/@dismissible/nestjs-jwt-auth-hook.svg" alt="Package License" /></a>
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-jwt-auth-hook" target="_blank"><img src="https://img.shields.io/npm/dm/@dismissible/nestjs-jwt-auth-hook.svg" alt="NPM Downloads" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api" target="_blank"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/dismissibleio/dismissible-api/release.yml"></a>
+  <a href="https://paypal.me/joshstuartx" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+</p>
+
+Dismissible manages the state of your UI elements across sessions, so your users see what matters, once! No more onboarding messages reappearing on every tab, no more notifications haunting users across devices. Dismissible syncs dismissal state everywhere, so every message is intentional, never repetitive.
+
 # @dismissible/nestjs-jwt-auth-hook
 
 JWT authentication hook for Dismissible applications using OpenID Connect (OIDC) well-known discovery.
 
 ## Overview
 
-This library provides a lifecycle hook that integrates with the `@dismissible/nestjs-dismissible` module to authenticate requests using JWT bearer tokens. It validates tokens using JWKS (JSON Web Key Set) fetched from an OIDC well-known endpoint.
+This library provides a lifecycle hook that integrates with the `@dismissible/nestjs-core` module to authenticate requests using JWT bearer tokens. It validates tokens using JWKS (JSON Web Key Set) fetched from an OIDC well-known endpoint.
 
 ## Installation
 
@@ -18,7 +33,7 @@ npm install @dismissible/nestjs-jwt-auth-hook @nestjs/axios axios
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { DismissibleModule } from '@dismissible/nestjs-dismissible';
+import { DismissibleModule } from '@dismissible/nestjs-core';
 import { JwtAuthHookModule, JwtAuthHook } from '@dismissible/nestjs-jwt-auth-hook';
 
 @Module({
@@ -47,7 +62,7 @@ When configuration values come from environment variables or other async sources
 ```typescript
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DismissibleModule } from '@dismissible/nestjs-dismissible';
+import { DismissibleModule } from '@dismissible/nestjs-core';
 import { JwtAuthHookModule, JwtAuthHook } from '@dismissible/nestjs-jwt-auth-hook';
 
 @Module({
@@ -81,8 +96,14 @@ export class AppModule {}
 | `jwksCacheDuration` | `number`   | No       | `600000`    | JWKS cache duration in milliseconds (10 minutes)                                            |
 | `requestTimeout`    | `number`   | No       | `30000`     | Request timeout in milliseconds (30 seconds)                                                |
 | `priority`          | `number`   | No       | `-100`      | Hook priority (lower numbers run first)                                                     |
+| `matchUserId`       | `boolean`  | No       | `true`      | Enable user ID matching against JWT claim                                                   |
+| `userIdClaim`       | `string`   | No       | `'sub'`     | The JWT claim key to use for user ID matching                                               |
+| `userIdMatchType`   | `string`   | No       | `'exact'`   | Match method: `exact`, `substring`, or `regex`                                              |
+| `userIdMatchRegex`  | `string`   | No\*\*   | -           | Regex pattern for user ID matching (required when type is `regex`)                          |
 
 \* `wellKnownUrl` is only required when `enabled` is `true`.
+
+\*\* `userIdMatchRegex` is required when `userIdMatchType` is `regex`.
 
 ## Environment Variables
 
@@ -98,13 +119,17 @@ When using the Dismissible API Docker image or the standalone API, these environ
 | `DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION` | JWKS cache duration in ms              | `600000` |
 | `DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT`     | Request timeout in ms                  | `30000`  |
 | `DISMISSIBLE_JWT_AUTH_PRIORITY`            | Hook priority (lower runs first)       | `-100`   |
+| `DISMISSIBLE_JWT_AUTH_MATCH_USER_ID`       | Enable user ID matching                | `true`   |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM`       | JWT claim key for user ID matching     | `sub`    |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE`  | User ID match method                   | `exact`  |
+| `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX` | Regex pattern for user ID matching     | `""`     |
 
 ### Example: Disabling JWT Auth for Development
 
 ```bash
 docker run -p 3001:3001 \
   -e DISMISSIBLE_JWT_AUTH_ENABLED=false \
-  -e DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING="postgresql://..." \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://..." \
   dismissibleio/dismissible-api:latest
 ```
 
@@ -116,7 +141,7 @@ docker run -p 3001:3001 \
   -e DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL="https://your-tenant.auth0.com/.well-known/openid-configuration" \
   -e DISMISSIBLE_JWT_AUTH_ISSUER="https://your-tenant.auth0.com/" \
   -e DISMISSIBLE_JWT_AUTH_AUDIENCE="your-api-identifier" \
-  -e DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING="postgresql://..." \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://..." \
   dismissibleio/dismissible-api:latest
 ```
 

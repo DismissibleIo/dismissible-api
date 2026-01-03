@@ -1,15 +1,16 @@
-import { mock } from 'ts-jest-mocker';
+import { mock, Mock } from 'ts-jest-mocker';
 import { of, throwError } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
+import { plainToInstance } from 'class-transformer';
 import { JwtAuthService } from './jwt-auth.service';
 import { JwtAuthHookConfig } from './jwt-auth-hook.config';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
 
 describe('JwtAuthService', () => {
   let service: JwtAuthService;
-  let mockHttpService: jest.Mocked<HttpService>;
-  let mockLogger: jest.Mocked<IDismissibleLogger>;
+  let mockHttpService: Mock<HttpService>;
+  let mockLogger: Mock<IDismissibleLogger>;
   let mockConfig: JwtAuthHookConfig;
 
   beforeEach(() => {
@@ -18,7 +19,7 @@ describe('JwtAuthService', () => {
     mockConfig = {
       enabled: true,
       wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
-      issuer: 'https://auth.example.com',
+      issuer: ['https://auth.example.com'],
       audience: 'my-api',
     };
 
@@ -235,6 +236,192 @@ describe('JwtAuthService', () => {
       );
     });
 
+    it('should successfully validate token with single issuer in array', async () => {
+      const configWithSingleIssuerArray: JwtAuthHookConfig = {
+        enabled: true,
+        wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+        issuer: ['https://auth.example.com'],
+        audience: 'my-api',
+      };
+      const serviceWithSingleIssuer = new JwtAuthService(
+        mockHttpService,
+        configWithSingleIssuerArray,
+        mockLogger,
+      );
+
+      const mockResponse: AxiosResponse = {
+        data: {
+          jwks_uri: 'https://auth.example.com/.well-known/jwks.json',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { headers: {} } as AxiosResponse['config'],
+      };
+      mockHttpService.get.mockReturnValue(of(mockResponse));
+
+      await serviceWithSingleIssuer.initializeJwksClient();
+
+      const jwt = require('jsonwebtoken');
+      const mockPayload = {
+        sub: 'user-123',
+        iss: 'https://auth.example.com',
+        aud: 'my-api',
+      };
+
+      jest.spyOn(jwt, 'decode').mockReturnValue({
+        header: { kid: 'key-id-123' },
+        payload: mockPayload,
+      });
+
+      const mockSigningKey = {
+        getPublicKey: jest.fn().mockReturnValue('public-key'),
+      };
+      const mockJwksClient = (serviceWithSingleIssuer as any).jwksClient;
+      jest.spyOn(mockJwksClient, 'getSigningKey').mockResolvedValue(mockSigningKey);
+      jest.spyOn(jwt, 'verify').mockReturnValue(mockPayload);
+
+      const result = await serviceWithSingleIssuer.validateToken('valid-token');
+
+      expect(result.valid).toBe(true);
+      expect(result.payload).toEqual(mockPayload);
+      expect(jwt.verify).toHaveBeenCalledWith(
+        'valid-token',
+        'public-key',
+        expect.objectContaining({
+          algorithms: ['RS256'],
+          issuer: 'https://auth.example.com',
+          audience: 'my-api',
+        }),
+      );
+    });
+
+    it('should successfully validate token when issuer matches one of multiple issuers', async () => {
+      const configWithMultipleIssuers: JwtAuthHookConfig = {
+        enabled: true,
+        wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+        issuer: [
+          'https://auth.example.com',
+          'https://auth2.example.com',
+          'https://auth3.example.com',
+        ],
+        audience: 'my-api',
+      };
+      const serviceWithMultipleIssuers = new JwtAuthService(
+        mockHttpService,
+        configWithMultipleIssuers,
+        mockLogger,
+      );
+
+      const mockResponse: AxiosResponse = {
+        data: {
+          jwks_uri: 'https://auth.example.com/.well-known/jwks.json',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { headers: {} } as AxiosResponse['config'],
+      };
+      mockHttpService.get.mockReturnValue(of(mockResponse));
+
+      await serviceWithMultipleIssuers.initializeJwksClient();
+
+      const jwt = require('jsonwebtoken');
+      const mockPayload = {
+        sub: 'user-123',
+        iss: 'https://auth2.example.com', // Matches second issuer
+        aud: 'my-api',
+      };
+
+      jest.spyOn(jwt, 'decode').mockReturnValue({
+        header: { kid: 'key-id-123' },
+        payload: mockPayload,
+      });
+
+      const mockSigningKey = {
+        getPublicKey: jest.fn().mockReturnValue('public-key'),
+      };
+      const mockJwksClient = (serviceWithMultipleIssuers as any).jwksClient;
+      jest.spyOn(mockJwksClient, 'getSigningKey').mockResolvedValue(mockSigningKey);
+      jest.spyOn(jwt, 'verify').mockReturnValue(mockPayload);
+
+      const result = await serviceWithMultipleIssuers.validateToken('valid-token');
+
+      expect(result.valid).toBe(true);
+      expect(result.payload).toEqual(mockPayload);
+      expect(jwt.verify).toHaveBeenCalledWith(
+        'valid-token',
+        'public-key',
+        expect.objectContaining({
+          algorithms: ['RS256'],
+          issuer: [
+            'https://auth.example.com',
+            'https://auth2.example.com',
+            'https://auth3.example.com',
+          ],
+          audience: 'my-api',
+        }),
+      );
+    });
+
+    it('should return invalid when token issuer does not match any of the configured issuers', async () => {
+      const configWithMultipleIssuers: JwtAuthHookConfig = {
+        enabled: true,
+        wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+        issuer: ['https://auth.example.com', 'https://auth2.example.com'],
+        audience: 'my-api',
+      };
+      const serviceWithMultipleIssuers = new JwtAuthService(
+        mockHttpService,
+        configWithMultipleIssuers,
+        mockLogger,
+      );
+
+      const mockResponse: AxiosResponse = {
+        data: {
+          jwks_uri: 'https://auth.example.com/.well-known/jwks.json',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { headers: {} } as AxiosResponse['config'],
+      };
+      mockHttpService.get.mockReturnValue(of(mockResponse));
+
+      await serviceWithMultipleIssuers.initializeJwksClient();
+
+      const jwt = require('jsonwebtoken');
+      jest.spyOn(jwt, 'decode').mockReturnValue({
+        header: { kid: 'key-id-123' },
+        payload: {},
+      });
+
+      const mockSigningKey = {
+        getPublicKey: jest.fn().mockReturnValue('public-key'),
+      };
+      const mockJwksClient = (serviceWithMultipleIssuers as any).jwksClient;
+      jest.spyOn(mockJwksClient, 'getSigningKey').mockResolvedValue(mockSigningKey);
+      jest.spyOn(jwt, 'verify').mockImplementation(() => {
+        throw new Error(
+          'jwt issuer invalid. expected: https://auth.example.com or https://auth2.example.com',
+        );
+      });
+
+      const result = await serviceWithMultipleIssuers.validateToken('invalid-issuer-token');
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('issuer invalid');
+      expect(jwt.verify).toHaveBeenCalledWith(
+        'invalid-issuer-token',
+        'public-key',
+        expect.objectContaining({
+          algorithms: ['RS256'],
+          issuer: ['https://auth.example.com', 'https://auth2.example.com'],
+          audience: 'my-api',
+        }),
+      );
+    });
+
     it('should successfully validate token without issuer and audience', async () => {
       const configWithoutIssuerAudience: JwtAuthHookConfig = {
         enabled: true,
@@ -405,6 +592,63 @@ describe('JwtAuthService', () => {
         'public-key',
         expect.objectContaining({
           algorithms: ['RS256', 'RS384'],
+        }),
+      );
+    });
+
+    it('should use algorithms from comma-separated string after transformation', async () => {
+      // Simulate config transformation from comma-separated string
+      const configWithCommaSeparatedAlgorithms = plainToInstance(JwtAuthHookConfig, {
+        enabled: true,
+        wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+        issuer: ['https://auth.example.com'],
+        audience: 'my-api',
+        algorithms: 'RS256,RS384,RS512', // Comma-separated string
+      });
+
+      const serviceWithAlgorithms = new JwtAuthService(
+        mockHttpService,
+        configWithCommaSeparatedAlgorithms,
+        mockLogger,
+      );
+
+      const mockResponse: AxiosResponse = {
+        data: {
+          jwks_uri: 'https://auth.example.com/.well-known/jwks.json',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { headers: {} } as AxiosResponse['config'],
+      };
+      mockHttpService.get.mockReturnValue(of(mockResponse));
+
+      await serviceWithAlgorithms.initializeJwksClient();
+
+      const jwt = require('jsonwebtoken');
+      const mockPayload = { sub: 'user-123' };
+
+      jest.spyOn(jwt, 'decode').mockReturnValue({
+        header: { kid: 'key-id-123' },
+        payload: mockPayload,
+      });
+
+      const mockSigningKey = {
+        getPublicKey: jest.fn().mockReturnValue('public-key'),
+      };
+      const mockJwksClient = (serviceWithAlgorithms as any).jwksClient;
+      jest.spyOn(mockJwksClient, 'getSigningKey').mockResolvedValue(mockSigningKey);
+      jest.spyOn(jwt, 'verify').mockReturnValue(mockPayload);
+
+      await serviceWithAlgorithms.validateToken('valid-token');
+
+      // Verify that the comma-separated string was transformed to an array
+      expect(configWithCommaSeparatedAlgorithms.algorithms).toEqual(['RS256', 'RS384', 'RS512']);
+      expect(jwt.verify).toHaveBeenCalledWith(
+        'valid-token',
+        'public-key',
+        expect.objectContaining({
+          algorithms: ['RS256', 'RS384', 'RS512'],
         }),
       );
     });

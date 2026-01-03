@@ -30,11 +30,11 @@ describe('TransformCommaSeparated', () => {
 
   it('should handle empty string', () => {
     const config = plainToInstance(TestConfig, { value: '' });
-    expect(config.value).toEqual(['']);
+    expect(config.value).toEqual([]);
   });
 
   it('should handle string with only whitespace', () => {
     const config = plainToInstance(TestConfig, { value: '  ' });
-    expect(config.value).toEqual(['']);
+    expect(config.value).toEqual([]);
   });
 });

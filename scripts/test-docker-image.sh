@@ -9,7 +9,7 @@ HEALTH_ENDPOINT="${HEALTH_ENDPOINT:-http://localhost:3001/health}"
 CONTAINER_ID=$(docker run -d \
   --network host \
   -e DISMISSIBLE_STORAGE_TYPE="postgres" \
-  -e DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING="postgresql://postgres:postgres@localhost:5432/dismissible" \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://postgres:postgres@localhost:5432/dismissible" \
   -e DISMISSIBLE_RUN_MIGRATION=false \
   "$IMAGE_TAG")
 

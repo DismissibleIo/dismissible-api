@@ -24,7 +24,8 @@
     "bin",
     "prisma",
     "prisma.config.mjs",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0"
@@ -36,7 +37,7 @@
   },
   "dependencies": {
     "@dismissible/nestjs-storage": "^1.0.2",
-    "@dismissible/nestjs-dismissible-item": "^1.0.2",
+    "@dismissible/nestjs-item": "^1.0.2",
     "@dismissible/nestjs-logger": "^1.0.2",
     "prisma": "^7.2.0",
     "@prisma/client": "^7.2.0",

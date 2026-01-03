@@ -10,25 +10,46 @@
   "scripts": {
     "build": "nx run-many --target=build --projects=libs/*,api",
     "build:libs": "nx run-many --target=build --projects=libs/*",
-    "serve": "nx serve api",
-    "prisma:generate": "nx run api:prisma:generate",
-    "prisma:push": "nx run api:prisma:push",
-    "prisma:migrate:dev": "nx run api:prisma:migrate:dev",
+    "serve:postgres": "DISMISSIBLE_STORAGE_TYPE=postgres nx serve api",
+    "serve:dynamodb": "DISMISSIBLE_STORAGE_TYPE=dynamodb nx serve api",
+    "serve:memory": "DISMISSIBLE_STORAGE_TYPE=memory nx serve api",
     "start": "node dist/api/src/main.js",
     "format": "npm run prettier:fix && npm run lint:fix",
     "lint": "nx run-many --target=lint --all",
     "lint:fix": "nx run-many --target=lint --all --fix",
     "commitlint": "commitlint --from=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD) --to=HEAD",
     "test": "nx run-many --target=test --all",
-    "test:e2e": "NODE_ENV=local-test nx run-many --target=test-e2e --projects=api,dismissible",
+    "test:e2e": "nx test-e2e:all api && nx test-e2e:all core",
+    "test:e2e:api:memory": "nx test-e2e:memory api",
+    "test:e2e:api:postgres": "nx test-e2e:postgres api",
+    "test:e2e:api:dynamodb": "nx test-e2e:dynamodb api",
+    "test:e2e:api:all": "nx test-e2e:all api",
+    "test:e2e:lib:dismissible:all": "nx test-e2e:all dismissible",
     "test:perf": "ts-node api/scripts/performance-test.ts",
     "prettier": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,mjs}\"",
     "prettier:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,mjs}\"",
     "validate": "npm run prettier && npm run lint && npm run commitlint && npm run test && npm run test:e2e",
+    "storage:init": "nx run api:storage:init",
+    "storage:setup": "npm run storage:setup:postgres && npm run storage:setup:dynamodb",
+    "storage:setup:postgres": "nx run api:storage:setup:postgres",
+    "storage:setup:dynamodb": "nx run api:storage:setup:dynamodb",
+    "storage:start": "docker-compose up -d dismissible-postgres dismissible-dynamodb",
+    "storage:start:postgres": "docker-compose up dismissible-postgres -d",
+    "storage:start:dynamodb": "docker-compose up dismissible-dynamodb -d",
+    "storage:stop": "docker-compose down",
+    "storage:stop:postgres": "docker-compose stop dismissible-postgres",
+    "storage:stop:dynamodb": "docker-compose stop dismissible-dynamodb",
     "nx:reset": "nx reset",
-    "db:start": "docker-compose up dismissible-postgres -d ",
-    "db:stop": "docker-compose down",
     "commit": "cz"
+  },
+  "overrides": {
+    "lru-cache": "^10.4.3",
+    "@babel/helper-compilation-targets": {
+      "lru-cache": "5.1.1"
+    },
+    "lru-memoizer": {
+      "lru-cache": "6.0.0"
+    }
   },
   "devDependencies": {
     "@commitlint/cli": "^20.2.0",
@@ -40,7 +61,6 @@
     "@nx/js": "^22.3.3",
     "@nx/nest": "^22.3.3",
     "@nx/node": "^22.3.3",
-    "@nx/webpack": "^22.3.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.4",
     "@types/supertest": "^6.0.3",
@@ -59,6 +79,7 @@
     "ts-jest": "^29.4.6",
     "ts-jest-mocker": "^1.3.0",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3"
   },
   "config": {

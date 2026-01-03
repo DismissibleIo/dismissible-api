@@ -142,13 +142,45 @@ describe('CorsConfig', () => {
       expect(errors).toHaveLength(0);
     });
 
-    it('should pass validation with only required fields', async () => {
+    it('should pass validation with only required fields when enabled', async () => {
+      const config = plainToInstance(CorsConfig, {
+        enabled: true,
+        origins: ['http://localhost:3000'],
+      });
+
+      const errors = await validate(config);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should pass validation when disabled without origins', async () => {
+      const config = plainToInstance(CorsConfig, {
+        enabled: false,
+      });
+
+      const errors = await validate(config);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should fail validation when enabled without origins', async () => {
       const config = plainToInstance(CorsConfig, {
         enabled: true,
       });
 
       const errors = await validate(config);
-      expect(errors).toHaveLength(0);
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors[0].property).toBe('origins');
+    });
+
+    it('should fail validation when enabled with empty origins', async () => {
+      const config = plainToInstance(CorsConfig, {
+        enabled: true,
+        origins: [],
+      });
+
+      const errors = await validate(config);
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors[0].property).toBe('origins');
+      expect(errors[0].constraints?.arrayNotEmpty).toBeDefined();
     });
 
     it('should fail validation when enabled is missing', async () => {

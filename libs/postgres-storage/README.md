@@ -1,3 +1,18 @@
+<p align="center">
+  <a href="https://dismissible.io" target="_blank"><img src="../../docs/images/dismissible_logo.png" width="120" alt="Dismissible" /></a>
+</p>
+
+<p align="center">Never Show The Same Thing Twice!</p>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-postgres-storage" target="_blank"><img src="https://img.shields.io/npm/v/@dismissible/nestjs-postgres-storage.svg" alt="NPM Version" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/npm/l/@dismissible/nestjs-postgres-storage.svg" alt="Package License" /></a>
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-postgres-storage" target="_blank"><img src="https://img.shields.io/npm/dm/@dismissible/nestjs-postgres-storage.svg" alt="NPM Downloads" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api" target="_blank"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/dismissibleio/dismissible-api/release.yml"></a>
+  <a href="https://paypal.me/joshstuartx" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+</p>
+
+Dismissible manages the state of your UI elements across sessions, so your users see what matters, once! No more onboarding messages reappearing on every tab, no more notifications haunting users across devices. Dismissible syncs dismissal state everywhere, so every message is intentional, never repetitive.
+
 # @dismissible/nestjs-postgres-storage
 
 PostgreSQL storage adapter for the Dismissible system using Prisma.
@@ -22,13 +37,13 @@ npm install @dismissible/nestjs-postgres-storage
 You'll also need to install the peer dependencies:
 
 ```bash
-npm install @dismissible/nestjs-storage @dismissible/nestjs-dismissible-item @dismissible/nestjs-logger prisma
+npm install @dismissible/nestjs-storage @dismissible/nestjs-item @dismissible/nestjs-logger prisma
 ```
 
 ## Prerequisites
 
 - PostgreSQL database (version 12 or higher)
-- Node.js 18 or higher
+- Node.js 24 or higher
 
 ## Getting Started
 
@@ -37,7 +52,7 @@ npm install @dismissible/nestjs-storage @dismissible/nestjs-dismissible-item @di
 First, set up your PostgreSQL database connection string:
 
 ```env
-DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING=postgresql://user:password@localhost:5432/dismissible
+DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING=postgresql://user:password@localhost:5432/dismissible
 ```
 
 ### 2. Initialize Database Schema
@@ -100,7 +115,7 @@ Import and configure the module in your NestJS application:
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { DismissibleModule } from '@dismissible/nestjs-dismissible';
+import { DismissibleModule } from '@dismissible/nestjs-core';
 import { PostgresStorageModule } from '@dismissible/nestjs-postgres-storage';
 import { LoggerModule } from '@dismissible/nestjs-logger';
 
@@ -108,7 +123,7 @@ import { LoggerModule } from '@dismissible/nestjs-logger';
   imports: [
     LoggerModule.forRoot({}),
     PostgresStorageModule.forRoot({
-      connectionString: process.env.DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING!,
+      connectionString: process.env.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING!,
     }),
     DismissibleModule.forRoot({
       storage: PostgresStorageModule,
@@ -133,7 +148,7 @@ import { PostgresStorageModule } from '@dismissible/nestjs-postgres-storage';
     PostgresStorageModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
-        connectionString: config.get<string>('DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING')!,
+        connectionString: config.get<string>('DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING')!,
       }),
       inject: [ConfigService],
     }),
@@ -275,7 +290,7 @@ const config = createPrismaConfig();
 ## Environment Variables
 
 - `DATABASE_URL` - PostgreSQL connection string (standard Prisma convention)
-- `DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING` - Alternative PostgreSQL connection string (fallback if `DATABASE_URL` is not set)
+- `DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING` - Alternative PostgreSQL connection string (fallback if `DATABASE_URL` is not set)
 
 ## Production Considerations
 
@@ -299,9 +314,9 @@ const config = createPrismaConfig();
 
 ## Related Packages
 
-- `@dismissible/nestjs-dismissible` - Main dismissible service
+- `@dismissible/nestjs-core` - Main dismissible service
 - `@dismissible/nestjs-storage` - Storage interface
-- `@dismissible/nestjs-dismissible-item` - Data models
+- `@dismissible/nestjs-item` - Data models
 - `@dismissible/nestjs-logger` - Logging
 
 ## License

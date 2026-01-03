@@ -10,7 +10,16 @@ import { Transform } from 'class-transformer';
  * // Input: ["a", "b"] → Output: ["a", "b"]
  */
 export function TransformCommaSeparated(): PropertyDecorator {
-  return Transform(({ value }) =>
-    typeof value === 'string' ? value.split(',').map((s) => s.trim()) : value,
-  );
+  return Transform(({ value }) => {
+    if (typeof value === 'string') {
+      if (value.trim().length > 0) {
+        return value.split(',').map((s) => s.trim());
+      } else {
+        return [];
+      }
+    } else if (Array.isArray(value)) {
+      return value;
+    }
+    return undefined;
+  });
 }

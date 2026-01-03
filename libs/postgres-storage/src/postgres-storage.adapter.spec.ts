@@ -1,13 +1,13 @@
-import { mock } from 'ts-jest-mocker';
+import { mock, Mock } from 'ts-jest-mocker';
 import { PostgresStorageAdapter } from './postgres-storage.adapter';
 import { PrismaService } from './prisma.service';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-item';
 
 describe('PostgresStorageAdapter', () => {
   let adapter: PostgresStorageAdapter;
   let mockPrismaService: PrismaService;
-  let mockLogger: jest.Mocked<IDismissibleLogger>;
+  let mockLogger: Mock<IDismissibleLogger>;
   let mockItemFactory: DismissibleItemFactory;
   let mockDismissibleItem: {
     findUnique: jest.Mock;

@@ -26,7 +26,7 @@ export function createPrismaConfig() {
     datasource: {
       url:
         process.env.DATABASE_URL ??
-        process.env.DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING ??
+        process.env.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING ??
         '',
     },
   };

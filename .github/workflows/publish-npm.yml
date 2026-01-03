@@ -36,8 +36,8 @@ jobs:
         run: npm install
         shell: bash
 
-      - name: Prisma generate
-        run: npm run prisma:generate
+      - name: Storage init
+        run: npm run storage:init
 
       - name: Build
         run: npm run build

@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule, AppModuleOptions } from './app.module';
 import { configureApp } from './app.setup';
-import { PrismaService } from '@dismissible/nestjs-postgres-storage';
+import { DISMISSIBLE_STORAGE_ADAPTER, IDismissibleStorage } from '@dismissible/nestjs-storage';
 
 export type TestAppOptions = {
   moduleOptions?: AppModuleOptions;
@@ -25,6 +25,9 @@ export async function createTestApp(options?: TestAppOptions): Promise<INestAppl
       bodyLimit: 10 * 1024, // 10kb
     }),
   );
+
+  app.useLogger(false);
+
   await configureApp(app);
   await app.init();
 
@@ -34,6 +37,6 @@ export async function createTestApp(options?: TestAppOptions): Promise<INestAppl
 }
 
 export async function cleanupTestData(app: INestApplication): Promise<void> {
-  const prisma = app.get(PrismaService);
-  await prisma.dismissibleItem.deleteMany({});
+  const storage = app.get<IDismissibleStorage>(DISMISSIBLE_STORAGE_ADAPTER);
+  await storage.deleteAll();
 }

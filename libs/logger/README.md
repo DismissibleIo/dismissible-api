@@ -1,3 +1,18 @@
+<p align="center">
+  <a href="https://dismissible.io" target="_blank"><img src="../../docs/images/dismissible_logo.png" width="120" alt="Dismissible" /></a>
+</p>
+
+<p align="center">Never Show The Same Thing Twice!</p>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-logger" target="_blank"><img src="https://img.shields.io/npm/v/@dismissible/nestjs-logger.svg" alt="NPM Version" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/npm/l/@dismissible/nestjs-logger.svg" alt="Package License" /></a>
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-logger" target="_blank"><img src="https://img.shields.io/npm/dm/@dismissible/nestjs-logger.svg" alt="NPM Downloads" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api" target="_blank"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/dismissibleio/dismissible-api/release.yml"></a>
+  <a href="https://paypal.me/joshstuartx" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+</p>
+
+Dismissible manages the state of your UI elements across sessions, so your users see what matters, once! No more onboarding messages reappearing on every tab, no more notifications haunting users across devices. Dismissible syncs dismissal state everywhere, so every message is intentional, never repetitive.
+
 # @dismissible/nestjs-logger
 
 A flexible logging module for NestJS applications in the Dismissible ecosystem.
@@ -129,7 +144,7 @@ The `LoggerModule` is registered as a global module, so you only need to import 
 
 This logger is used by other Dismissible packages:
 
-- `@dismissible/nestjs-dismissible` - Main dismissible service
+- `@dismissible/nestjs-core` - Main dismissible service
 - `@dismissible/nestjs-storage` - Storage adapters
 - `@dismissible/nestjs-postgres-storage` - PostgreSQL storage adapter
 

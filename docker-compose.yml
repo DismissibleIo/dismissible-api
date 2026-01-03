@@ -5,11 +5,24 @@ services:
     restart: unless-stopped
     depends_on:
       - dismissible-postgres
+      - dismissible-dynamodb
     environment:
       # Server
       DISMISSIBLE_PORT: 3001
       DISMISSIBLE_SWAGGER_ENABLED: true
-      DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+
+      # Storage Type
+      DISMISSIBLE_STORAGE_TYPE: dynamodb
+
+      # Postgres Storage
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+
+      # DynamoDB Storage (LocalStack)
+      DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME: dismissible-items
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION: us-east-1
+      DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID: test
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
 
       # JWT Authentication (disabled for local development)
       DISMISSIBLE_JWT_AUTH_ENABLED: false
@@ -18,6 +31,10 @@ services:
       # DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL: https://your-tenant.auth0.com/.well-known/openid-configuration
       # DISMISSIBLE_JWT_AUTH_ISSUER: https://your-tenant.auth0.com/
       # DISMISSIBLE_JWT_AUTH_AUDIENCE: your-api-identifier
+      # DISMISSIBLE_JWT_AUTH_MATCH_USER_ID: true
+      # DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM: sub
+      # DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE: exact
+      # DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX:
 
       # Security Headers (Helmet)
       DISMISSIBLE_HELMET_ENABLED: true
@@ -50,5 +67,31 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  dismissible-dynamodb:
+    image: localstack/localstack:latest
+    container_name: dismissible-dynamodb
+    restart: unless-stopped
+    environment:
+      # Enable specific LocalStack services
+      SERVICES: dynamodb
+      # AWS region configuration
+      AWS_DEFAULT_REGION: us-east-1
+      # LocalStack configuration
+      DEBUG: 1
+      # Persistence mode (optional - data persists across restarts)
+      # PERSISTENCE: 1
+    ports:
+      - '4566:4566'
+    volumes:
+      - dismissible_dynamodb_data:/var/lib/localstack
+      # Share a Docker network for inter-container communication
+    networks:
+      - default
+
+networks:
+  default:
+    name: dismissible-network
+
 volumes:
   postgres_data:
+  dismissible_dynamodb_data:

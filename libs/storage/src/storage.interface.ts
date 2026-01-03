@@ -1,4 +1,4 @@
-import { DismissibleItemDto } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemDto } from '@dismissible/nestjs-item';
 
 /**
  * Injection token for the storage provider.
@@ -31,4 +31,17 @@ export interface IDismissibleStorage {
    * @returns The updated item
    */
   update(item: DismissibleItemDto): Promise<DismissibleItemDto>;
+
+  /**
+   * Delete an item by user ID and item ID.
+   * @param userId The user identifier
+   * @param itemId The item identifier
+   */
+  delete(userId: string, itemId: string): Promise<void>;
+
+  /**
+   * Delete all items.
+   * Useful for cleanup operations.
+   */
+  deleteAll(): Promise<void>;
 }

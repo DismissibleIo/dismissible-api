@@ -17,7 +17,7 @@ export interface IJwtAuthHookModuleAsyncOptions {
  *
  * @example
  * ```typescript
- * import { DismissibleModule } from '@dismissible/nestjs-dismissible';
+ * import { DismissibleModule } from '@dismissible/nestjs-core';
  * import { JwtAuthHookModule, JwtAuthHook } from '@dismissible/nestjs-jwt-auth-hook';
  *
  * @Module({
