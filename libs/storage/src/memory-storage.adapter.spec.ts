@@ -1,7 +1,7 @@
 import { mock, Mock } from 'ts-jest-mocker';
 import { MemoryStorageAdapter } from './memory-storage.adapter';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { DismissibleItemFactory } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemFactory } from '@dismissible/nestjs-item';
 
 describe('MemoryStorageAdapter', () => {
   let adapter: MemoryStorageAdapter;
@@ -168,10 +168,10 @@ describe('MemoryStorageAdapter', () => {
       await adapter.create(item2);
       expect(adapter.size).toBe(2);
 
-      adapter.clear();
+      await adapter.deleteAll();
 
       expect(adapter.size).toBe(0);
-      expect(mockLogger.debug).toHaveBeenCalledWith('Storage clear', {
+      expect(mockLogger.debug).toHaveBeenCalledWith('Storage deleteAll', {
         previousSize: 2,
       });
       expect(await adapter.get('user-1', 'item-1')).toBeNull();

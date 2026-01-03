@@ -1,5 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder } from '@nestjs/swagger';
+import { Mock } from 'ts-jest-mocker';
+import { DISMISSIBLE_LOGGER } from '@dismissible/nestjs-logger';
 import { configureAppWithSwagger } from './swagger.factory';
 import { SwaggerConfig } from './swagger.config';
 
@@ -24,11 +26,15 @@ jest.mock('@nestjs/swagger', () => ({
 }));
 
 describe('configureAppWithSwagger', () => {
-  let mockApp: jest.Mocked<INestApplication>;
+  let mockApp: Mock<INestApplication>;
+  let mockGet: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockApp = {} as any;
+    mockGet = jest.fn();
+    mockApp = {
+      get: mockGet,
+    } as any;
   });
 
   it('should configure Swagger when enabled is true', () => {
@@ -36,8 +42,21 @@ describe('configureAppWithSwagger', () => {
       enabled: true,
       path: 'docs',
     };
+    const mockLogger = {
+      info: jest.fn(),
+      setContext: jest.fn(),
+    };
+    mockGet.mockImplementation((token) => {
+      if (token === SwaggerConfig) {
+        return swaggerConfig;
+      }
+      if (token === DISMISSIBLE_LOGGER) {
+        return mockLogger;
+      }
+      return null;
+    });
 
-    configureAppWithSwagger(mockApp, swaggerConfig);
+    configureAppWithSwagger(mockApp);
 
     expect(DocumentBuilder).toHaveBeenCalled();
     expect(mockSetTitle).toHaveBeenCalledWith('Dismissible');
@@ -53,8 +72,21 @@ describe('configureAppWithSwagger', () => {
     const swaggerConfig: SwaggerConfig = {
       enabled: true,
     };
+    const mockLogger = {
+      info: jest.fn(),
+      setContext: jest.fn(),
+    };
+    mockGet.mockImplementation((token) => {
+      if (token === SwaggerConfig) {
+        return swaggerConfig;
+      }
+      if (token === DISMISSIBLE_LOGGER) {
+        return mockLogger;
+      }
+      return null;
+    });
 
-    configureAppWithSwagger(mockApp, swaggerConfig);
+    configureAppWithSwagger(mockApp);
 
     expect(mockSetup).toHaveBeenCalledWith('docs', mockApp, expect.any(Function), {
       useGlobalPrefix: true,
@@ -66,8 +98,21 @@ describe('configureAppWithSwagger', () => {
       enabled: true,
       path: 'api-docs',
     };
+    const mockLogger = {
+      info: jest.fn(),
+      setContext: jest.fn(),
+    };
+    mockGet.mockImplementation((token) => {
+      if (token === SwaggerConfig) {
+        return swaggerConfig;
+      }
+      if (token === DISMISSIBLE_LOGGER) {
+        return mockLogger;
+      }
+      return null;
+    });
 
-    configureAppWithSwagger(mockApp, swaggerConfig);
+    configureAppWithSwagger(mockApp);
 
     expect(mockSetup).toHaveBeenCalledWith('api-docs', mockApp, expect.any(Function), {
       useGlobalPrefix: true,
@@ -78,8 +123,21 @@ describe('configureAppWithSwagger', () => {
     const swaggerConfig: SwaggerConfig = {
       enabled: false,
     };
+    const mockLogger = {
+      info: jest.fn(),
+      setContext: jest.fn(),
+    };
+    mockGet.mockImplementation((token) => {
+      if (token === SwaggerConfig) {
+        return swaggerConfig;
+      }
+      if (token === DISMISSIBLE_LOGGER) {
+        return mockLogger;
+      }
+      return null;
+    });
 
-    configureAppWithSwagger(mockApp, swaggerConfig);
+    configureAppWithSwagger(mockApp);
 
     expect(DocumentBuilder).not.toHaveBeenCalled();
     expect(mockSetup).not.toHaveBeenCalled();
@@ -89,8 +147,21 @@ describe('configureAppWithSwagger', () => {
     const swaggerConfig: SwaggerConfig = {
       enabled: true,
     };
+    const mockLogger = {
+      info: jest.fn(),
+      setContext: jest.fn(),
+    };
+    mockGet.mockImplementation((token) => {
+      if (token === SwaggerConfig) {
+        return swaggerConfig;
+      }
+      if (token === DISMISSIBLE_LOGGER) {
+        return mockLogger;
+      }
+      return null;
+    });
 
-    configureAppWithSwagger(mockApp, swaggerConfig);
+    configureAppWithSwagger(mockApp);
 
     const setupCall = mockSetup.mock.calls[0];
     const documentFactory = setupCall[2];
@@ -109,8 +180,21 @@ describe('configureAppWithSwagger', () => {
     const swaggerConfig: SwaggerConfig = {
       enabled: true,
     };
+    const mockLogger = {
+      info: jest.fn(),
+      setContext: jest.fn(),
+    };
+    mockGet.mockImplementation((token) => {
+      if (token === SwaggerConfig) {
+        return swaggerConfig;
+      }
+      if (token === DISMISSIBLE_LOGGER) {
+        return mockLogger;
+      }
+      return null;
+    });
 
-    configureAppWithSwagger(mockApp, swaggerConfig);
+    configureAppWithSwagger(mockApp);
 
     const setupCall = mockSetup.mock.calls[0];
     const documentFactory = setupCall[2];

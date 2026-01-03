@@ -7,7 +7,7 @@ describe('prisma-config', () => {
     jest.resetModules();
     process.env = { ...originalEnv };
     delete process.env.DATABASE_URL;
-    delete process.env.DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING;
+    delete process.env.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING;
   });
 
   afterAll(() => {
@@ -40,8 +40,8 @@ describe('prisma-config', () => {
       expect(config.datasource.url).toBe('postgres://test:test@localhost/test');
     });
 
-    it('should fall back to DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING when DATABASE_URL is not set', async () => {
-      process.env.DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING =
+    it('should fall back to DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING when DATABASE_URL is not set', async () => {
+      process.env.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING =
         'postgres://fallback:fallback@localhost/fallback';
 
       const { createPrismaConfig } = await import('./prisma-config');
@@ -50,9 +50,9 @@ describe('prisma-config', () => {
       expect(config.datasource.url).toBe('postgres://fallback:fallback@localhost/fallback');
     });
 
-    it('should prefer DATABASE_URL over DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING', async () => {
+    it('should prefer DATABASE_URL over DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING', async () => {
       process.env.DATABASE_URL = 'postgres://primary:primary@localhost/primary';
-      process.env.DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING =
+      process.env.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING =
         'postgres://fallback:fallback@localhost/fallback';
 
       const { createPrismaConfig } = await import('./prisma-config');

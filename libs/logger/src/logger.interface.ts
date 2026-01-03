@@ -3,6 +3,8 @@
  */
 export const DISMISSIBLE_LOGGER = Symbol('DISMISSIBLE_LOGGER');
 
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal' | 'verbose';
+
 /**
  * Interface for logger providers.
  */
@@ -26,4 +28,14 @@ export interface IDismissibleLogger {
    * Log an error message.
    */
   error(message: string, error?: Error, context?: object): void;
+
+  /**
+   * Set the context for the logger.
+   */
+  setContext(context: string): void;
+
+  /**
+   * Set the log levels for the logger.
+   */
+  setLogLevels(levels: LogLevel[]): void;
 }

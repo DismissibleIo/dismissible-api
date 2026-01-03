@@ -13,12 +13,13 @@
   },
   "files": [
     "src",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
-    "@dismissible/nestjs-dismissible-hooks": "^1.0.2",
-    "@dismissible/nestjs-dismissible-request": "^1.0.2",
+    "@dismissible/nestjs-hooks": "^1.0.2",
+    "@dismissible/nestjs-request": "^1.0.2",
     "@dismissible/nestjs-logger": "^1.0.2",
     "@dismissible/nestjs-validation": "^1.0.2",
     "jwks-rsa": "^3.2.0",

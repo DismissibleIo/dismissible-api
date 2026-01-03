@@ -5,14 +5,16 @@ import { DefaultAppConfig } from './default-app.config';
 import { ServerConfig } from '../server/server.config';
 import { CorsConfig } from '../cors/cors.config';
 import { HelmetConfig } from '../helmet/helmet.config';
+import { ValidationConfig } from '../validation/validation.config';
 
 describe('DefaultAppConfig', () => {
   describe('transformation', () => {
     it('should transform all nested configs correctly', () => {
       const config = plainToInstance(DefaultAppConfig, {
         server: { port: 3001 },
-        cors: { enabled: true },
+        cors: { enabled: true, origins: ['http://localhost:3000'] },
         helmet: { enabled: true },
+        validation: { disableErrorMessages: true },
       });
 
       expect(config.server).toBeInstanceOf(ServerConfig);
@@ -21,6 +23,8 @@ describe('DefaultAppConfig', () => {
       expect(config.cors.enabled).toBe(true);
       expect(config.helmet).toBeInstanceOf(HelmetConfig);
       expect(config.helmet.enabled).toBe(true);
+      expect(config.validation).toBeInstanceOf(ValidationConfig);
+      expect(config.validation.disableErrorMessages).toBe(true);
     });
   });
 
@@ -28,8 +32,9 @@ describe('DefaultAppConfig', () => {
     it('should pass validation with all required nested configs', async () => {
       const config = plainToInstance(DefaultAppConfig, {
         server: { port: 3001 },
-        cors: { enabled: true },
+        cors: { enabled: true, origins: ['http://localhost:3000'] },
         helmet: { enabled: true },
+        validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);
       expect(errors).toHaveLength(0);
@@ -38,8 +43,9 @@ describe('DefaultAppConfig', () => {
     it('should fail validation when server config is invalid', async () => {
       const config = plainToInstance(DefaultAppConfig, {
         server: { port: 'not-a-number' },
-        cors: { enabled: true },
+        cors: { enabled: true, origins: ['http://localhost:3000'] },
         helmet: { enabled: true },
+        validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);
       expect(errors.length).toBeGreaterThan(0);
@@ -50,8 +56,9 @@ describe('DefaultAppConfig', () => {
     it('should fail validation when cors config has invalid nested property', async () => {
       const config = plainToInstance(DefaultAppConfig, {
         server: { port: 3001 },
-        cors: { enabled: true, maxAge: 'not-a-number' },
+        cors: { enabled: true, origins: ['http://localhost:3000'], maxAge: 'not-a-number' },
         helmet: { enabled: true },
+        validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);
       expect(errors.length).toBeGreaterThan(0);
@@ -62,8 +69,9 @@ describe('DefaultAppConfig', () => {
     it('should fail validation when helmet config has invalid nested property', async () => {
       const config = plainToInstance(DefaultAppConfig, {
         server: { port: 3001 },
-        cors: { enabled: true },
+        cors: { enabled: true, origins: ['http://localhost:3000'] },
         helmet: { enabled: true, hstsMaxAge: 'not-a-number' },
+        validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);
       expect(errors.length).toBeGreaterThan(0);

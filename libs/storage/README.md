@@ -1,6 +1,21 @@
+<p align="center">
+  <a href="https://dismissible.io" target="_blank"><img src="../../docs/images/dismissible_logo.png" width="120" alt="Dismissible" /></a>
+</p>
+
+<p align="center">Never Show The Same Thing Twice!</p>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-storage" target="_blank"><img src="https://img.shields.io/npm/v/@dismissible/nestjs-storage.svg" alt="NPM Version" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/npm/l/@dismissible/nestjs-storage.svg" alt="Package License" /></a>
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-storage" target="_blank"><img src="https://img.shields.io/npm/dm/@dismissible/nestjs-storage.svg" alt="NPM Downloads" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api" target="_blank"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/dismissibleio/dismissible-api/release.yml"></a>
+  <a href="https://paypal.me/joshstuartx" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+</p>
+
+Dismissible manages the state of your UI elements across sessions, so your users see what matters, once! No more onboarding messages reappearing on every tab, no more notifications haunting users across devices. Dismissible syncs dismissal state everywhere, so every message is intentional, never repetitive.
+
 # @dismissible/nestjs-storage
 
-Storage interface and in-memory adapter for the Dismissible system.
+Storage interface and memory adapter for the Dismissible system.
 
 > **Part of the Dismissible API** - This library is part of the [Dismissible API](https://dismissible.io) ecosystem. Visit [dismissible.io](https://dismissible.io) for more information and documentation.
 
@@ -22,13 +37,13 @@ npm install @dismissible/nestjs-storage
 
 ### Using In-Memory Storage
 
-The in-memory storage adapter is useful for development, testing, or when you don't need persistence:
+The memory storage adapter is useful for development, testing, or when you don't need persistence:
 
 ```typescript
 import { Module } from '@nestjs/common';
 import { StorageModule, MemoryStorageAdapter } from '@dismissible/nestjs-storage';
 import { LoggerModule } from '@dismissible/nestjs-logger';
-import { DismissibleItemModule } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemModule } from '@dismissible/nestjs-item';
 
 @Module({
   imports: [
@@ -47,9 +62,9 @@ export class AppModule {}
 You can implement your own storage adapter by implementing the `IDismissibleStorage` interface:
 
 ```typescript
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { IDismissibleStorage, DISMISSIBLE_STORAGE_ADAPTER } from '@dismissible/nestjs-storage';
-import { DismissibleItemDto } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemDto } from '@dismissible/nestjs-item';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 
 @Injectable()
@@ -71,6 +86,18 @@ export class MyCustomStorageAdapter implements IDismissibleStorage {
   async update(item: DismissibleItemDto): Promise<DismissibleItemDto> {
     // Your implementation
     this.logger.debug('Updating item', { itemId: item.id });
+    // ...
+  }
+
+  async delete(userId: string, itemId: string): Promise<void> {
+    // Your implementation
+    this.logger.debug('Deleting item', { userId, itemId });
+    // ...
+  }
+
+  async deleteAll(): Promise<void> {
+    // Your implementation
+    this.logger.debug('Deleting all items');
     // ...
   }
 }
@@ -98,12 +125,14 @@ interface IDismissibleStorage {
   get(userId: string, itemId: string): Promise<DismissibleItemDto | null>;
   create(item: DismissibleItemDto): Promise<DismissibleItemDto>;
   update(item: DismissibleItemDto): Promise<DismissibleItemDto>;
+  delete(userId: string, itemId: string): Promise<void>;
+  deleteAll(): Promise<void>;
 }
 ```
 
 ### MemoryStorageAdapter
 
-An in-memory implementation of `IDismissibleStorage`. Data is stored in a `Map` and will be lost when the application restarts.
+An in memory implementation of `IDismissibleStorage`. Data is stored in a `Map` and will be lost when the application restarts.
 
 **Note:** This adapter is suitable for development and testing only. For production use, consider using `@dismissible/nestjs-postgres-storage` or implementing your own persistent storage adapter.
 
@@ -138,9 +167,9 @@ export class MyService {
 
 ## Related Packages
 
-- `@dismissible/nestjs-dismissible` - Main dismissible service (uses storage adapters)
+- `@dismissible/nestjs-core` - Main dismissible service (uses storage adapters)
 - `@dismissible/nestjs-postgres-storage` - PostgreSQL storage adapter implementation
-- `@dismissible/nestjs-dismissible-item` - Data models used by storage adapters
+- `@dismissible/nestjs-item` - Data models used by storage adapters
 - `@dismissible/nestjs-logger` - Logging used by storage adapters
 
 ## License

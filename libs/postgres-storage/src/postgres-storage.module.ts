@@ -2,7 +2,7 @@ import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
 import { DISMISSIBLE_STORAGE_ADAPTER } from '@dismissible/nestjs-storage';
 import { PostgresStorageAdapter } from './postgres-storage.adapter';
 import { PrismaService } from './prisma.service';
-import { DismissibleItemModule } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemModule } from '@dismissible/nestjs-item';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import {
   PostgresStorageConfig,

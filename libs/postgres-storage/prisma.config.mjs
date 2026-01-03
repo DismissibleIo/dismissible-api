@@ -28,6 +28,8 @@ export default defineConfig({
   },
   datasource: {
     url:
-      process.env.DATABASE_URL ?? process.env.DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING ?? '',
+      process.env.DATABASE_URL ??
+      process.env.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING ??
+      'postgresql://postgres:postgres@localhost:5432/dismissible',
   },
 });

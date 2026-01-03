@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  },
+  "files": [],
+  "include": [],
+  "references": [{ "path": "./tsconfig.lib.json" }]
+}

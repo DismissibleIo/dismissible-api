@@ -1,0 +1,334 @@
+<p align="center">
+  <a href="https://dismissible.io" target="_blank"><img src="../../docs/images/dismissible_logo.png" width="120" alt="Dismissible" /></a>
+</p>
+
+<p align="center">Never Show The Same Thing Twice!</p>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-dynamodb-storage" target="_blank"><img src="https://img.shields.io/npm/v/@dismissible/nestjs-dynamodb-storage.svg" alt="NPM Version" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/npm/l/@dismissible/nestjs-dynamodb-storage.svg" alt="Package License" /></a>
+  <a href="https://www.npmjs.com/package/@dismissible/nestjs-dynamodb-storage" target="_blank"><img src="https://img.shields.io/npm/dm/@dismissible/nestjs-dynamodb-storage.svg" alt="NPM Downloads" /></a>
+  <a href="https://github.com/dismissibleio/dismissible-api" target="_blank"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/dismissibleio/dismissible-api/release.yml"></a>
+  <a href="https://paypal.me/joshstuartx" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+</p>
+
+Dismissible manages the state of your UI elements across sessions, so your users see what matters, once! No more onboarding messages reappearing on every tab, no more notifications haunting users across devices. Dismissible syncs dismissal state everywhere, so every message is intentional, never repetitive.
+
+# @dismissible/nestjs-dynamodb-storage
+
+DynamoDB storage adapter for the Dismissible system using AWS SDK v3.
+
+> **Part of the Dismissible API** - This library is part of the [Dismissible API](https://dismissible.io) ecosystem. Visit [dismissible.io](https://dismissible.io) for more information and documentation.
+
+## Overview
+
+This library provides a production-ready DynamoDB storage adapter for the Dismissible system. It uses AWS SDK v3 for DynamoDB access and includes:
+
+- Persistent storage of dismissible items using DynamoDB
+- Support for LocalStack/DynamoDB Local for local development
+- Automatic document serialization/deserialization
+- Full TypeScript support
+
+## Installation
+
+```bash
+npm install @dismissible/nestjs-dynamodb-storage
+```
+
+## Prerequisites
+
+- AWS account with DynamoDB access (or LocalStack for local development)
+- Node.js 24 or higher
+- AWS SDK for JavaScript v3 compatible environment
+
+## Getting Started
+
+### 1. Create DynamoDB Table
+
+Before using the storage module, you must create the DynamoDB table.
+
+#### Option A: Using the CLI Tool (Recommended)
+
+The package includes a CLI helper for table creation:
+
+```bash
+# For local development with LocalStack
+DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT=http://localhost:4566 npx dismissible-dynamodb-setup
+
+# For production (uses default AWS credentials)
+DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION=us-east-1 npx dismissible-dynamodb-setup
+```
+
+#### Option B: Using AWS Console or CLI
+
+Create the table manually using AWS Console or AWS CLI:
+
+```bash
+aws dynamodb create-table \
+  --table-name items \
+  --attribute-definitions \
+    AttributeName=userId,AttributeType=S \
+    AttributeName=id,AttributeType=S \
+  --key-schema \
+    AttributeName=userId,KeyType=HASH \
+    AttributeName=id,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST \
+  --region us-east-1
+```
+
+**Example item stored in the table:**
+
+```json
+{
+  "userId": "user-123",
+  "id": "welcome-banner-v2",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "dismissedAt": "2024-01-15T12:00:00.000Z"
+}
+```
+
+#### Option C: Using CloudFormation/SAM
+
+```yaml
+Resources:
+  DismissibleTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: dismissible-items
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+```
+
+### 2. Module Configuration
+
+Import and configure the module in your NestJS application:
+
+```typescript
+import { Module } from '@nestjs/common';
+import { DismissibleModule } from '@dismissible/nestjs-core';
+import { DynamoDBStorageModule } from '@dismissible/nestjs-dynamodb-storage';
+import { LoggerModule } from '@dismissible/nestjs-logger';
+
+@Module({
+  imports: [
+    LoggerModule.forRoot({}),
+    DynamoDBStorageModule.forRoot({
+      tableName: 'items',
+      region: 'us-east-1',
+      // Optional: endpoint for LocalStack
+      endpoint: process.env.DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT,
+    }),
+    DismissibleModule.forRoot({
+      storage: DynamoDBStorageModule,
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### 3. Async Configuration
+
+You can also configure the module asynchronously:
+
+```typescript
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DynamoDBStorageModule } from '@dismissible/nestjs-dynamodb-storage';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    DynamoDBStorageModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        tableName: config.get<string>('DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME')!,
+        region: config.get<string>('DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION'),
+        endpoint: config.get<string>('DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT'),
+        accessKeyId: config.get<string>('DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID'),
+        secretAccessKey: config.get<string>('DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY'),
+        sessionToken: config.get<string>('DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN'),
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+## DynamoDB Table Schema
+
+The library expects a DynamoDB table with the following schema:
+
+| Attribute   | Type   | Key Type      | Description                   |
+| ----------- | ------ | ------------- | ----------------------------- |
+| userId      | String | Partition Key | User identifier               |
+| id          | String | Sort Key      | Item identifier               |
+| createdAt   | String | -             | ISO 8601 timestamp            |
+| dismissedAt | String | -             | ISO 8601 timestamp (nullable) |
+
+**Billing Mode:** PAY_PER_REQUEST (on-demand capacity)
+
+## API Reference
+
+### DynamoDBStorageModule
+
+#### `DynamoDBStorageModule.forRoot(options)`
+
+Configures the DynamoDB storage module synchronously.
+
+**Options:**
+
+- `tableName: string` - DynamoDB table name (required)
+- `region?: string` - AWS region (default: us-east-1)
+- `endpoint?: string` - DynamoDB endpoint URL (for LocalStack/DynamoDB Local)
+- `accessKeyId?: string` - AWS access key ID
+- `secretAccessKey?: string` - AWS secret access key
+- `sessionToken?: string` - AWS session token (optional)
+
+**Returns:** `DynamicModule`
+
+#### `DynamoDBStorageModule.forRootAsync(options)`
+
+Configures the DynamoDB storage module asynchronously.
+
+**Options:**
+
+- `imports?: any[]` - Modules to import
+- `useFactory: (deps) => DynamoDBStorageModuleOptions` - Factory function
+- `inject?: any[]` - Dependencies to inject into the factory
+
+**Returns:** `DynamicModule`
+
+### DynamoDBStorageAdapter
+
+The adapter implements `IDismissibleStorage` and provides:
+
+- `get(userId, itemId)` - Retrieve an item
+- `create(item)` - Create a new item
+- `update(item)` - Update an existing item
+
+### DynamoDBClientService
+
+The service manages the DynamoDB client lifecycle:
+
+- Initializes DynamoDBClient with configured credentials
+- Creates DynamoDBDocumentClient for automatic serialization
+- Handles connection lifecycle (no explicit cleanup required)
+
+## CLI Tool
+
+The package includes a CLI tool for DynamoDB table setup:
+
+```bash
+# Create table with default settings
+npx dismissible-dynamodb-setup
+
+# With custom table name
+DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME=my-table npx dismissible-dynamodb-setup
+
+# For LocalStack
+DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT=http://localhost:4566 DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION=us-east-1 npx dismissible-dynamodb-setup
+
+# For AWS
+DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION=us-west-2 DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID=xxx DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY=yyy npx dismissible-dynamodb-setup
+```
+
+## Environment Variables
+
+When using this package as part of the [`@dismissible/nestjs-api`](), the following environment variables will be available:
+
+| Variable                                             | Description             | Default           |
+| ---------------------------------------------------- | ----------------------- | ----------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name     | dismissible-items |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region              | us-east-1         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID       | -                 |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key   | -                 |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token       | -                 |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack endpoint URL | -                 |
+
+For more information, [see all configuration](/docs/CONFIGURATION.md).
+
+## Local Development with LocalStack
+
+LocalStack provides a local AWS cloud stack for development. To use it with this library:
+
+1. Start LocalStack:
+
+```bash
+docker run -d --name localstack -p 4566:4566 localstack/localstack
+```
+
+2. Create the table:
+
+```bash
+DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT=http://localhost:4566 DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION=us-east-1 npx dismissible-dynamodb-setup
+```
+
+3. Configure your application:
+
+```typescript
+DynamoDBStorageModule.forRoot({
+  tableName: 'items',
+  region: 'us-east-1',
+  endpoint: 'http://localhost:4566',
+  accessKeyId: 'test',
+  secretAccessKey: 'test',
+}),
+```
+
+## Production Considerations
+
+1. **IAM Permissions**: Ensure your application has the following permissions:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Scan",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:CreateTable",
+        "dynamodb:DescribeTable"
+      ],
+      "Resource": "arn:aws:dynamodb:*:*:table/dismissible-items"
+    }
+  ]
+}
+```
+
+> [!IMPORTANT]
+> **Note:** If you change the `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME` environment variable, you must update the `Resource` ARN in the IAM policy to match your table name. The Resource ARN is restricted to the specific table name (`dismissible-items` by default) to prevent access to other tables.
+
+> [!CAUTION]
+> **Best Practice:** While `dynamodb:CreateTable` is included in the permissions above, it's recommended to create the table before deploying your application and avoid running `DISMISSIBLE_STORAGE_RUN_SETUP=true` during production deployments. This reduces the risk of accidental table creation and follows the principle of least privilege.
+
+2. **Table Creation**: Create the table before deploying your application. Use the CLI tool or CloudFormation/Terraform.
+
+3. **Monitoring**: Enable CloudWatch metrics for DynamoDB to monitor throughput and latency.
+
+4. **Backups**: Consider enabling point-in-time recovery for disaster recovery.
+
+## Related Packages
+
+- `@dismissible/nestjs-core` - Main dismissible service
+- `@dismissible/nestjs-storage` - Storage interface
+- `@dismissible/nestjs-item` - Data models
+- `@dismissible/nestjs-logger` - Logging
+
+## License
+
+MIT

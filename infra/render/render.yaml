@@ -15,33 +15,46 @@ services:
     healthCheckPath: /health
     image:
       url: docker.io/dismissibleio/dismissible-api:latest # Official prebuilt image - easiest way to get started
-    # Alternative: Build from local Dockerfile
-    # runtime: docker
-    # dockerfilePath: ./Dockerfile
-    # dockerContext: .
     envVars:
-      # Server Configuration
+      # Core Settings
       - key: DISMISSIBLE_PORT
         value: '10000'
-      - key: PORT
-        value: '10000'
 
-      # Database - connection string from Render Postgres
-      - key: DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING
+      # Swagger Documentation
+      - key: DISMISSIBLE_SWAGGER_ENABLED
+        value: 'false'
+      - key: DISMISSIBLE_SWAGGER_PATH
+        value: 'docs'
+
+      # Storage Configuration
+      - key: DISMISSIBLE_STORAGE_TYPE
+        value: 'postgres'
+
+      # Database Migrations - run migrations automatically on startup
+      - key: DISMISSIBLE_STORAGE_RUN_SETUP
+        value: 'true'
+
+      # Postgres Storage
+      - key: DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING
         fromDatabase:
           name: dismissible-db
           property: connectionString
 
-      # Database Migrations - set to "true" to run migrations automatically on startup
-      # Alternatively, run migrations manually before deploying
-      - key: DISMISSIBLE_RUN_MIGRATION
-        value: 'false'
+      # DynamoDB Storage
+      - key: DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME
+        value: 'dismissible-items'
+      - key: DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION
+        value: 'us-east-1'
+      - key: DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT
+        value: ''
+      - key: DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID
+        value: ''
+      - key: DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY
+        value: ''
+      - key: DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN
+        value: ''
 
-      # Swagger - disabled in production for security
-      - key: DISMISSIBLE_SWAGGER_ENABLED
-        value: 'false'
-
-      # Helmet Security Headers
+      # Security (Helmet)
       - key: DISMISSIBLE_HELMET_ENABLED
         value: 'true'
       - key: DISMISSIBLE_HELMET_CSP
@@ -58,7 +71,7 @@ services:
       # CORS Configuration
       # Update DISMISSIBLE_CORS_ORIGINS with your frontend domain(s)
       - key: DISMISSIBLE_CORS_ENABLED
-        value: 'true'
+        value: 'false'
       - key: DISMISSIBLE_CORS_ORIGINS
         sync: false
       - key: DISMISSIBLE_CORS_METHODS
@@ -69,6 +82,16 @@ services:
         value: 'true'
       - key: DISMISSIBLE_CORS_MAX_AGE
         value: '86400'
+
+      # Validation Settings
+      - key: DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES
+        value: 'true'
+      - key: DISMISSIBLE_VALIDATION_WHITELIST
+        value: 'true'
+      - key: DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED
+        value: 'true'
+      - key: DISMISSIBLE_VALIDATION_TRANSFORM
+        value: 'true'
 
       # JWT Authentication
       # Set to "false" to disable authentication, or configure your OIDC provider
@@ -81,6 +104,22 @@ services:
       #   sync: false  # Set in Render dashboard
       # - key: DISMISSIBLE_JWT_AUTH_AUDIENCE
       #   sync: false  # Set in Render dashboard
+      # - key: DISMISSIBLE_JWT_AUTH_ALGORITHMS
+      #   value: 'RS256'
+      # - key: DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION
+      #   value: '600000'
+      # - key: DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT
+      #   value: '30000'
+      # - key: DISMISSIBLE_JWT_AUTH_PRIORITY
+      #   value: '-100'
+      # - key: DISMISSIBLE_JWT_AUTH_MATCH_USER_ID
+      #   value: 'true'
+      # - key: DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM
+      #   value: 'sub'
+      # - key: DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE
+      #   value: 'exact'
+      # - key: DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX
+      #   value: ''
 
       # Node environment
       - key: NODE_ENV

@@ -1,4 +1,12 @@
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { TransformBoolean, TransformCommaSeparated } from '@dismissible/nestjs-validation';
 
@@ -7,9 +15,10 @@ export class CorsConfig {
   @TransformBoolean()
   public readonly enabled!: boolean;
 
+  @ValidateIf((o) => o.enabled === true)
   @IsArray()
+  @ArrayNotEmpty({ message: 'origins must not be empty when CORS is enabled' })
   @IsString({ each: true })
-  @IsOptional()
   @TransformCommaSeparated()
   public readonly origins?: string[];
 

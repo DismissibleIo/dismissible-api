@@ -36,6 +36,15 @@ jobs:
         ports:
           - 5432:5432
 
+      dismissible-dynamodb:
+        image: localstack/localstack:latest
+        env:
+          SERVICES: dynamodb
+          AWS_DEFAULT_REGION: us-east-1
+          DEBUG: 0
+        ports:
+          - 4566:4566
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,21 +61,16 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Prisma generate
-        run: npm run prisma:generate
+      - name: Storage init
+        run: npm run storage:init
 
-      - name: Run database migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dismissible
-          DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/dismissible
-        run: npm run prisma:push
+      - name: Run storage setup
+        run: npm run storage:setup
 
       - name: Build
         run: npm run build
 
       - name: Test
-        env:
-          DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING: postgresql://postgres:postgres@localhost:5432/dismissible
         run: npm run validate
 
       - name: Generate canary preid
@@ -90,7 +94,7 @@ jobs:
       - name: Get canary version
         id: version
         run: |
-          CANARY_VERSION=$(node -p "require('./dist/libs/dismissible/package.json').version")
+          CANARY_VERSION=$(node -p "require('./dist/libs/core/package.json').version")
           echo "canary_version=$CANARY_VERSION" >> $GITHUB_OUTPUT
           echo "Canary version: $CANARY_VERSION"
 
@@ -109,10 +113,11 @@ jobs:
           echo ""
           echo "Install commands:"
           echo "  npm install @dismissible/nestjs-api@${VERSION}"
-          echo "  npm install @dismissible/nestjs-dismissible@${VERSION}"
-          echo "  npm install @dismissible/nestjs-dismissible-hooks@${VERSION}"
-          echo "  npm install @dismissible/nestjs-dismissible-item@${VERSION}"
-          echo "  npm install @dismissible/nestjs-dismissible-request@${VERSION}"
+          echo "  npm install @dismissible/nestjs-core@${VERSION}"
+          echo "  npm install @dismissible/nestjs-hooks@${VERSION}"
+          echo "  npm install @dismissible/nestjs-item@${VERSION}"
+          echo "  npm install @dismissible/nestjs-request@${VERSION}"
+          echo "  npm install @dismissible/nestjs-dynamodb-storage@${VERSION}"
           echo "  npm install @dismissible/nestjs-logger@${VERSION}"
           echo "  npm install @dismissible/nestjs-postgres-storage@${VERSION}"
           echo "  npm install @dismissible/nestjs-storage@${VERSION}"
@@ -120,4 +125,4 @@ jobs:
           echo ""
           echo "Or use the canary tag:"
           echo "  npm install @dismissible/nestjs-api@canary"
-          echo "  npm install @dismissible/nestjs-dismissible@canary"
+          echo "  npm install @dismissible/nestjs-core@canary"

@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { IDismissibleStorage } from '@dismissible/nestjs-storage';
-import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-dismissible-item';
+import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-item';
 import { PrismaService } from './prisma.service';
 
 /**
@@ -69,6 +69,24 @@ export class PostgresStorageAdapter implements IDismissibleStorage {
     });
 
     return this.mapToDto(updated);
+  }
+
+  async delete(userId: string, itemId: string): Promise<void> {
+    this.logger.debug('PostgreSQL storage delete', { userId, itemId });
+
+    await this.prisma.dismissibleItem.delete({
+      where: {
+        userId_id: {
+          userId,
+          id: itemId,
+        },
+      },
+    });
+  }
+
+  async deleteAll(): Promise<void> {
+    this.logger.debug('PostgreSQL storage deleteAll');
+    await this.prisma.dismissibleItem.deleteMany({});
   }
 
   /**

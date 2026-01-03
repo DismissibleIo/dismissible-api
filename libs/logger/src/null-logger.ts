@@ -1,4 +1,4 @@
-import { IDismissibleLogger } from './logger.interface';
+import { IDismissibleLogger, LogLevel } from './logger.interface';
 
 export class NullLogger implements IDismissibleLogger {
   info(_message: string, _context?: object) {
@@ -11,6 +11,12 @@ export class NullLogger implements IDismissibleLogger {
     /* empty */
   }
   debug(_message: string, _context?: object) {
+    /* empty */
+  }
+  setContext(_context: string) {
+    /* empty */
+  }
+  setLogLevels(_levels: LogLevel[]) {
     /* empty */
   }
 }

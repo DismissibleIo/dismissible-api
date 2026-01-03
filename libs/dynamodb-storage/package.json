@@ -1,0 +1,56 @@
+{
+  "name": "@dismissible/nestjs-dynamodb-storage",
+  "version": "1.0.2",
+  "description": "DynamoDB storage adapter for Dismissible using AWS SDK v3",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "bin": {
+    "dismissible-dynamodb-setup": "./bin/dismissible-dynamodb-setup.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "bin",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": false
+    }
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.958.0",
+    "@aws-sdk/lib-dynamodb": "^3.958.0",
+    "@aws-sdk/util-waiter": "^3.370.0",
+    "@dismissible/nestjs-item": "^1.0.2",
+    "@dismissible/nestjs-logger": "^1.0.2",
+    "@dismissible/nestjs-storage": "^1.0.2"
+  },
+  "keywords": [
+    "nestjs",
+    "dismissible",
+    "storage",
+    "dynamodb",
+    "aws",
+    "adapter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DismissibleIo/dismissible-api"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -113,7 +113,7 @@ The blueprint automatically configures:
 
 ### Database
 
-- `DISMISSIBLE_POSTGRES_STORAGE_CONNECTION_STRING`: Automatically injected from the database
+- `DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING`: Automatically injected from the database
 
 ### Security
 
@@ -123,7 +123,7 @@ The blueprint automatically configures:
 
 ### CORS
 
-- `DISMISSIBLE_CORS_ENABLED`: true
+- `DISMISSIBLE_CORS_ENABLED`: false (**you should set this to true**)
 - `DISMISSIBLE_CORS_ORIGINS`: **Must be set manually** (see step 3 above)
 - `DISMISSIBLE_CORS_METHODS`: GET,POST,DELETE,OPTIONS
 - `DISMISSIBLE_CORS_ALLOWED_HEADERS`: Content-Type,Authorization,x-request-id
@@ -138,6 +138,10 @@ JWT authentication is enabled by default. Configure these in the Render dashboar
 - `DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`: Your OIDC provider's well-known URL
 - `DISMISSIBLE_JWT_AUTH_ISSUER`: Expected issuer claim
 - `DISMISSIBLE_JWT_AUTH_AUDIENCE`: Expected audience claim
+- `DISMISSIBLE_JWT_AUTH_MATCH_USER_ID`: Enable user ID matching (defaults to `true`)
+- `DISMISSIBLE_JWT_AUTH_USER_ID_CLAIM`: JWT claim key for user ID matching (defaults to `sub`)
+- `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE`: Match method: `exact`, `substring`, or `regex` (defaults to `exact`)
+- `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX`: Regex pattern (required when type is `regex`)
 
 Example for Auth0:
 
