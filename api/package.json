@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-api",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Dismissible API application",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -30,13 +30,13 @@
     "storage:setup:dynamodb": "npx dismissible-dynamodb-setup"
   },
   "dependencies": {
-    "@dismissible/nestjs-core": "^1.0.2",
-    "@dismissible/nestjs-item": "^1.0.2",
-    "@dismissible/nestjs-jwt-auth-hook": "^1.0.2",
-    "@dismissible/nestjs-storage": "^1.0.2",
-    "@dismissible/nestjs-postgres-storage": "^1.0.2",
-    "@dismissible/nestjs-dynamodb-storage": "^1.0.2",
-    "@dismissible/nestjs-logger": "^1.0.2",
+    "@dismissible/nestjs-core": "^2.0.0",
+    "@dismissible/nestjs-item": "^2.0.0",
+    "@dismissible/nestjs-jwt-auth-hook": "^2.0.0",
+    "@dismissible/nestjs-storage": "^2.0.0",
+    "@dismissible/nestjs-postgres-storage": "^2.0.0",
+    "@dismissible/nestjs-dynamodb-storage": "^2.0.0",
+    "@dismissible/nestjs-logger": "^2.0.0",
     "@nestjs/common": "^11.1.11",
     "@nestjs/core": "^11.1.11",
     "@nestjs/platform-fastify": "^11.1.11",
