@@ -3,7 +3,7 @@ import { HealthModule } from './health';
 import { ConfigModule } from './config';
 import { AppConfig } from './config/app.config';
 import { join } from 'path';
-import { DismissibleModule } from '@dismissible/nestjs-core';
+import { DismissibleModule, IDismissibleLifecycleHook } from '@dismissible/nestjs-core';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { DefaultAppConfig } from './config/default-app.config';
 import { DynamicStorageModule } from './storage/dynamic-storage.module';
@@ -19,6 +19,8 @@ export type AppModuleOptions = {
   schema?: new () => DefaultAppConfig;
   logger?: Type<IDismissibleLogger>;
   imports?: DynamicModule[];
+  hooks?: Type<IDismissibleLifecycleHook>[];
+  storage?: StorageType;
 };
 
 @Module({})
@@ -45,13 +47,13 @@ export class AppModule {
         }),
         DismissibleModule.forRoot({
           logger: options?.logger,
-          hooks: [JwtAuthHook],
+          hooks: [JwtAuthHook, ...(options?.hooks ?? [])],
           storage: DynamicStorageModule.forRootAsync({
             // TODO: nestjs doesn't support optional dynamic modules.
             //   So instead, we are just using the env vars to switch between modules.
             //   This isn't ideal, but there's not a great option. I will look to see
             //   if we can raise an issue similar to this: https://github.com/nestjs/nest/issues/9868
-            storage: process.env.DISMISSIBLE_STORAGE_TYPE as StorageType,
+            storage: options?.storage ?? (process.env.DISMISSIBLE_STORAGE_TYPE as StorageType),
           }),
         }),
       ],

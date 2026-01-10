@@ -7,6 +7,8 @@ import { configureApp } from './app.setup';
 import { DefaultAppConfig } from './config/default-app.config';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { Type, DynamicModule } from '@nestjs/common';
+import { IDismissibleLifecycleHook } from '@dismissible/nestjs-hooks';
+import { StorageType } from './storage/storage.config';
 
 export interface IDismissibleNestApplication {
   getNestApplication(): INestApplication;
@@ -18,6 +20,8 @@ export interface IDismissibleNestFactoryOptions {
   schema?: new () => DefaultAppConfig;
   logger?: Type<IDismissibleLogger>;
   imports?: DynamicModule[];
+  hooks?: Type<IDismissibleLifecycleHook>[];
+  storage?: StorageType;
 }
 
 class DismissibleNestApplication implements IDismissibleNestApplication {

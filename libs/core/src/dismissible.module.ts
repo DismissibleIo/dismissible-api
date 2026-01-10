@@ -22,7 +22,12 @@ import { DismissibleItemModule } from '@dismissible/nestjs-item';
 export type IDismissibleModuleOptions = IDismissibleLoggerModuleOptions &
   IDismissibleStorageModuleOptions & {
     hooks?: Type<IDismissibleLifecycleHook>[];
+    imports?: DynamicModule[];
+    providers?: Provider[];
+    controllers?: Type<any>[];
   };
+
+const defaultControllers = [GetOrCreateController, DismissController, RestoreController];
 
 @Module({})
 export class DismissibleModule {
@@ -54,6 +59,12 @@ export class DismissibleModule {
       });
     }
 
+    if (options.providers && options.providers.length > 0) {
+      for (const provider of options.providers) {
+        providers.push(provider);
+      }
+    }
+
     return {
       module: DismissibleModule,
       imports: [
@@ -63,8 +74,9 @@ export class DismissibleModule {
         ResponseModule,
         options.storage ?? StorageModule,
         DismissibleItemModule,
+        ...(options.imports ?? []),
       ],
-      controllers: [GetOrCreateController, DismissController, RestoreController],
+      controllers: options.controllers ?? defaultControllers,
       providers,
       exports: [
         DismissibleService,

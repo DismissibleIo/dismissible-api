@@ -63,8 +63,11 @@ The `DismissibleModule.forRoot()` method accepts a configuration object with the
 ```typescript
 import { DismissibleModule } from '@dismissible/nestjs-api';
 import { PostgresStorageModule } from '@dismissible/nestjs-postgres-storage';
+import { HttpModule } from '@nestjs/axios';
 import { AuditHook, AnalyticsHook } from './hooks';
 import { CustomLogger } from './logger';
+import { AnalyticsService } from './services';
+import { CustomDismissibleController } from './controllers';
 
 @Module({
   imports: [
@@ -77,6 +80,15 @@ import { CustomLogger } from './logger';
 
       // Lifecycle hooks (optional)
       hooks: [AuditHook, AnalyticsHook],
+
+      // Additional NestJS modules (optional)
+      imports: [HttpModule.register({ timeout: 5000 })],
+
+      // Additional providers (optional)
+      providers: [AnalyticsService],
+
+      // Custom controllers - replaces built-in REST API (optional)
+      // controllers: [CustomDismissibleController],
     }),
   ],
 })
@@ -85,11 +97,73 @@ export class AppModule {}
 
 ### Configuration Options
 
-| Option    | Type                                   | Default           | Description                                     |
-| --------- | -------------------------------------- | ----------------- | ----------------------------------------------- |
-| `storage` | `DynamicModule \| Type<any>`           | In-memory storage | Storage module for persisting dismissible items |
-| `logger`  | `Type<IDismissibleLogger>`             | Console logger    | Custom logger implementation                    |
-| `hooks`   | `Type<IDismissibleLifecycleHook<T>>[]` | `[]`              | Array of lifecycle hook classes                 |
+| Option        | Type                                   | Default           | Description                                                 |
+| ------------- | -------------------------------------- | ----------------- | ----------------------------------------------------------- |
+| `storage`     | `DynamicModule \| Type<any>`           | In-memory storage | Storage module for persisting dismissible items             |
+| `logger`      | `Type<IDismissibleLogger>`             | Console logger    | Custom logger implementation                                |
+| `hooks`       | `Type<IDismissibleLifecycleHook<T>>[]` | `[]`              | Array of lifecycle hook classes                             |
+| `imports`     | `DynamicModule[]`                      | `[]`              | Additional NestJS dynamic modules to import                 |
+| `providers`   | `Provider[]`                           | `[]`              | Additional providers to register in the module              |
+| `controllers` | `Type<any>[]`                          | Default REST API  | Custom controllers (replaces built-in REST API if provided) |
+
+### Adding Custom Imports
+
+Use the `imports` option to add additional NestJS modules that your hooks or custom logic depend on:
+
+```typescript
+import { DismissibleModule } from '@dismissible/nestjs-api';
+import { HttpModule } from '@nestjs/axios';
+import { CacheModule } from '@nestjs/cache-manager';
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      imports: [HttpModule.register({ timeout: 5000 }), CacheModule.register({ ttl: 300 })],
+      hooks: [WebhookNotificationHook], // Can now inject HttpService
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Adding Custom Providers
+
+Use the `providers` option to register additional services that your hooks or controllers can inject:
+
+```typescript
+import { DismissibleModule } from '@dismissible/nestjs-api';
+import { AnalyticsService } from './analytics.service';
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      providers: [AnalyticsService],
+      hooks: [AnalyticsHook], // Can inject AnalyticsService
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Custom Controllers
+
+Use the `controllers` option to replace the built-in REST API with your own controllers:
+
+```typescript
+import { DismissibleModule } from '@dismissible/nestjs-api';
+import { CustomDismissibleController } from './custom-dismissible.controller';
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      controllers: [CustomDismissibleController],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+> **Note**: When you provide custom controllers, the built-in REST API endpoints are replaced entirely. Your custom controllers can inject `DismissibleService` to interact with the dismissible system.
 
 ## Built-in REST API
 

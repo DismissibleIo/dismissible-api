@@ -204,19 +204,31 @@ And our `main.ts` file is:
 ```typescript
 import { DismissibleNestFactory } from '@dismissible/nestjs-api';
 import { CustomModule } from './custom.module';
+import { AuditHook } from './hooks';
+import { CustomLogger } from './logger';
 
 const configPath = join(__dirname, '../config');
 
 async function bootstrap() {
   const app = await DismissibleNestFactory.create({
-    imports: [CustomModule],
     configPath,
+    // Additional NestJS modules
+    imports: [CustomModule],
+    // Lifecycle hooks
+    hooks: [AuditHook],
+    // Custom logger implementation
+    logger: CustomLogger,
+    // Storage type override (defaults to DISMISSIBLE_STORAGE_TYPE env var)
+    // storage: 'postgres',
   });
   await app.start();
 }
 
 bootstrap();
 ```
+
+> [!TIP]
+> See the [NestJS API Module documentation](./NESTJS_API_MODULE.md#module-configuration) for the full list of programmatic configuration options including custom providers and controllers.
 
 ### Environment Aware
 
