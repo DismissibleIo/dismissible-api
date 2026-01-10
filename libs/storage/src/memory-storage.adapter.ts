@@ -3,6 +3,10 @@ import { LRUCache } from 'lru-cache';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { IDismissibleStorage } from './storage.interface';
 import { DismissibleItemDto } from '@dismissible/nestjs-item';
+import { MemoryStorageConfig } from './memory-storage.config';
+
+const DEFAULT_MAX_ITEMS = 5000;
+const DEFAULT_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 /**
  * In-memory storage provider for dismissible items with LRU eviction.
@@ -16,10 +20,13 @@ import { DismissibleItemDto } from '@dismissible/nestjs-item';
 export class MemoryStorageAdapter implements IDismissibleStorage {
   private readonly storage: LRUCache<string, DismissibleItemDto>;
 
-  constructor(@Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger) {
+  constructor(
+    private readonly config: MemoryStorageConfig,
+    @Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger,
+  ) {
     this.storage = new LRUCache<string, DismissibleItemDto>({
-      max: 5000,
-      ttl: 6 * 60 * 60 * 1000, // 6 hours
+      max: config.maxItems ?? DEFAULT_MAX_ITEMS,
+      ttl: config.ttlMs ?? DEFAULT_TTL_MS,
     });
   }
 

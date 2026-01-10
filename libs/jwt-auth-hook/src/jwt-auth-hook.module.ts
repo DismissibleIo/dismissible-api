@@ -2,7 +2,7 @@ import { Module, DynamicModule, InjectionToken } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { JwtAuthHook } from './jwt-auth.hook';
 import { JwtAuthService } from './jwt-auth.service';
-import { JWT_AUTH_HOOK_CONFIG, JwtAuthHookConfig } from './jwt-auth-hook.config';
+import { DISMISSIBLE_JWT_AUTH_HOOK_CONFIG, JwtAuthHookConfig } from './jwt-auth-hook.config';
 
 /**
  * Async module options for JWT auth hook.
@@ -44,13 +44,13 @@ export class JwtAuthHookModule {
       imports: [HttpModule],
       providers: [
         {
-          provide: JWT_AUTH_HOOK_CONFIG,
+          provide: DISMISSIBLE_JWT_AUTH_HOOK_CONFIG,
           useValue: config,
         },
         JwtAuthService,
         JwtAuthHook,
       ],
-      exports: [JwtAuthHook, JwtAuthService, JWT_AUTH_HOOK_CONFIG],
+      exports: [JwtAuthHook, JwtAuthService, DISMISSIBLE_JWT_AUTH_HOOK_CONFIG],
       global: true,
     };
   }
@@ -65,14 +65,14 @@ export class JwtAuthHookModule {
       imports: [HttpModule],
       providers: [
         {
-          provide: JWT_AUTH_HOOK_CONFIG,
+          provide: DISMISSIBLE_JWT_AUTH_HOOK_CONFIG,
           useFactory: options.useFactory,
           inject: options.inject ?? [],
         },
         JwtAuthService,
         JwtAuthHook,
       ],
-      exports: [JwtAuthHook, JwtAuthService, JWT_AUTH_HOOK_CONFIG],
+      exports: [JwtAuthHook, JwtAuthService, DISMISSIBLE_JWT_AUTH_HOOK_CONFIG],
       global: true,
     };
   }

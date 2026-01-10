@@ -14,7 +14,7 @@ import { TransformBoolean, TransformCommaSeparated } from '@dismissible/nestjs-v
 /**
  * Injection token for JWT auth hook configuration.
  */
-export const JWT_AUTH_HOOK_CONFIG = Symbol('JWT_AUTH_HOOK_CONFIG');
+export const DISMISSIBLE_JWT_AUTH_HOOK_CONFIG = Symbol('DISMISSIBLE_JWT_AUTH_HOOK_CONFIG');
 
 /**
  * User ID match type for comparing JWT claim against request userId.

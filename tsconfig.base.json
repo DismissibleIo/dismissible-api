@@ -20,6 +20,7 @@
       "@dismissible/nestjs-item": ["libs/item/src/index.ts"],
       "@dismissible/nestjs-request": ["libs/request/src/index.ts"],
       "@dismissible/nestjs-jwt-auth-hook": ["libs/jwt-auth-hook/src/index.ts"],
+      "@dismissible/nestjs-rate-limiter-hook": ["libs/rate-limiter-hook/src/index.ts"],
       "@dismissible/nestjs-logger": ["libs/logger/src/index.ts"],
       "@dismissible/nestjs-postgres-storage": ["libs/postgres-storage/src/index.ts"],
       "@dismissible/nestjs-dynamodb-storage": ["libs/dynamodb-storage/src/index.ts"],

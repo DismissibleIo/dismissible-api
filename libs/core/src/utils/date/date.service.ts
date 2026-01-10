@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { IDateService } from './date.service.interface';
 
 /**
  * Service for date operations.
  */
 @Injectable()
-export class DateService {
+export class DateService implements IDateService {
   getNow(): Date {
     return new Date();
   }

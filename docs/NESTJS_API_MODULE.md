@@ -17,6 +17,8 @@ The `@dismissible/nestjs-api` package provides a complete NestJS module for mana
   - [In-Memory Storage](#memory-storage-default)
   - [PostgreSQL Storage](#postgresql-storage)
   - [Custom Storage Adapter](#custom-storage-adapter)
+- [JWT Authentication](#jwt-authentication)
+- [Rate Limiting](#rate-limiting)
 - [Lifecycle Hooks](#lifecycle-hooks)
   - [Creating a Hook](#creating-a-hook)
   - [Hook Methods](#hook-methods)
@@ -252,13 +254,39 @@ export class FeaturesController {
 
 ### In-Memory Storage (Default)
 
-The default storage adapter keeps items in memory. Data is lost on application restart. This is ideal for development and testing.
+The default storage adapter keeps items in memory using an LRU (Least Recently Used) cache. Data is lost on application restart. This is ideal for development and testing.
 
 ```typescript
 DismissibleModule.forRoot({
   // No storage option = memory storage
 });
 ```
+
+#### Configuration
+
+| Property   | Description                                     | Default    |
+| ---------- | ----------------------------------------------- | ---------- |
+| `maxItems` | Maximum number of items to store (LRU eviction) | `5000`     |
+| `ttlMs`    | Time-to-live in milliseconds                    | `21600000` |
+
+#### Environment Variables
+
+| Variable                               | Description                      | Default    |
+| -------------------------------------- | -------------------------------- | ---------- |
+| `DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS` | Maximum number of items to store | `5000`     |
+| `DISMISSIBLE_STORAGE_MEMORY_TTL_MS`    | Time-to-live in milliseconds     | `21600000` |
+
+#### YAML Configuration
+
+```yaml
+storage:
+  type: memory
+  memory:
+    maxItems: ${DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS:-5000}
+    ttlMs: ${DISMISSIBLE_STORAGE_MEMORY_TTL_MS:-21600000}
+```
+
+> **Warning**: Do not use the memory adapter in production. Data will be lost on restart and is not shared across multiple instances.
 
 ### PostgreSQL Storage
 
@@ -464,6 +492,66 @@ export class AppModule {}
 \* Required only when `enabled` is `true`.
 
 See the [@dismissible/nestjs-jwt-auth-hook README](../libs/jwt-auth-hook/README.md) for more details.
+
+## Rate Limiting
+
+Protect your API from abuse using the optional Rate Limiter Hook. It uses in-memory rate limiting based on IP address, Origin header, or Referer header:
+
+```bash
+npm install @dismissible/nestjs-rate-limiter-hook
+```
+
+```typescript
+import { Module } from '@nestjs/common';
+import { DismissibleModule } from '@dismissible/nestjs-api';
+import { RateLimiterHookModule, RateLimiterHook } from '@dismissible/nestjs-rate-limiter-hook';
+
+@Module({
+  imports: [
+    RateLimiterHookModule.forRoot({
+      enabled: true,
+      points: 1000, // 1000 requests
+      duration: 1, // per 1 second
+      blockDuration: 60, // block for 60 seconds after limit exceeded
+      keyType: ['ip', 'origin', 'referrer'],
+      keyMode: 'any', // check all key types independently
+    }),
+    DismissibleModule.forRoot({
+      hooks: [RateLimiterHook],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Rate Limiter Configuration
+
+| Option          | Type                 | Required | Default | Description                                                     |
+| --------------- | -------------------- | -------- | ------- | --------------------------------------------------------------- |
+| `enabled`       | `boolean`            | Yes      | -       | Whether rate limiting is enabled                                |
+| `points`        | `number`             | Yes\*    | -       | Number of requests allowed per duration                         |
+| `duration`      | `number`             | Yes\*    | -       | Time window in seconds                                          |
+| `blockDuration` | `number`             | No       | -       | Duration in seconds to block requests after limit is exceeded   |
+| `keyType`       | `RateLimitKeyType[]` | Yes\*    | -       | Key source(s) for rate limiting: `ip`, `origin`, `referrer`     |
+| `keyMode`       | `RateLimitKeyMode`   | No       | `and`   | Mode for combining key types: `and`, `or`, `any`                |
+| `ignoredKeys`   | `string[]`           | No       | -       | Keys to bypass rate limiting (exact match after trim+lowercase) |
+| `priority`      | `number`             | No       | `-101`  | Hook priority (lower numbers run first)                         |
+
+\* Required when `enabled` is `true`.
+
+### Key Types
+
+- **`ip`**: Rate limit by IP address (extracted from `x-forwarded-for` or `x-real-ip` headers)
+- **`origin`**: Rate limit by Origin header hostname
+- **`referrer`**: Rate limit by Referer header hostname
+
+### Key Modes
+
+- **`and`**: Combine all key types into a single key (e.g., `192.168.1.1:example.com`)
+- **`or`**: Use the first available key type as a fallback chain
+- **`any`**: Check all key types independently - request is blocked if ANY key exceeds the limit
+
+See the [@dismissible/nestjs-rate-limiter-hook README](../libs/rate-limiter-hook/README.md) for more details.
 
 ## Lifecycle Hooks
 

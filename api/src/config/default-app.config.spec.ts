@@ -34,6 +34,7 @@ describe('DefaultAppConfig', () => {
         server: { port: 3001 },
         cors: { enabled: true, origins: ['http://localhost:3000'] },
         helmet: { enabled: true },
+        storage: { type: 'memory' },
         validation: { disableErrorMessages: true },
       });
       const errors = await validate(config);

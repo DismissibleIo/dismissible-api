@@ -13,6 +13,12 @@ import {
   JwtAuthHookConfig,
 } from '@dismissible/nestjs-jwt-auth-hook';
 import { StorageType } from './storage/storage.config';
+import {
+  RateLimiterHook,
+  RateLimiterHookConfig,
+  RateLimiterHookModule,
+} from '@dismissible/nestjs-rate-limiter-hook';
+import { plainToClass } from 'class-transformer';
 
 export type AppModuleOptions = {
   configPath?: string;
@@ -41,13 +47,19 @@ export class AppModule {
         }),
         HealthModule,
         ...(options?.imports ?? []),
+        RateLimiterHookModule.forRootAsync({
+          useFactory: (config: DefaultAppConfig) => {
+            return config.rateLimiter ?? plainToClass(RateLimiterHookConfig, { enabled: false });
+          },
+          inject: [options?.schema ?? AppConfig],
+        }),
         JwtAuthHookModule.forRootAsync({
           useFactory: (config: JwtAuthHookConfig) => config,
           inject: [JwtAuthHookConfig],
         }),
         DismissibleModule.forRoot({
           logger: options?.logger,
-          hooks: [JwtAuthHook, ...(options?.hooks ?? [])],
+          hooks: [JwtAuthHook, RateLimiterHook, ...(options?.hooks ?? [])],
           storage: DynamicStorageModule.forRootAsync({
             // TODO: nestjs doesn't support optional dynamic modules.
             //   So instead, we are just using the env vars to switch between modules.

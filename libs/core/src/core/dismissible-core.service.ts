@@ -5,30 +5,36 @@ import {
   IDismissServiceResponse,
   IRestoreServiceResponse,
 } from './service-responses.interface';
-import { DismissibleHelper } from '../utils/dismissible.helper';
-import { DateService } from '../utils/date/date.service';
+import { IDismissibleCoreService } from './dismissible-core.service.interface';
+import { IDismissibleHelper, DISMISSIBLE_HELPER } from '../utils/dismissible.helper.interface';
+import { IDateService, DISMISSIBLE_DATE_SERVICE } from '../utils/date/date.service.interface';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import {
   ItemNotFoundException,
   ItemAlreadyDismissedException,
   ItemNotDismissedException,
 } from '../exceptions';
-import { ValidationService } from '@dismissible/nestjs-validation';
-import { DismissibleItemDto, DismissibleItemFactory } from '@dismissible/nestjs-item';
+import { IValidationService, DISMISSIBLE_VALIDATION_SERVICE } from '@dismissible/nestjs-validation';
+import {
+  DismissibleItemDto,
+  IDismissibleItemFactory,
+  DISMISSIBLE_ITEM_FACTORY,
+} from '@dismissible/nestjs-item';
 
 /**
  * Core business logic service for dismissible operations.
  * Handles pure CRUD operations without side effects (hooks, events).
  */
 @Injectable()
-export class DismissibleCoreService {
+export class DismissibleCoreService implements IDismissibleCoreService {
   constructor(
     @Inject(DISMISSIBLE_STORAGE_ADAPTER) private readonly storage: IDismissibleStorage,
-    private readonly dateService: DateService,
+    @Inject(DISMISSIBLE_DATE_SERVICE) private readonly dateService: IDateService,
     @Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger,
-    private readonly itemFactory: DismissibleItemFactory,
-    private readonly validationService: ValidationService,
-    private readonly dismissibleHelper: DismissibleHelper,
+    @Inject(DISMISSIBLE_ITEM_FACTORY) private readonly itemFactory: IDismissibleItemFactory,
+    @Inject(DISMISSIBLE_VALIDATION_SERVICE)
+    private readonly validationService: IValidationService,
+    @Inject(DISMISSIBLE_HELPER) private readonly dismissibleHelper: IDismissibleHelper,
   ) {}
 
   /**

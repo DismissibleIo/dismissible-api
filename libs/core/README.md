@@ -14,9 +14,27 @@
 
 # @dismissible/nestjs-core
 
-A powerful NestJS library for managing dismissible state in your applications. Perfect for guided tours, user preferences, onboarding flows, and any scenario where you need to track whether a user has dismissed or interacted with specific items.
+The core NestJS library for managing dismissible state in your applications. This is the central package that ties together all the main Dismissible libraries and contains the domain logic for dismissible items.
+
+Perfect for guided tours, user preferences, onboarding flows, and any scenario where you need to track whether a user has dismissed or interacted with specific items.
 
 > **Part of the Dismissible API** - This library is part of the [Dismissible API](https://dismissible.io) ecosystem. Visit [dismissible.io](https://dismissible.io) for more information and documentation.
+
+## Related Packages
+
+This core library integrates with several lower-level packages:
+
+| Package                                                                                                      | Description                                  |
+| ------------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| [@dismissible/nestjs-storage](https://www.npmjs.com/package/@dismissible/nestjs-storage)                     | Storage interfaces and base module           |
+| [@dismissible/nestjs-postgres-storage](https://www.npmjs.com/package/@dismissible/nestjs-postgres-storage)   | PostgreSQL storage adapter                   |
+| [@dismissible/nestjs-dynamodb-storage](https://www.npmjs.com/package/@dismissible/nestjs-dynamodb-storage)   | DynamoDB storage adapter                     |
+| [@dismissible/nestjs-hooks](https://www.npmjs.com/package/@dismissible/nestjs-hooks)                         | Lifecycle hook interfaces                    |
+| [@dismissible/nestjs-jwt-auth-hook](https://www.npmjs.com/package/@dismissible/nestjs-jwt-auth-hook)         | JWT authentication hook                      |
+| [@dismissible/nestjs-rate-limiter-hook](https://www.npmjs.com/package/@dismissible/nestjs-rate-limiter-hook) | Rate limiting hook                           |
+| [@dismissible/nestjs-logger](https://www.npmjs.com/package/@dismissible/nestjs-logger)                       | Logger interfaces and default implementation |
+| [@dismissible/nestjs-item](https://www.npmjs.com/package/@dismissible/nestjs-item)                           | Dismissible item DTOs and types              |
+| [@dismissible/react-client](https://www.npmjs.com/package/@dismissible/react-client)                         | React client for frontend integration        |
 
 ## Features
 
@@ -48,7 +66,7 @@ import { Module } from '@nestjs/common';
 import { DismissibleModule } from '@dismissible/nestjs-core';
 
 @Module({
-  imports: [DismissibleModule.forRoot({})],
+  imports: [DismissibleModule.forRoot()],
 })
 export class AppModule {}
 ```
@@ -113,11 +131,39 @@ function WelcomeBanner() {
 
 The React client automatically uses the built-in REST API endpoints, so no additional configuration is needed on the backend.
 
-## Advanced Usage
+## Configuration Options
 
-### Using PostgreSQL Storage
+All configuration is done through `DismissibleModule.forRoot()`. The following options are available:
 
-To persist dismissible items in a PostgreSQL database, use the `PostgresStorageModule`:
+```typescript
+interface IDismissibleModuleOptions {
+  // Custom storage module (defaults to memory storage)
+  storage?: Type<any> | DynamicModule;
+
+  // Custom logger implementation
+  logger?: Type<IDismissibleLogger>;
+
+  // Lifecycle hooks to register
+  hooks?: Type<IDismissibleLifecycleHook>[];
+
+  // Additional modules to import
+  imports?: DynamicModule[];
+
+  // Additional providers to register
+  providers?: Provider[];
+
+  // Custom controllers (overrides default REST API controllers)
+  controllers?: Type<any>[];
+}
+```
+
+---
+
+### `storage`
+
+Specifies a custom storage module for persisting dismissible items. Defaults to in-memory storage.
+
+**Default:** In-memory storage (data lost on restart)
 
 ```typescript
 import { Module } from '@nestjs/common';
@@ -127,223 +173,37 @@ import { PostgresStorageModule } from '@dismissible/nestjs-postgres-storage';
 @Module({
   imports: [
     DismissibleModule.forRoot({
-      storage: PostgresStorageModule,
+      storage: PostgresStorageModule.forRoot({
+        connectionString: 'postgresql://user:password@localhost:5432/dismissible',
+      }),
     }),
   ],
 })
 export class AppModule {}
 ```
 
-**Prerequisites:**
+**Related packages:**
 
-1. Install the PostgreSQL storage package:
+- [@dismissible/nestjs-storage](https://www.npmjs.com/package/@dismissible/nestjs-storage) - Storage interfaces and base module for implementing custom adapters
+- [@dismissible/nestjs-postgres-storage](https://www.npmjs.com/package/@dismissible/nestjs-postgres-storage) - PostgreSQL storage adapter
+- [@dismissible/nestjs-dynamodb-storage](https://www.npmjs.com/package/@dismissible/nestjs-dynamodb-storage) - DynamoDB storage adapter
 
-   ```bash
-   npm install @dismissible/nestjs-postgres-storage
-   ```
+---
 
-2. Set up your database connection string:
+### `logger`
 
-   ```env
-   DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING=postgresql://user:password@localhost:5432/dismissible
-   ```
+Provides a custom logger implementation. The logger must implement the `IDismissibleLogger` interface.
 
-3. Run Prisma migrations (if using Prisma):
-   ```bash
-   npx prisma migrate dev
-   ```
-
-The PostgreSQL adapter uses Prisma and automatically handles schema migrations. The storage persists all dismissible items across application restarts.
-
-### Using the Service
-
-Instead of using the built-in REST API endpoints, you can inject `DismissibleService` directly into your controllers or other services for more control:
+**Default:** Built-in console logger
 
 ```typescript
-import { Controller, Get, Param, Delete, Post } from '@nestjs/common';
-import { DismissibleService } from '@dismissible/nestjs-core';
-
-@Controller('features')
-export class FeaturesController {
-  constructor(private readonly dismissibleService: DismissibleService) {}
-
-  @Get(':userId/items/:itemId')
-  async getOrCreateItem(@Param('userId') userId: string, @Param('itemId') itemId: string) {
-    const result = await this.dismissibleService.getOrCreate(
-      itemId,
-      userId,
-      undefined, // optional request context
-    );
-
-    return {
-      item: result.item,
-      wasCreated: result.created,
-    };
-  }
-
-  @Delete(':userId/items/:itemId')
-  async dismissItem(@Param('userId') userId: string, @Param('itemId') itemId: string) {
-    const result = await this.dismissibleService.dismiss(itemId, userId);
-    return { item: result.item };
-  }
-
-  @Post(':userId/items/:itemId/restore')
-  async restoreItem(@Param('userId') userId: string, @Param('itemId') itemId: string) {
-    const result = await this.dismissibleService.restore(itemId, userId);
-    return { item: result.item };
-  }
-}
-```
-
-### JWT Authentication
-
-Secure your API endpoints using the JWT Auth Hook with any OIDC-compliant identity provider:
-
-```typescript
-import { Module } from '@nestjs/common';
+import { Injectable, Module } from '@nestjs/common';
 import { DismissibleModule } from '@dismissible/nestjs-core';
-import { JwtAuthHookModule, JwtAuthHook } from '@dismissible/nestjs-jwt-auth-hook';
-
-@Module({
-  imports: [
-    JwtAuthHookModule.forRoot({
-      enabled: true,
-      wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
-      issuer: 'https://auth.example.com',
-      audience: 'my-api',
-    }),
-    DismissibleModule.forRoot({
-      hooks: [JwtAuthHook],
-    }),
-  ],
-})
-export class AppModule {}
-```
-
-See the [@dismissible/nestjs-jwt-auth-hook](https://www.npmjs.com/package/@dismissible/nestjs-jwt-auth-hook) package for detailed configuration options.
-
-### Custom Lifecycle Hooks
-
-Lifecycle hooks allow you to intercept operations and add custom logic, validation, or mutations:
-
-```typescript
-import { Injectable } from '@nestjs/common';
-import { IDismissibleLifecycleHook, IHookResult } from '@dismissible/nestjs-core';
-@Injectable()
-export class AuditHook implements IDismissibleLifecycleHook {
-  // Lower priority runs first (default is 0)
-  readonly priority = 10;
-
-  async onBeforeDismiss(
-    itemId: string,
-    userId: string,
-    context?: IRequestContext,
-  ): Promise<IHookResult> {
-    // Block dismissal of critical items
-    if (itemId.startsWith('critical-')) {
-      return {
-        proceed: false,
-        reason: 'Cannot dismiss critical items',
-      };
-    }
-
-    // Allow the operation to proceed
-    return { proceed: true };
-  }
-
-  async onAfterCreate(
-    itemId: string,
-    item: DismissibleItemDto,
-    userId: string,
-    context?: IRequestContext,
-  ): Promise<void> {
-    // Log item creation for analytics
-    console.log(`Item created: ${itemId} for user ${userId}`);
-  }
-
-  // Mutate item ID before operation
-  async onBeforeGetOrCreate(
-    itemId: string,
-    userId: string,
-    context?: IRequestContext,
-  ): Promise<IHookResult> {
-    // Normalize item IDs (e.g., lowercase)
-    return {
-      proceed: true,
-      mutations: {
-        id: itemId.toLowerCase(),
-      },
-    };
-  }
-}
-```
-
-Register hooks in your module:
-
-```typescript
-import { DismissibleModule } from '@dismissible/nestjs-core';
-import { AuditHook } from './hooks/audit.hook';
-
-@Module({
-  imports: [
-    DismissibleModule.forRoot({
-      hooks: [AuditHook],
-    }),
-  ],
-})
-export class AppModule {}
-```
-
-### Listening to Events
-
-The library emits events for all operations. Listen to them using NestJS's `EventEmitter2`:
-
-```typescript
-import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import {
-  ItemCreatedEvent,
-  ItemDismissedEvent,
-  ItemRestoredEvent,
-  ItemRetrievedEvent,
-  DismissibleEvents,
-} from '@dismissible/nestjs-core';
-
-@Injectable()
-export class AnalyticsService {
-  @OnEvent(DismissibleEvents.ITEM_CREATED)
-  handleItemCreated(event: ItemCreatedEvent) {
-    // Track item creation in analytics
-    console.log(`Analytics: Item ${event.id} created for user ${event.userId}`);
-  }
-
-  @OnEvent(DismissibleEvents.ITEM_DISMISSED)
-  handleItemDismissed(event: ItemDismissedEvent) {
-    // Track dismissals
-    console.log(`Analytics: Item ${event.id} dismissed by user ${event.userId}`);
-  }
-
-  @OnEvent(DismissibleEvents.ITEM_RESTORED)
-  handleItemRestored(event: ItemRestoredEvent) {
-    // Track restorations
-    console.log(`Analytics: Item ${event.id} restored by user ${event.userId}`);
-  }
-}
-```
-
-### Custom Logger
-
-Provide a custom logger implementation:
-
-```typescript
-import { Injectable } from '@nestjs/common';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { DismissibleModule } from '@dismissible/nestjs-core';
 
 @Injectable()
-export class CustomLogger implements IDismissibleLogger {
+class CustomLogger implements IDismissibleLogger {
   debug(message: string, context?: any) {
-    // Your custom logging logic
     console.log(`[DEBUG] ${message}`, context);
   }
 
@@ -370,131 +230,473 @@ export class CustomLogger implements IDismissibleLogger {
 export class AppModule {}
 ```
 
-## API Reference
+**Related packages:**
 
-### DismissibleService
+- [@dismissible/nestjs-logger](https://www.npmjs.com/package/@dismissible/nestjs-logger) - Logger interfaces and default implementation
 
-The main service for interacting with dismissible items.
+---
 
-#### Methods
+### `hooks`
 
-**`getOrCreate(itemId, userId, context?)`**
+Registers lifecycle hooks that intercept operations. Hooks can block operations, mutate parameters, or perform side effects.
 
-Retrieves an existing item or creates a new one if it doesn't exist.
-
-- `itemId: string` - Unique identifier for the item
-- `userId: string` - User identifier (required)
-- `context?: IRequestContext` - Optional request context for tracing
-
-Returns: `Promise<IGetOrCreateServiceResponse>`
-
-**`dismiss(itemId, userId, context?)`**
-
-Marks an item as dismissed.
-
-- `itemId: string` - Item identifier
-- `userId: string` - User identifier
-- `context?: IRequestContext` - Optional request context
-
-Returns: `Promise<IDismissServiceResponse>`
-
-**`restore(itemId, userId, context?)`**
-
-Restores a previously dismissed item.
-
-- `itemId: string` - Item identifier
-- `userId: string` - User identifier
-- `context?: IRequestContext` - Optional request context
-
-Returns: `Promise<IRestoreServiceResponse>`
-
-### Module Configuration
+**Default:** No hooks
 
 ```typescript
-interface IDismissibleModuleOptions {
-  // Custom storage module (defaults to memory storage)
-  storage?: DynamicModule | Type<any>;
+import { Injectable, Module } from '@nestjs/common';
+import { DismissibleModule } from '@dismissible/nestjs-core';
+import { IDismissibleLifecycleHook, IHookResult } from '@dismissible/nestjs-hooks';
 
-  // Custom logger implementation
-  logger?: Type<IDismissibleLogger>;
+@Injectable()
+class AuditHook implements IDismissibleLifecycleHook {
+  readonly priority = 10; // Lower runs first
 
-  // Lifecycle hooks to register
-  hooks?: Type<IDismissibleLifecycleHook>[];
+  async onAfterDismiss(itemId: string, userId: string): Promise<void> {
+    console.log(`User ${userId} dismissed ${itemId}`);
+  }
+}
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      hooks: [AuditHook],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+For JWT authentication, use the [@dismissible/nestjs-jwt-auth-hook](https://www.npmjs.com/package/@dismissible/nestjs-jwt-auth-hook) package:
+
+```typescript
+import { Module } from '@nestjs/common';
+import { DismissibleModule } from '@dismissible/nestjs-core';
+import { JwtAuthHookModule, JwtAuthHook } from '@dismissible/nestjs-jwt-auth-hook';
+
+@Module({
+  imports: [
+    JwtAuthHookModule.forRoot({
+      enabled: true,
+      wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
+      issuer: 'https://auth.example.com',
+      audience: 'my-api',
+    }),
+    DismissibleModule.forRoot({
+      hooks: [JwtAuthHook],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+**Related packages:**
+
+- [@dismissible/nestjs-hooks](https://www.npmjs.com/package/@dismissible/nestjs-hooks) - Hook interfaces and types for implementing custom lifecycle hooks
+- [@dismissible/nestjs-jwt-auth-hook](https://www.npmjs.com/package/@dismissible/nestjs-jwt-auth-hook) - JWT authentication hook for OIDC providers
+- [@dismissible/nestjs-rate-limiter-hook](https://www.npmjs.com/package/@dismissible/nestjs-rate-limiter-hook) - Rate limiting hook
+
+---
+
+### `imports`
+
+Adds additional modules to the DismissibleModule's imports. Useful for injecting dependencies that your hooks or providers need.
+
+**Default:** None
+
+```typescript
+import { Module } from '@nestjs/common';
+import { DismissibleModule } from '@dismissible/nestjs-core';
+import { HttpModule } from '@nestjs/axios';
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      imports: [HttpModule],
+      hooks: [WebhookHook], // Hook that uses HttpService
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+---
+
+### `providers`
+
+Registers additional providers within the DismissibleModule. Useful for services that your hooks depend on.
+
+**Default:** None
+
+```typescript
+import { Injectable, Module } from '@nestjs/common';
+import { DismissibleModule, IDismissibleLifecycleHook } from '@dismissible/nestjs-core';
+
+@Injectable()
+class AnalyticsService {
+  track(event: string, data: any) {
+    // Send to analytics
+  }
+}
+
+@Injectable()
+class AnalyticsHook implements IDismissibleLifecycleHook {
+  constructor(private analytics: AnalyticsService) {}
+
+  async onAfterDismiss(itemId: string, userId: string): Promise<void> {
+    this.analytics.track('item_dismissed', { itemId, userId });
+  }
+}
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      providers: [AnalyticsService],
+      hooks: [AnalyticsHook],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+---
+
+### `controllers`
+
+Overrides the default REST API controllers. Use this when you want complete control over the API endpoints.
+
+**Default:** Built-in controllers for get-or-create, dismiss, and restore
+
+```typescript
+import { Controller, Get, Param, Module, Inject } from '@nestjs/common';
+import {
+  DismissibleModule,
+  IDismissibleService,
+  DISMISSIBLE_SERVICE,
+} from '@dismissible/nestjs-core';
+
+@Controller('custom')
+class CustomController {
+  constructor(
+    @Inject(DISMISSIBLE_SERVICE)
+    private dismissibleService: IDismissibleService,
+  ) {}
+
+  @Get(':userId/:itemId')
+  async getItem(@Param('userId') userId: string, @Param('itemId') itemId: string) {
+    return this.dismissibleService.getOrCreate(itemId, userId);
+  }
+}
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      controllers: [CustomController],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+To disable the REST API entirely, pass an empty array:
+
+```typescript
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      controllers: [],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+---
+
+## Using the Service Directly
+
+Instead of using the built-in REST API, you can inject `DismissibleService` into your own controllers or services:
+
+```typescript
+import { Controller, Get, Param, Delete, Post, Inject } from '@nestjs/common';
+import { IDismissibleService, DISMISSIBLE_SERVICE } from '@dismissible/nestjs-core';
+
+@Controller('features')
+export class FeaturesController {
+  constructor(
+    @Inject(DISMISSIBLE_SERVICE)
+    private readonly dismissibleService: IDismissibleService,
+  ) {}
+
+  @Get(':userId/items/:itemId')
+  async getOrCreateItem(@Param('userId') userId: string, @Param('itemId') itemId: string) {
+    const result = await this.dismissibleService.getOrCreate(itemId, userId);
+    return {
+      item: result.item,
+      wasCreated: result.created,
+    };
+  }
+
+  @Delete(':userId/items/:itemId')
+  async dismissItem(@Param('userId') userId: string, @Param('itemId') itemId: string) {
+    const result = await this.dismissibleService.dismiss(itemId, userId);
+    return { item: result.item };
+  }
+
+  @Post(':userId/items/:itemId/restore')
+  async restoreItem(@Param('userId') userId: string, @Param('itemId') itemId: string) {
+    const result = await this.dismissibleService.restore(itemId, userId);
+    return { item: result.item };
+  }
 }
 ```
 
 ## Events
 
-The library emits the following events:
-
-- `DismissibleEvents.ITEM_CREATED` - Emitted when a new item is created
-- `DismissibleEvents.ITEM_RETRIEVED` - Emitted when an existing item is retrieved
-- `DismissibleEvents.ITEM_DISMISSED` - Emitted when an item is dismissed
-- `DismissibleEvents.ITEM_RESTORED` - Emitted when an item is restored
-
-All events include:
-
-- `id: string` - The item identifier
-- `item: DismissibleItemDto` - The current item state
-- `userId: string` - The user identifier
-- `context?: IRequestContext` - Optional request context
-
-Dismiss and restore events also include:
-
-- `previousItem: DismissibleItemDto` - The item state before the operation
-
-## Lifecycle Hooks
-
-Hooks can implement any of the following methods:
-
-- `onBeforeGetOrCreate()` - Called before get-or-create operation
-- `onAfterGetOrCreate()` - Called after get-or-create operation
-- `onBeforeCreate()` - Called before creating a new item
-- `onAfterCreate()` - Called after creating a new item
-- `onBeforeDismiss()` - Called before dismissing an item
-- `onAfterDismiss()` - Called after dismissing an item
-- `onBeforeRestore()` - Called before restoring an item
-- `onAfterRestore()` - Called after restoring an item
-
-Hooks can:
-
-- **Block operations** by returning `{ proceed: false, reason: string }`
-- **Mutate parameters** by returning `{ proceed: true, mutations: { id?, userId?, context? } }`
-- **Perform side effects** in post-hooks (no return value needed)
-
-Hooks are executed in priority order (lower numbers first).
-
-## Storage Adapters
-
-### In-Memory Storage (Default)
-
-The default storage adapter stores items in memory. Data is lost on application restart.
-
-### PostgreSQL Storage
-
-Use `PostgresStorageModule` for persistent storage. See the [Using PostgreSQL Storage](#using-postgresql-storage) section above.
-
-### Custom Storage Adapter
-
-Implement the `IDismissibleStorage` interface to create a custom storage adapter:
+The library emits events for all operations using NestJS's EventEmitter2:
 
 ```typescript
 import { Injectable } from '@nestjs/common';
-import { IDismissibleStorage } from '@dismissible/nestjs-storage';
-import { DismissibleItemDto } from '@dismissible/nestjs-item';
+import { OnEvent } from '@nestjs/event-emitter';
+import {
+  ItemCreatedEvent,
+  ItemDismissedEvent,
+  ItemRestoredEvent,
+  DismissibleEvents,
+} from '@dismissible/nestjs-core';
 
 @Injectable()
-export class RedisStorageAdapter implements IDismissibleStorage {
-  async get(userId: string, itemId: string): Promise<DismissibleItemDto | null> {
-    // Your implementation
+export class AnalyticsService {
+  @OnEvent(DismissibleEvents.ITEM_CREATED)
+  handleItemCreated(event: ItemCreatedEvent) {
+    console.log(`Item ${event.id} created for user ${event.userId}`);
   }
 
-  async create(userId: string, item: DismissibleItemDto): Promise<void> {
-    // Your implementation
+  @OnEvent(DismissibleEvents.ITEM_DISMISSED)
+  handleItemDismissed(event: ItemDismissedEvent) {
+    console.log(`Item ${event.id} dismissed by user ${event.userId}`);
   }
 
-  async update(userId: string, item: DismissibleItemDto): Promise<void> {
-    // Your implementation
+  @OnEvent(DismissibleEvents.ITEM_RESTORED)
+  handleItemRestored(event: ItemRestoredEvent) {
+    console.log(`Item ${event.id} restored by user ${event.userId}`);
+  }
+}
+```
+
+Available events:
+
+- `DismissibleEvents.ITEM_CREATED` - New item created
+- `DismissibleEvents.ITEM_RETRIEVED` - Existing item retrieved
+- `DismissibleEvents.ITEM_DISMISSED` - Item dismissed
+- `DismissibleEvents.ITEM_RESTORED` - Item restored
+
+## Overriding Services
+
+All core services can be overridden using symbol-based dependency injection tokens. This allows you to provide custom implementations while maintaining type safety.
+
+### Available Service Tokens
+
+| Token                          | Interface                 | Description                                     |
+| ------------------------------ | ------------------------- | ----------------------------------------------- |
+| `DISMISSIBLE_SERVICE`          | `IDismissibleService`     | Main orchestration service                      |
+| `DISMISSIBLE_CORE_SERVICE`     | `IDismissibleCoreService` | Core business logic service                     |
+| `DISMISSIBLE_HOOK_RUNNER`      | `IHookRunner`             | Lifecycle hook execution                        |
+| `DISMISSIBLE_HELPER`           | `IDismissibleHelper`      | Helper utilities                                |
+| `DISMISSIBLE_DATE_SERVICE`     | `IDateService`            | Date operations                                 |
+| `DISMISSIBLE_RESPONSE_SERVICE` | `IResponseService`        | HTTP response formatting                        |
+| `DISMISSIBLE_ITEM_MAPPER`      | `IDismissibleItemMapper`  | Domain to DTO mapping                           |
+| `DISMISSIBLE_ITEM_FACTORY`     | `IDismissibleItemFactory` | Item creation (from `@dismissible/nestjs-item`) |
+
+### Example: Overriding the Date Service
+
+Override the date service to control time in tests or add custom behavior:
+
+```typescript
+import { Injectable, Module } from '@nestjs/common';
+import {
+  DismissibleModule,
+  IDateService,
+  DISMISSIBLE_DATE_SERVICE,
+} from '@dismissible/nestjs-core';
+
+@Injectable()
+class CustomDateService implements IDateService {
+  getNow(): Date {
+    // Custom implementation - e.g., use a fixed time for testing
+    return new Date('2024-01-01T00:00:00.000Z');
+  }
+
+  parseIso(isoString: string): Date {
+    return new Date(isoString);
+  }
+
+  toIso(date: Date): string {
+    return date.toISOString();
+  }
+}
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      providers: [
+        CustomDateService,
+        { provide: DISMISSIBLE_DATE_SERVICE, useExisting: CustomDateService },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Example: Overriding the Main Service
+
+Override the main dismissible service for custom orchestration logic:
+
+```typescript
+import { Injectable, Inject, Module } from '@nestjs/common';
+import {
+  DismissibleModule,
+  IDismissibleService,
+  IDismissibleCoreService,
+  DISMISSIBLE_SERVICE,
+  DISMISSIBLE_CORE_SERVICE,
+  IGetOrCreateServiceResponse,
+  IDismissServiceResponse,
+  IRestoreServiceResponse,
+} from '@dismissible/nestjs-core';
+import { IRequestContext } from '@dismissible/nestjs-request';
+
+@Injectable()
+class CustomDismissibleService implements IDismissibleService {
+  constructor(
+    @Inject(DISMISSIBLE_CORE_SERVICE)
+    private readonly coreService: IDismissibleCoreService,
+  ) {}
+
+  async getOrCreate(
+    itemId: string,
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IGetOrCreateServiceResponse> {
+    // Add custom logic before/after core operation
+    console.log('Custom getOrCreate called');
+    return this.coreService.getOrCreate(itemId, userId);
+  }
+
+  async dismiss(
+    itemId: string,
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IDismissServiceResponse> {
+    return this.coreService.dismiss(itemId, userId);
+  }
+
+  async restore(
+    itemId: string,
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IRestoreServiceResponse> {
+    return this.coreService.restore(itemId, userId);
+  }
+}
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      providers: [
+        CustomDismissibleService,
+        { provide: DISMISSIBLE_SERVICE, useExisting: CustomDismissibleService },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Example: Overriding the Item Factory
+
+Override the item factory to customize how items are created:
+
+```typescript
+import { Injectable, Module } from '@nestjs/common';
+import { DismissibleModule } from '@dismissible/nestjs-core';
+import {
+  DismissibleItemDto,
+  IDismissibleItemFactory,
+  ICreateDismissibleItemOptions,
+  DISMISSIBLE_ITEM_FACTORY,
+} from '@dismissible/nestjs-item';
+
+@Injectable()
+class CustomItemFactory implements IDismissibleItemFactory {
+  create(options: ICreateDismissibleItemOptions): DismissibleItemDto {
+    const item = new DismissibleItemDto();
+    item.id = options.id;
+    item.userId = options.userId;
+    item.createdAt = options.createdAt;
+    item.dismissedAt = options.dismissedAt;
+    return item;
+  }
+
+  clone(item: DismissibleItemDto): DismissibleItemDto {
+    return this.create({
+      id: item.id,
+      createdAt: item.createdAt,
+      userId: item.userId,
+      dismissedAt: item.dismissedAt,
+    });
+  }
+
+  createDismissed(item: DismissibleItemDto, dismissedAt: Date): DismissibleItemDto {
+    return this.create({
+      id: item.id,
+      createdAt: item.createdAt,
+      userId: item.userId,
+      dismissedAt,
+    });
+  }
+
+  createRestored(item: DismissibleItemDto): DismissibleItemDto {
+    return this.create({
+      id: item.id,
+      createdAt: item.createdAt,
+      userId: item.userId,
+      dismissedAt: undefined,
+    });
+  }
+}
+
+@Module({
+  imports: [
+    DismissibleModule.forRoot({
+      providers: [
+        CustomItemFactory,
+        { provide: DISMISSIBLE_ITEM_FACTORY, useExisting: CustomItemFactory },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Injecting Overridable Services
+
+When injecting these services in your own code, use the symbol tokens for maximum flexibility:
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common';
+import { IDismissibleService, DISMISSIBLE_SERVICE } from '@dismissible/nestjs-core';
+
+@Injectable()
+export class MyService {
+  constructor(
+    @Inject(DISMISSIBLE_SERVICE)
+    private readonly dismissibleService: IDismissibleService,
+  ) {}
+
+  async myMethod(userId: string, itemId: string) {
+    // Your custom implementation will be injected if you've overridden it
+    return this.dismissibleService.getOrCreate(itemId, userId);
   }
 }
 ```

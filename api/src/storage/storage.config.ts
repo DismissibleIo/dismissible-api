@@ -1,7 +1,8 @@
-import { IsDefined, IsEnum, ValidateIf, ValidateNested } from 'class-validator';
+import { IsDefined, IsEnum, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PostgresStorageConfig } from '@dismissible/nestjs-postgres-storage';
 import { DynamoDBStorageConfig } from '@dismissible/nestjs-dynamodb-storage';
+import { MemoryStorageConfig } from '@dismissible/nestjs-storage';
 
 export enum StorageType {
   MEMORY = 'memory',
@@ -25,4 +26,10 @@ export class StorageConfig {
   @ValidateNested()
   @Type(() => DynamoDBStorageConfig)
   public readonly dynamodb!: DynamoDBStorageConfig;
+
+  @IsOptional()
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => MemoryStorageConfig)
+  public readonly memory?: MemoryStorageConfig;
 }

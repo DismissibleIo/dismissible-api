@@ -1,24 +1,37 @@
-import { Controller, Post, UseFilters } from '@nestjs/common';
+import { Controller, Post, Inject, UseFilters } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { DismissibleService } from '../../../core/dismissible.service';
-import { DismissibleItemMapper } from '../../dismissible-item.mapper';
+import {
+  IDismissibleService,
+  DISMISSIBLE_SERVICE,
+} from '../../../core/dismissible.service.interface';
+import {
+  IDismissibleItemMapper,
+  DISMISSIBLE_ITEM_MAPPER,
+} from '../../dismissible-item.mapper.interface';
 import { RequestContext, IRequestContext } from '@dismissible/nestjs-request';
 import { RestoreResponseDto } from './restore.response.dto';
-import { ResponseService } from '../../../response/response.service';
+import {
+  IResponseService,
+  DISMISSIBLE_RESPONSE_SERVICE,
+} from '../../../response/response.service.interface';
 import { HttpExceptionFilter } from '../../../response/http-exception-filter';
 import { API_TAG_DISMISSIBLE } from '../api-tags.constants';
+import { DISMISSIBLE_DEFAULT_ROUTE } from '../../api.constants';
 import { UserId, ItemId } from '../../validation';
 
 /**
  * Controller for restore dismissible item operations.
  */
 @ApiTags(API_TAG_DISMISSIBLE)
-@Controller('v1/users/:userId/items')
+@Controller(DISMISSIBLE_DEFAULT_ROUTE)
 export class RestoreController {
   constructor(
-    private readonly dismissibleService: DismissibleService,
-    private readonly mapper: DismissibleItemMapper,
-    private readonly responseService: ResponseService,
+    @Inject(DISMISSIBLE_SERVICE)
+    private readonly dismissibleService: IDismissibleService,
+    @Inject(DISMISSIBLE_ITEM_MAPPER)
+    private readonly mapper: IDismissibleItemMapper,
+    @Inject(DISMISSIBLE_RESPONSE_SERVICE)
+    private readonly responseService: IResponseService,
   ) {}
 
   @Post(':itemId')

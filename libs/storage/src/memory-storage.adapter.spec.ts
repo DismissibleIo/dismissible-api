@@ -11,7 +11,7 @@ describe('MemoryStorageAdapter', () => {
   beforeEach(() => {
     mockLogger = mock<IDismissibleLogger>({ failIfMockNotProvided: false });
     itemFactory = new DismissibleItemFactory();
-    adapter = new MemoryStorageAdapter(mockLogger);
+    adapter = new MemoryStorageAdapter({}, mockLogger);
   });
 
   describe('get', () => {
