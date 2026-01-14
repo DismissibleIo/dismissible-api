@@ -34,7 +34,7 @@ export class DismissController {
     private readonly responseService: IResponseService,
   ) {}
 
-  @Delete(':itemId')
+  @Delete()
   @ApiOperation({
     summary: 'Dismiss an item',
     description: 'Marks a dismissible item as dismissed.',

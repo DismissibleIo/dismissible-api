@@ -4,7 +4,6 @@ import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logg
 
 export function configureAppWithCors(app: INestApplication) {
   const logger = app.get<IDismissibleLogger>(DISMISSIBLE_LOGGER);
-  logger.setContext('CORS');
   const corsConfig = app.get(CorsConfig);
 
   if (corsConfig.enabled) {
@@ -20,8 +19,8 @@ export function configureAppWithCors(app: INestApplication) {
       credentials: corsConfig.credentials ?? true,
       maxAge: corsConfig.maxAge ?? 86400,
     });
-    logger.info('CORS is enabled', { corsConfig });
+    logger.log('CORS is enabled', { corsConfig });
   } else {
-    logger.info('CORS is disabled');
+    logger.log('CORS is disabled');
   }
 }

@@ -79,7 +79,7 @@ export class JwtAuthService implements OnModuleInit {
         timeout: this.config.requestTimeout ?? 30000,
       });
 
-      this.logger.info('JWKS client initialized successfully', {
+      this.logger.log('JWKS client initialized successfully', {
         jwksUri: this.jwksUri,
       });
     } catch (error) {

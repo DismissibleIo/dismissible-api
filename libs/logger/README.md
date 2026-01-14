@@ -61,7 +61,7 @@ export class MyService {
 
   doSomething() {
     this.logger.debug('Debug message', { context: 'MyService' });
-    this.logger.info('Info message', { userId: 'user-123' });
+    this.logger.log('Log message', { userId: 'user-123' });
     this.logger.warn('Warning message', { itemId: 'item-456' });
     this.logger.error('Error message', new Error('Something went wrong'), {
       additionalContext: 'value',
@@ -88,8 +88,8 @@ class WinstonLogger implements IDismissibleLogger {
     this.logger.debug(message, context);
   }
 
-  info(message: string, context?: object): void {
-    this.logger.info(message, context);
+  log(message: string, ...optionalParams: any[]): void {
+    this.logger.log(message, ...optionalParams);
   }
 
   warn(message: string, context?: object): void {
@@ -117,10 +117,10 @@ export class AppModule {}
 
 ```typescript
 interface IDismissibleLogger {
-  debug(message: string, context?: object): void;
-  info(message: string, context?: object): void;
-  warn(message: string, context?: object): void;
-  error(message: string, error?: Error, context?: object): void;
+  debug(message: string, ...optionalParams: any[]): void;
+  log(message: string, ...optionalParams: any[]): void;
+  warn(message: string, ...optionalParams: any[]): void;
+  error(message: string, ...optionalParams: any[]): void;
 }
 ```
 

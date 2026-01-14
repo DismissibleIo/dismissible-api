@@ -34,7 +34,7 @@ export class GetOrCreateController {
     private readonly responseService: IResponseService,
   ) {}
 
-  @Get(':itemId')
+  @Get()
   @ApiOperation({
     summary: 'Get or create a dismissible item',
     description:

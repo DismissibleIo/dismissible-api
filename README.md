@@ -113,6 +113,9 @@ The Dismissible project is jam packed with features!
   - Events
   - Storage adapters
   - Custom loggers
+  - Rate limiter
+  - JWT Auth
+  - CORS / Helmut security
 
 ## Documentation
 

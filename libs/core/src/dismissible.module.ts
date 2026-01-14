@@ -1,4 +1,4 @@
-import { Module, DynamicModule, Type, Provider } from '@nestjs/common';
+import { Module, DynamicModule, Type, Provider, ForwardReference } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GetOrCreateController } from './api/use-cases/get-or-create/get-or-create.controller';
 import { DismissController } from './api/use-cases/dismiss/dismiss.controller';
@@ -29,7 +29,7 @@ import { DismissibleItemModule } from '@dismissible/nestjs-item';
 export type IDismissibleModuleOptions = IDismissibleLoggerModuleOptions &
   IDismissibleStorageModuleOptions & {
     hooks?: Type<IDismissibleLifecycleHook>[];
-    imports?: DynamicModule[];
+    imports?: Array<Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference>;
     providers?: Provider[];
     controllers?: Type<any>[];
   };

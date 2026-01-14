@@ -8,13 +8,13 @@ describe('NullLogger', () => {
     logger = new NullLogger();
   });
 
-  describe('info', () => {
+  describe('log', () => {
     it('should not throw when called without context', () => {
-      expect(() => logger.info('test message')).not.toThrow();
+      expect(() => logger.log('test message')).not.toThrow();
     });
 
     it('should not throw when called with context', () => {
-      expect(() => logger.info('test message', { key: 'value' })).not.toThrow();
+      expect(() => logger.log('test message', { key: 'value' })).not.toThrow();
     });
   });
 
@@ -56,7 +56,7 @@ describe('NullLogger', () => {
 
   describe('setLogLevels', () => {
     it('should not throw when called with levels', () => {
-      const levels: LogLevel[] = ['info', 'warn', 'error'];
+      const levels: LogLevel[] = ['log', 'warn', 'error'];
       expect(() => logger.setLogLevels(levels)).not.toThrow();
     });
 

@@ -6,7 +6,6 @@ import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logg
 
 export async function configureAppWithHelmet(app: INestApplication) {
   const logger = app.get<IDismissibleLogger>(DISMISSIBLE_LOGGER);
-  logger.setContext('Helmet');
   const helmetConfig = app.get(HelmetConfig);
 
   if (helmetConfig.enabled) {
@@ -20,8 +19,8 @@ export async function configureAppWithHelmet(app: INestApplication) {
         preload: helmetConfig.hstsPreload ?? false,
       },
     });
-    logger.info('Helmet is enabled', { helmetConfig });
+    logger.log('Helmet is enabled', { helmetConfig });
   } else {
-    logger.info('Helmet is disabled');
+    logger.log('Helmet is disabled');
   }
 }

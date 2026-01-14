@@ -29,8 +29,7 @@ describe('configureAppWithCors', () => {
       maxAge: 3600,
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === CorsConfig) {
@@ -44,7 +43,6 @@ describe('configureAppWithCors', () => {
 
     configureAppWithCors(mockApp);
 
-    expect(mockLogger.setContext).toHaveBeenCalledWith('CORS');
     expect(mockEnableCors).toHaveBeenCalledWith({
       origin: ['https://example.com', 'https://app.example.com'],
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -52,7 +50,7 @@ describe('configureAppWithCors', () => {
       credentials: false,
       maxAge: 3600,
     });
-    expect(mockLogger.info).toHaveBeenCalledWith('CORS is enabled', { corsConfig });
+    expect(mockLogger.log).toHaveBeenCalledWith('CORS is enabled', { corsConfig });
   });
 
   it('should configure CORS with partial config using defaults for missing values', () => {
@@ -62,8 +60,7 @@ describe('configureAppWithCors', () => {
       credentials: false,
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === CorsConfig) {
@@ -84,7 +81,7 @@ describe('configureAppWithCors', () => {
       credentials: false,
       maxAge: 86400,
     });
-    expect(mockLogger.info).toHaveBeenCalledWith('CORS is enabled', { corsConfig });
+    expect(mockLogger.log).toHaveBeenCalledWith('CORS is enabled', { corsConfig });
   });
 
   it('should not configure CORS when enabled is false', () => {
@@ -92,8 +89,7 @@ describe('configureAppWithCors', () => {
       enabled: false,
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === CorsConfig) {
@@ -107,35 +103,7 @@ describe('configureAppWithCors', () => {
 
     configureAppWithCors(mockApp);
 
-    expect(mockLogger.setContext).toHaveBeenCalledWith('CORS');
     expect(mockEnableCors).not.toHaveBeenCalled();
-    expect(mockLogger.info).toHaveBeenCalledWith('CORS is disabled');
-  });
-
-  it('should set logger context before checking config', () => {
-    const corsConfig: CorsConfig = {
-      enabled: true,
-      origins: ['http://localhost:3000'],
-    };
-    const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
-    };
-    mockGet.mockImplementation((token) => {
-      if (token === CorsConfig) {
-        return corsConfig;
-      }
-      if (token === DISMISSIBLE_LOGGER) {
-        return mockLogger;
-      }
-      return null;
-    });
-
-    configureAppWithCors(mockApp);
-
-    // Verify setContext is called before enableCors
-    const setContextCallOrder = mockLogger.setContext.mock.invocationCallOrder[0];
-    const enableCorsCallOrder = mockEnableCors.mock.invocationCallOrder[0];
-    expect(setContextCallOrder).toBeLessThan(enableCorsCallOrder);
+    expect(mockLogger.log).toHaveBeenCalledWith('CORS is disabled');
   });
 });

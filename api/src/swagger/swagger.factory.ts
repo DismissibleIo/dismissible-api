@@ -9,11 +9,10 @@ const swaggerDocumentOptions: SwaggerDocumentOptions = {
 
 export function configureAppWithSwagger(app: INestApplication) {
   const logger = app.get<IDismissibleLogger>(DISMISSIBLE_LOGGER);
-  logger.setContext('Swagger');
   const swaggerConfig = app.get(SwaggerConfig);
 
   if (swaggerConfig.enabled) {
-    logger.info('Swagger is enabled', { swaggerConfig });
+    logger.log('Swagger is enabled', { swaggerConfig });
     const { path = 'docs' } = swaggerConfig;
 
     const config = new DocumentBuilder()
@@ -27,6 +26,6 @@ export function configureAppWithSwagger(app: INestApplication) {
       useGlobalPrefix: true,
     });
   } else {
-    logger.info('Swagger is disabled');
+    logger.log('Swagger is disabled');
   }
 }

@@ -14,8 +14,7 @@ describe('configureAppWithHelmet', () => {
   let mockGet: jest.Mock;
   let mockRegister: jest.Mock;
   let mockLogger: {
-    info: jest.Mock;
-    setContext: jest.Mock;
+    log: jest.Mock;
   };
   let mockFastifyHelmetModule: jest.Mock;
 
@@ -24,8 +23,7 @@ describe('configureAppWithHelmet', () => {
     mockGet = jest.fn();
     mockRegister = jest.fn().mockResolvedValue(undefined);
     mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockApp = {
       get: mockGet,
@@ -60,7 +58,6 @@ describe('configureAppWithHelmet', () => {
 
     await configureAppWithHelmet(mockFastifyApp);
 
-    expect(mockLogger.setContext).toHaveBeenCalledWith('Helmet');
     expect(mockRegister).toHaveBeenCalledWith(mockFastifyHelmetModule, {
       contentSecurityPolicy: false,
       crossOriginEmbedderPolicy: false,
@@ -70,7 +67,7 @@ describe('configureAppWithHelmet', () => {
         preload: true,
       },
     });
-    expect(mockLogger.info).toHaveBeenCalledWith('Helmet is enabled', { helmetConfig });
+    expect(mockLogger.log).toHaveBeenCalledWith('Helmet is enabled', { helmetConfig });
   });
 
   it('should configure Helmet with default values when config values are undefined', async () => {
@@ -94,7 +91,6 @@ describe('configureAppWithHelmet', () => {
 
     await configureAppWithHelmet(mockFastifyApp);
 
-    expect(mockLogger.setContext).toHaveBeenCalledWith('Helmet');
     expect(mockRegister).toHaveBeenCalledWith(mockFastifyHelmetModule, {
       contentSecurityPolicy: true,
       crossOriginEmbedderPolicy: true,
@@ -104,7 +100,7 @@ describe('configureAppWithHelmet', () => {
         preload: false,
       },
     });
-    expect(mockLogger.info).toHaveBeenCalledWith('Helmet is enabled', { helmetConfig });
+    expect(mockLogger.log).toHaveBeenCalledWith('Helmet is enabled', { helmetConfig });
   });
 
   it('should configure Helmet with partial config using defaults for missing values', async () => {
@@ -139,7 +135,7 @@ describe('configureAppWithHelmet', () => {
         preload: false,
       },
     });
-    expect(mockLogger.info).toHaveBeenCalledWith('Helmet is enabled', { helmetConfig });
+    expect(mockLogger.log).toHaveBeenCalledWith('Helmet is enabled', { helmetConfig });
   });
 
   it('should not configure Helmet when enabled is false', async () => {
@@ -158,36 +154,8 @@ describe('configureAppWithHelmet', () => {
 
     await configureAppWithHelmet(mockApp);
 
-    expect(mockLogger.setContext).toHaveBeenCalledWith('Helmet');
     expect(mockRegister).not.toHaveBeenCalled();
-    expect(mockLogger.info).toHaveBeenCalledWith('Helmet is disabled');
-  });
-
-  it('should set logger context before checking config', async () => {
-    const helmetConfig: HelmetConfig = {
-      enabled: true,
-    };
-    mockGet.mockImplementation((token) => {
-      if (token === HelmetConfig) {
-        return helmetConfig;
-      }
-      if (token === DISMISSIBLE_LOGGER) {
-        return mockLogger;
-      }
-      return null;
-    });
-
-    const mockFastifyApp = {
-      ...mockApp,
-      register: mockRegister,
-    } as any;
-
-    await configureAppWithHelmet(mockFastifyApp);
-
-    // Verify setContext is called before register
-    const setContextCallOrder = mockLogger.setContext.mock.invocationCallOrder[0];
-    const registerCallOrder = mockRegister.mock.invocationCallOrder[0];
-    expect(setContextCallOrder).toBeLessThan(registerCallOrder);
+    expect(mockLogger.log).toHaveBeenCalledWith('Helmet is disabled');
   });
 
   it('should handle HSTS config with all custom values', async () => {

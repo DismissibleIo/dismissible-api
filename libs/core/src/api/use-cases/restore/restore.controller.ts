@@ -34,7 +34,7 @@ export class RestoreController {
     private readonly responseService: IResponseService,
   ) {}
 
-  @Post(':itemId')
+  @Post()
   @ApiOperation({
     summary: 'Restore a dismissed item',
     description: 'Restores a previously dismissed item.',

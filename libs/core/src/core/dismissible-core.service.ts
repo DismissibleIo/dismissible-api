@@ -75,7 +75,7 @@ export class DismissibleCoreService implements IDismissibleCoreService {
 
     const createdItem = await this.storage.create(newItem);
 
-    this.logger.info(`Created new dismissible item`, { itemId, userId });
+    this.logger.log(`Created new dismissible item`, { itemId, userId });
 
     return createdItem;
   }
@@ -132,7 +132,7 @@ export class DismissibleCoreService implements IDismissibleCoreService {
 
     const updatedItem = await this.storage.update(dismissedItem);
 
-    this.logger.info(`Item dismissed`, { itemId, userId });
+    this.logger.log(`Item dismissed`, { itemId, userId });
 
     return {
       item: updatedItem,
@@ -169,7 +169,7 @@ export class DismissibleCoreService implements IDismissibleCoreService {
 
     const updatedItem = await this.storage.update(restoredItem);
 
-    this.logger.info(`Item restored`, { itemId, userId });
+    this.logger.log(`Item restored`, { itemId, userId });
 
     return {
       item: updatedItem,
