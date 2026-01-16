@@ -676,7 +676,7 @@ describe('JwtAuthService', () => {
           timeout: 30000,
         }),
       );
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.log).toHaveBeenCalledWith(
         'JWKS client initialized successfully',
         expect.objectContaining({
           jwksUri: 'https://auth.example.com/.well-known/jwks.json',
@@ -761,7 +761,7 @@ describe('JwtAuthService', () => {
       await serviceWithCacheDuration.initializeJwksClient();
 
       expect((serviceWithCacheDuration as any).jwksClient).toBeDefined();
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.log).toHaveBeenCalledWith(
         'JWKS client initialized successfully',
         expect.any(Object),
       );

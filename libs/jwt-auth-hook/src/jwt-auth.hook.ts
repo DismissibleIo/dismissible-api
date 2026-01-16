@@ -3,7 +3,11 @@ import { IDismissibleLifecycleHook, IHookResult } from '@dismissible/nestjs-hook
 import { IRequestContext } from '@dismissible/nestjs-request';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { JwtAuthService } from './jwt-auth.service';
-import { JWT_AUTH_HOOK_CONFIG, JwtAuthHookConfig, UserIdMatchType } from './jwt-auth-hook.config';
+import {
+  DISMISSIBLE_JWT_AUTH_HOOK_CONFIG,
+  JwtAuthHookConfig,
+  UserIdMatchType,
+} from './jwt-auth-hook.config';
 
 /**
  * JWT authentication hook that validates bearer tokens on every request.
@@ -15,7 +19,7 @@ export class JwtAuthHook implements IDismissibleLifecycleHook {
 
   constructor(
     private readonly jwtAuthService: JwtAuthService,
-    @Inject(JWT_AUTH_HOOK_CONFIG)
+    @Inject(DISMISSIBLE_JWT_AUTH_HOOK_CONFIG)
     private readonly config: JwtAuthHookConfig,
     @Inject(DISMISSIBLE_LOGGER)
     private readonly logger: IDismissibleLogger,

@@ -1,0 +1,49 @@
+{
+  "name": "rate-limiter-hook",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/rate-limiter-hook/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/rate-limiter-hook",
+        "main": "libs/rate-limiter-hook/src/index.ts",
+        "tsConfig": "libs/rate-limiter-hook/tsconfig.lib.json",
+        "assets": ["libs/rate-limiter-hook/package.json", "libs/rate-limiter-hook/README.md"],
+        "generatePackageJson": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/rate-limiter-hook/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/rate-limiter-hook"],
+      "options": {
+        "jestConfig": "libs/rate-limiter-hook/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/rate-limiter-hook"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/rate-limiter-hook"
+      }
+    }
+  }
+}

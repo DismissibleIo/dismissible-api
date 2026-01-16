@@ -37,6 +37,7 @@
     "@dismissible/nestjs-postgres-storage": "^2.0.1",
     "@dismissible/nestjs-dynamodb-storage": "^2.0.1",
     "@dismissible/nestjs-logger": "^2.0.1",
+    "@dismissible/nestjs-rate-limiter-hook": "^2.0.1",
     "@nestjs/common": "^11.1.11",
     "@nestjs/core": "^11.1.11",
     "@nestjs/platform-fastify": "^11.1.11",

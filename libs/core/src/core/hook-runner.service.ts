@@ -7,6 +7,7 @@ import {
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { DismissibleItemDto } from '@dismissible/nestjs-item';
 import { IRequestContext } from '@dismissible/nestjs-request';
+import { IHookRunner } from './hook-runner.interface';
 
 /**
  * Result from running pre-hooks.
@@ -32,7 +33,7 @@ export interface IHookRunResult {
  * Service responsible for running lifecycle hooks.
  */
 @Injectable()
-export class HookRunner {
+export class HookRunner implements IHookRunner {
   private readonly sortedHooks: IDismissibleLifecycleHook[];
 
   constructor(

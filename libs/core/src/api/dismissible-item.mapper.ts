@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DismissibleItemDto } from '@dismissible/nestjs-item';
 import { DismissibleItemResponseDto } from './dismissible-item-response.dto';
+import { IDismissibleItemMapper } from './dismissible-item.mapper.interface';
 
 /**
  * Mapper for converting domain objects to DTOs.
  */
 @Injectable()
-export class DismissibleItemMapper {
+export class DismissibleItemMapper implements IDismissibleItemMapper {
   /**
    * Convert a dismissible item to a response DTO.
    * Converts Date objects to ISO 8601 strings.

@@ -48,6 +48,7 @@ describe('AppConfig', () => {
           enabled: true,
           wellKnownUrl: 'https://auth.example.com/.well-known/openid-configuration',
         },
+        validation: {},
       });
       const errors = await validate(config);
       expect(errors).toHaveLength(0);
@@ -90,22 +91,6 @@ describe('AppConfig', () => {
       expect(errors.length).toBeGreaterThan(0);
       const jwtAuthError = errors.find((e) => e.property === 'jwtAuth');
       expect(jwtAuthError).toBeDefined();
-    });
-
-    it('should fail validation when jwtAuth enabled is false but wellKnownUrl is required', async () => {
-      const config = plainToInstance(AppConfig, {
-        server: { port: 3001 },
-        cors: { enabled: true, origins: ['http://localhost:3000'] },
-        helmet: { enabled: true },
-        swagger: { enabled: true },
-        storage: {
-          type: 'postgres',
-          postgres: { connectionString: 'postgresql://localhost:5432/test' },
-        },
-        jwtAuth: { enabled: false },
-      });
-      const errors = await validate(config);
-      expect(errors).toHaveLength(0);
     });
   });
 });

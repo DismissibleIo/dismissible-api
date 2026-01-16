@@ -7,8 +7,8 @@ import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logg
 
 export async function configureApp(app: INestApplication): Promise<void> {
   const logger = app.get<IDismissibleLogger>(DISMISSIBLE_LOGGER);
-  logger.setContext('AppSetup');
-  logger.info('Configuring application');
+  app.useLogger(logger);
+  logger.log('Configuring application');
 
   await configureAppWithHelmet(app);
   configureAppWithCors(app);

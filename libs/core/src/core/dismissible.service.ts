@@ -1,13 +1,18 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { DismissibleCoreService } from './dismissible-core.service';
+import {
+  IDismissibleCoreService,
+  DISMISSIBLE_CORE_SERVICE,
+} from './dismissible-core.service.interface';
 import { HookRunner } from './hook-runner.service';
+import { IHookRunner, DISMISSIBLE_HOOK_RUNNER } from './hook-runner.interface';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import {
   IGetOrCreateServiceResponse,
   IDismissServiceResponse,
   IRestoreServiceResponse,
 } from './service-responses.interface';
+import { IDismissibleService } from './dismissible.service.interface';
 import { IRequestContext } from '@dismissible/nestjs-request';
 import { DismissibleEvents } from '../events';
 import {
@@ -16,7 +21,7 @@ import {
   ItemDismissedEvent,
   ItemRestoredEvent,
 } from '../events';
-import { ValidationService } from '@dismissible/nestjs-validation';
+import { IValidationService, DISMISSIBLE_VALIDATION_SERVICE } from '@dismissible/nestjs-validation';
 import { DismissibleInputDto } from '../validation';
 
 /**
@@ -24,14 +29,17 @@ import { DismissibleInputDto } from '../validation';
  * Coordinates core logic, hooks, and events.
  */
 @Injectable()
-export class DismissibleService {
+export class DismissibleService implements IDismissibleService {
   constructor(
-    private readonly coreService: DismissibleCoreService,
-    private readonly hookRunner: HookRunner,
+    @Inject(DISMISSIBLE_CORE_SERVICE)
+    private readonly coreService: IDismissibleCoreService,
+    @Inject(DISMISSIBLE_HOOK_RUNNER)
+    private readonly hookRunner: IHookRunner,
     private readonly eventEmitter: EventEmitter2,
     @Inject(DISMISSIBLE_LOGGER)
     private readonly logger: IDismissibleLogger,
-    private readonly validationService: ValidationService,
+    @Inject(DISMISSIBLE_VALIDATION_SERVICE)
+    private readonly validationService: IValidationService,
   ) {}
 
   /**

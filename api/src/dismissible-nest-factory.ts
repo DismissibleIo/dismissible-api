@@ -5,8 +5,10 @@ import { AppModule } from './app.module';
 import { ServerConfig } from './server/server.config';
 import { configureApp } from './app.setup';
 import { DefaultAppConfig } from './config/default-app.config';
-import { IDismissibleLogger } from '@dismissible/nestjs-logger';
+import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { Type, DynamicModule } from '@nestjs/common';
+import { IDismissibleLifecycleHook } from '@dismissible/nestjs-hooks';
+import { StorageType } from './storage/storage.config';
 
 export interface IDismissibleNestApplication {
   getNestApplication(): INestApplication;
@@ -18,6 +20,8 @@ export interface IDismissibleNestFactoryOptions {
   schema?: new () => DefaultAppConfig;
   logger?: Type<IDismissibleLogger>;
   imports?: DynamicModule[];
+  hooks?: Type<IDismissibleLifecycleHook>[];
+  storage?: StorageType;
 }
 
 class DismissibleNestApplication implements IDismissibleNestApplication {
@@ -25,9 +29,10 @@ class DismissibleNestApplication implements IDismissibleNestApplication {
 
   async start(): Promise<void> {
     const serverConfig = this.app.get(ServerConfig);
+    const logger = this.app.get(DISMISSIBLE_LOGGER);
     const port = serverConfig.port ?? 3000;
     await this.app.listen(port, '0.0.0.0');
-    console.log(`🚀 Application is running on: http://localhost:${port}`);
+    logger.log(`🚀 Application is running on: http://localhost:${port}`);
   }
 
   getNestApplication(): INestApplication {

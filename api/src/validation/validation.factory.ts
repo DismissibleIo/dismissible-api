@@ -4,10 +4,9 @@ import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logg
 
 export function configureAppWithValidation(app: INestApplication) {
   const logger = app.get<IDismissibleLogger>(DISMISSIBLE_LOGGER);
-  logger.setContext('Validation');
   const validationConfig = app.get(ValidationConfig);
 
-  logger.info('Registering ValidationPipe', { validationConfig });
+  logger.log('Registering ValidationPipe', { validationConfig });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: validationConfig.whitelist ?? true,

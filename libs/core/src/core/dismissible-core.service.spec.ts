@@ -9,7 +9,7 @@ import {
 } from '../exceptions';
 import { DismissibleItemFactory } from '@dismissible/nestjs-item';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { ValidationService } from '@dismissible/nestjs-validation';
+import { IValidationService } from '@dismissible/nestjs-validation';
 import { BadRequestException } from '@nestjs/common';
 import { DismissibleHelper } from '../utils/dismissible.helper';
 import { DateService } from '../utils/date/date.service';
@@ -20,7 +20,7 @@ describe('DismissibleCoreService', () => {
   let mockDateService: Mock<DateService>;
   let mockLogger: Mock<IDismissibleLogger>;
   let itemFactory: Mock<DismissibleItemFactory>;
-  let validationService: Mock<ValidationService>;
+  let validationService: Mock<IValidationService>;
   let dismissibleHelper: Mock<DismissibleHelper>;
 
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('DismissibleCoreService', () => {
     });
     dismissibleHelper = mock(DismissibleHelper, { failIfMockNotProvided: false });
     itemFactory = mock(DismissibleItemFactory);
-    validationService = mock(ValidationService, { failIfMockNotProvided: false });
+    validationService = mock<IValidationService>({ failIfMockNotProvided: false });
     validationService.validateInstance.mockResolvedValue(undefined);
     service = new DismissibleCoreService(
       storage,

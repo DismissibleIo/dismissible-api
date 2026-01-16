@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { validate, ValidationError } from 'class-validator';
 import { plainToInstance, ClassConstructor } from 'class-transformer';
+import { IValidationService } from './validation.service.interface';
 
 @Injectable()
-export class ValidationService {
+export class ValidationService implements IValidationService {
   async validateDto<T extends object>(dtoClass: ClassConstructor<T>, data: unknown): Promise<T> {
     if (data === null || data === undefined) {
       throw new BadRequestException('Data cannot be null or undefined');

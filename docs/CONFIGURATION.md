@@ -44,7 +44,15 @@ Depending how your IAMs is configured will depend what config you need to pass. 
 
 #### In-Memory
 
-No configuration required. This storage backend is intended for testing and development purposes only.
+In-memory storage uses an LRU (Least Recently Used) cache. This storage backend is intended for testing and development purposes only.
+
+| Variable                               | Description                      | Default    |
+| -------------------------------------- | -------------------------------- | ---------- |
+| `DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS` | Maximum number of items to store | `5000`     |
+| `DISMISSIBLE_STORAGE_MEMORY_TTL_MS`    | Time-to-live in milliseconds     | `21600000` |
+
+> [!WARNING]
+> Data stored in memory will be lost when the application restarts. Do not use in production or for multi-instance deployments.
 
 ### Swagger
 
@@ -118,6 +126,37 @@ This config prevents internal error messages from leaking out. In production env
 | `DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED` | Reject unknown properties       | `true`  |
 | `DISMISSIBLE_VALIDATION_TRANSFORM`              | Auto-transform payloads to DTOs | `true`  |
 
+### Rate Limiter Settings
+
+Rate limiting protects your API from abuse by limiting the number of requests from a given source. When enabled, requests exceeding the limit receive a `429 Too Many Requests` response.
+
+| Variable                                  | Description                                                                 | Default              |
+| ----------------------------------------- | --------------------------------------------------------------------------- | -------------------- |
+| `DISMISSIBLE_RATE_LIMITER_ENABLED`        | Enable rate limiting                                                        | `false`              |
+| `DISMISSIBLE_RATE_LIMITER_POINTS`         | Number of requests allowed per duration window                              | `1000`               |
+| `DISMISSIBLE_RATE_LIMITER_DURATION`       | Time window in seconds                                                      | `1`                  |
+| `DISMISSIBLE_RATE_LIMITER_BLOCK_DURATION` | Duration in seconds to block requests after limit exceeded                  | `60`                 |
+| `DISMISSIBLE_RATE_LIMITER_KEY_TYPE`       | Key type(s) for rate limiting (comma-separated): `ip`, `origin`, `referrer` | `ip,origin,referrer` |
+| `DISMISSIBLE_RATE_LIMITER_KEY_MODE`       | Mode for combining key types: `and`, `or`, `any`                            | `any`                |
+| `DISMISSIBLE_RATE_LIMITER_IGNORED_KEYS`   | Comma-separated keys to bypass rate limiting                                | -                    |
+| `DISMISSIBLE_RATE_LIMITER_PRIORITY`       | Hook priority (lower runs first)                                            | `-101`               |
+
+#### Key Types
+
+- **`ip`**: Rate limit by IP address (extracted from `x-forwarded-for` or `x-real-ip` headers)
+- **`origin`**: Rate limit by Origin header hostname (useful for CORS scenarios)
+- **`referrer`**: Rate limit by Referer header hostname
+
+#### Key Modes
+
+- **`and`**: Combine all key types into a single key (e.g., `192.168.1.1:example.com`)
+- **`or`**: Use the first available key type as a fallback chain
+- **`any`**: Check all key types independently - request is blocked if ANY key exceeds the limit
+
+#### Ignored Keys
+
+The `DISMISSIBLE_RATE_LIMITER_IGNORED_KEYS` variable accepts a comma-separated list of keys to bypass rate limiting. Matching is exact after trim+lowercase. For Origin/Referer, the URL hostname is matched (e.g., `https://google.com/search` matches `google.com`).
+
 ## NestJS API Module Configuration
 
 The [Dismissible NestJS Module API library](https://www.npmjs.com/package/@dismissible/nestjs-api) has an alternative way to set configuration by using a `.env.yaml` file eg. [`api/config/.env.yaml`](api/config/.env.yaml)
@@ -162,6 +201,9 @@ storage:
     accessKeyId: ${DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID:-}
     secretAccessKey: ${DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY:-}
     sessionToken: ${DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN:-}
+  memory:
+    maxItems: ${DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS:-5000}
+    ttlMs: ${DISMISSIBLE_STORAGE_MEMORY_TTL_MS:-21600000}
 
 jwtAuth:
   enabled: ${DISMISSIBLE_JWT_AUTH_ENABLED:-false}
@@ -183,6 +225,16 @@ validation:
   whitelist: ${DISMISSIBLE_VALIDATION_WHITELIST:-true}
   forbidNonWhitelisted: ${DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED:-true}
   transform: ${DISMISSIBLE_VALIDATION_TRANSFORM:-true}
+
+rateLimiter:
+  enabled: ${DISMISSIBLE_RATE_LIMITER_ENABLED:-false}
+  points: ${DISMISSIBLE_RATE_LIMITER_POINTS:-1000}
+  duration: ${DISMISSIBLE_RATE_LIMITER_DURATION:-1}
+  blockDuration: ${DISMISSIBLE_RATE_LIMITER_BLOCK_DURATION:-60}
+  keyType: ${DISMISSIBLE_RATE_LIMITER_KEY_TYPE:-ip,origin,referrer}
+  keyMode: ${DISMISSIBLE_RATE_LIMITER_KEY_MODE:-any}
+  ignoredKeys: ${DISMISSIBLE_RATE_LIMITER_IGNORED_KEYS:-}
+  priority: ${DISMISSIBLE_RATE_LIMITER_PRIORITY:--101}
 ```
 
 ### Usage
@@ -204,19 +256,31 @@ And our `main.ts` file is:
 ```typescript
 import { DismissibleNestFactory } from '@dismissible/nestjs-api';
 import { CustomModule } from './custom.module';
+import { AuditHook } from './hooks';
+import { CustomLogger } from './logger';
 
 const configPath = join(__dirname, '../config');
 
 async function bootstrap() {
   const app = await DismissibleNestFactory.create({
-    imports: [CustomModule],
     configPath,
+    // Additional NestJS modules
+    imports: [CustomModule],
+    // Lifecycle hooks
+    hooks: [AuditHook],
+    // Custom logger implementation
+    logger: CustomLogger,
+    // Storage type override (defaults to DISMISSIBLE_STORAGE_TYPE env var)
+    // storage: 'postgres',
   });
   await app.start();
 }
 
 bootstrap();
 ```
+
+> [!TIP]
+> See the [NestJS API Module documentation](./NESTJS_API_MODULE.md#module-configuration) for the full list of programmatic configuration options including custom providers and controllers.
 
 ### Environment Aware
 

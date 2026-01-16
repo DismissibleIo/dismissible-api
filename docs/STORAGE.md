@@ -63,13 +63,23 @@ The `DismissibleItemDto` represents a dismissible item:
 
 An in-memory storage implementation using an LRU (Least Recently Used) cache. Suitable for development and testing only—data is lost when the application restarts.
 
-**Features:**
+#### Configuration
 
-- Maximum 5,000 items stored
-- Items automatically expire after 6 hours (TTL)
-- No external dependencies
+| Property   | Required | Description                                     | Default    |
+| ---------- | -------- | ----------------------------------------------- | ---------- |
+| `maxItems` | No       | Maximum number of items to store (LRU eviction) | `5000`     |
+| `ttlMs`    | No       | Time-to-live in milliseconds                    | `21600000` |
 
-**Usage:**
+#### Environment Variables
+
+| Variable                               | Description                      | Default    |
+| -------------------------------------- | -------------------------------- | ---------- |
+| `DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS` | Maximum number of items to store | `5000`     |
+| `DISMISSIBLE_STORAGE_MEMORY_TTL_MS`    | Time-to-live in milliseconds     | `21600000` |
+
+#### Usage
+
+**Static configuration:**
 
 ```typescript
 import { Module } from '@nestjs/common';
@@ -83,10 +93,24 @@ import { DismissibleItemModule } from '@dismissible/nestjs-item';
     DismissibleItemModule,
     StorageModule.forRoot({
       adapter: MemoryStorageAdapter,
+      config: {
+        maxItems: 10000,
+        ttlMs: 43200000, // 12 hours
+      },
     }),
   ],
 })
 export class AppModule {}
+```
+
+**Using environment variables (via YAML config):**
+
+```yaml
+storage:
+  type: memory
+  memory:
+    maxItems: ${DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS:-5000}
+    ttlMs: ${DISMISSIBLE_STORAGE_MEMORY_TTL_MS:-21600000}
 ```
 
 > **Warning:** Do not use the memory adapter in production. Data will be lost on restart and is not shared across multiple instances.

@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { JwksClient, SigningKey } from 'jwks-rsa';
 import * as jwt from 'jsonwebtoken';
 import { firstValueFrom } from 'rxjs';
-import { JWT_AUTH_HOOK_CONFIG, JwtAuthHookConfig } from './jwt-auth-hook.config';
+import { DISMISSIBLE_JWT_AUTH_HOOK_CONFIG, JwtAuthHookConfig } from './jwt-auth-hook.config';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 
 /**
@@ -37,7 +37,7 @@ export class JwtAuthService implements OnModuleInit {
 
   constructor(
     private readonly httpService: HttpService,
-    @Inject(JWT_AUTH_HOOK_CONFIG)
+    @Inject(DISMISSIBLE_JWT_AUTH_HOOK_CONFIG)
     private readonly config: JwtAuthHookConfig,
     @Inject(DISMISSIBLE_LOGGER)
     private readonly logger: IDismissibleLogger,
@@ -79,7 +79,7 @@ export class JwtAuthService implements OnModuleInit {
         timeout: this.config.requestTimeout ?? 30000,
       });
 
-      this.logger.info('JWKS client initialized successfully', {
+      this.logger.log('JWKS client initialized successfully', {
         jwksUri: this.jwksUri,
       });
     } catch (error) {

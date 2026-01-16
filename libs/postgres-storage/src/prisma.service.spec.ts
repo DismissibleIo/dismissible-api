@@ -3,7 +3,9 @@ import { PrismaService } from './prisma.service';
 import { PostgresStorageConfig } from './postgres-storage.config';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
 
-const mockPoolInstance = {};
+const mockPoolInstance = {
+  end: jest.fn().mockResolvedValue(undefined),
+};
 const mockPrismaPgInstance = {};
 
 jest.mock('pg', () => ({
@@ -111,7 +113,7 @@ describe('PrismaService', () => {
   });
 
   describe('onModuleDestroy', () => {
-    it('should disconnect from database', async () => {
+    it('should disconnect from database and close pool', async () => {
       service = new PrismaService(mockConfig, mockLogger);
       (service as any).$disconnect.mockResolvedValue(undefined);
 
@@ -119,6 +121,7 @@ describe('PrismaService', () => {
 
       expect(mockLogger.debug).toHaveBeenCalledWith('Disconnecting from PostgreSQL database');
       expect((service as any).$disconnect).toHaveBeenCalled();
+      expect(mockPoolInstance.end).toHaveBeenCalled();
       expect(mockLogger.debug).toHaveBeenCalledWith('Disconnected from PostgreSQL database');
     });
   });

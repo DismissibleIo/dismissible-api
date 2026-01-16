@@ -4,7 +4,7 @@ import { DismissibleService } from './dismissible.service';
 import { DismissibleCoreService } from './dismissible-core.service';
 import { HookRunner, IHookRunResult } from './hook-runner.service';
 import { IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { ValidationService } from '@dismissible/nestjs-validation';
+import { IValidationService } from '@dismissible/nestjs-validation';
 import { DismissibleEvents } from '../events';
 import { createTestItem, createTestContext } from '../testing/factories';
 
@@ -14,7 +14,7 @@ describe('DismissibleService', () => {
   let mockHookRunner: Mock<HookRunner>;
   let mockEventEmitter: Mock<EventEmitter2>;
   let mockLogger: Mock<IDismissibleLogger>;
-  let mockValidationService: Mock<ValidationService>;
+  let mockValidationService: Mock<IValidationService>;
 
   const testUserId = 'test-user-id';
 
@@ -30,7 +30,7 @@ describe('DismissibleService', () => {
     mockHookRunner = mock(HookRunner, { failIfMockNotProvided: false });
     mockEventEmitter = mock(EventEmitter2, { failIfMockNotProvided: false });
     mockLogger = mock<IDismissibleLogger>({ failIfMockNotProvided: false });
-    mockValidationService = mock(ValidationService, { failIfMockNotProvided: false });
+    mockValidationService = mock<IValidationService>({ failIfMockNotProvided: false });
 
     mockValidationService.validateDto.mockResolvedValue({} as never);
 

@@ -11,6 +11,8 @@ import { PostgresStorageConfig } from './postgres-storage.config';
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly pool: Pool;
+
   constructor(
     private readonly config: PostgresStorageConfig,
     @Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger,
@@ -18,6 +20,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     const pool = new Pool({ connectionString: config.connectionString });
     const adapter = new PrismaPg(pool);
     super({ adapter });
+    this.pool = pool;
   }
 
   async onModuleInit(): Promise<void> {
@@ -39,6 +42,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleDestroy(): Promise<void> {
     this.logger.debug('Disconnecting from PostgreSQL database');
     await this.$disconnect();
+    await this.pool.end();
     this.logger.debug('Disconnected from PostgreSQL database');
   }
 }

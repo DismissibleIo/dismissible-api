@@ -43,8 +43,7 @@ describe('configureAppWithSwagger', () => {
       path: 'docs',
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === SwaggerConfig) {
@@ -73,8 +72,7 @@ describe('configureAppWithSwagger', () => {
       enabled: true,
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === SwaggerConfig) {
@@ -99,8 +97,7 @@ describe('configureAppWithSwagger', () => {
       path: 'api-docs',
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === SwaggerConfig) {
@@ -124,8 +121,7 @@ describe('configureAppWithSwagger', () => {
       enabled: false,
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === SwaggerConfig) {
@@ -148,8 +144,7 @@ describe('configureAppWithSwagger', () => {
       enabled: true,
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === SwaggerConfig) {
@@ -181,8 +176,7 @@ describe('configureAppWithSwagger', () => {
       enabled: true,
     };
     const mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockGet.mockImplementation((token) => {
       if (token === SwaggerConfig) {

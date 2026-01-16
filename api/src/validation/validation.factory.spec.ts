@@ -19,8 +19,7 @@ describe('configureAppWithValidation', () => {
   let mockGet: jest.Mock;
   let mockUseGlobalPipes: jest.Mock;
   let mockLogger: {
-    info: jest.Mock;
-    setContext: jest.Mock;
+    log: jest.Mock;
   };
 
   beforeEach(() => {
@@ -28,8 +27,7 @@ describe('configureAppWithValidation', () => {
     mockGet = jest.fn();
     mockUseGlobalPipes = jest.fn();
     mockLogger = {
-      info: jest.fn(),
-      setContext: jest.fn(),
+      log: jest.fn(),
     };
     mockApp = {
       get: mockGet,
@@ -56,8 +54,7 @@ describe('configureAppWithValidation', () => {
 
     configureAppWithValidation(mockApp);
 
-    expect(mockLogger.setContext).toHaveBeenCalledWith('Validation');
-    expect(mockLogger.info).toHaveBeenCalledWith('Registering ValidationPipe', {
+    expect(mockLogger.log).toHaveBeenCalledWith('Registering ValidationPipe', {
       validationConfig,
     });
     expect(ValidationPipe).toHaveBeenCalledWith({
@@ -146,23 +143,6 @@ describe('configureAppWithValidation', () => {
     expect(mockUseGlobalPipes).toHaveBeenCalledTimes(1);
   });
 
-  it('should set logger context to Validation', () => {
-    const validationConfig: ValidationConfig = {};
-    mockGet.mockImplementation((token) => {
-      if (token === ValidationConfig) {
-        return validationConfig;
-      }
-      if (token === DISMISSIBLE_LOGGER) {
-        return mockLogger;
-      }
-      return null;
-    });
-
-    configureAppWithValidation(mockApp);
-
-    expect(mockLogger.setContext).toHaveBeenCalledWith('Validation');
-  });
-
   it('should log validation config when registering ValidationPipe', () => {
     const validationConfig: ValidationConfig = {
       whitelist: true,
@@ -180,7 +160,7 @@ describe('configureAppWithValidation', () => {
 
     configureAppWithValidation(mockApp);
 
-    expect(mockLogger.info).toHaveBeenCalledWith('Registering ValidationPipe', {
+    expect(mockLogger.log).toHaveBeenCalledWith('Registering ValidationPipe', {
       validationConfig,
     });
   });

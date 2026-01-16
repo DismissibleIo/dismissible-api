@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DismissibleItemDto } from './dismissible-item';
+import { IDismissibleItemFactory } from './dismissible-item.factory.interface';
 
 /**
  * Options for creating a dismissible item.
@@ -17,7 +18,7 @@ export interface ICreateDismissibleItemOptions {
  * Uses class-transformer to ensure proper class instantiation.
  */
 @Injectable()
-export class DismissibleItemFactory {
+export class DismissibleItemFactory implements IDismissibleItemFactory {
   /**
    * Create a new DismissibleItemDto instance from the provided options.
    * Uses plainToInstance to ensure the result is a proper class instance.

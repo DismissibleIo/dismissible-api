@@ -145,13 +145,15 @@ docker run -p 3001:3001 \
 
 ### In-Memory
 
-In-process memory storage for development, testing, or single-instance deployments.
+In-process memory storage for development, testing, or single-instance deployments. Uses an LRU (Least Recently Used) cache.
 
 **Environment Variables:**
 
-| Variable                   | Description                     | Default |
-| -------------------------- | ------------------------------- | ------- |
-| `DISMISSIBLE_STORAGE_TYPE` | Storage backend type (`memory`) | -       |
+| Variable                               | Description                      | Default    |
+| -------------------------------------- | -------------------------------- | ---------- |
+| `DISMISSIBLE_STORAGE_TYPE`             | Storage backend type (`memory`)  | -          |
+| `DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS` | Maximum number of items to store | `5000`     |
+| `DISMISSIBLE_STORAGE_MEMORY_TTL_MS`    | Time-to-live in milliseconds     | `21600000` |
 
 **Example:**
 
@@ -161,7 +163,17 @@ docker run -p 3001:3001 \
   dismissibleio/dismissible-api:latest
 ```
 
-**Warning**: Data stored memory will be lost when the container restarts. Do not use in production or for multi-instance deployments.
+**Example with custom limits:**
+
+```bash
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_STORAGE_TYPE=memory \
+  -e DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS=10000 \
+  -e DISMISSIBLE_STORAGE_MEMORY_TTL_MS=43200000 \
+  dismissibleio/dismissible-api:latest
+```
+
+**Warning**: Data stored in memory will be lost when the container restarts. Do not use in production or for multi-instance deployments.
 
 ---
 
@@ -249,6 +261,45 @@ services:
       - '3001:3001'
     environment:
       DISMISSIBLE_STORAGE_TYPE: memory
+      DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS: 5000
+      DISMISSIBLE_STORAGE_MEMORY_TTL_MS: 21600000
+```
+
+### With Rate Limiting
+
+Add rate limiting to protect your API from abuse:
+
+```yaml
+services:
+  api:
+    image: dismissibleio/dismissible-api:latest
+    ports:
+      - '3001:3001'
+    environment:
+      DISMISSIBLE_STORAGE_TYPE: postgres
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
+      # Rate limiting: 1000 requests per second
+      DISMISSIBLE_RATE_LIMITER_ENABLED: 'true'
+      DISMISSIBLE_RATE_LIMITER_POINTS: 1000
+      DISMISSIBLE_RATE_LIMITER_DURATION: 1
+      DISMISSIBLE_RATE_LIMITER_BLOCK_DURATION: 60
+      DISMISSIBLE_RATE_LIMITER_KEY_TYPE: 'ip,origin,referrer'
+      DISMISSIBLE_RATE_LIMITER_KEY_MODE: 'any'
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dismissible
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
 ```
 
 Start the services:

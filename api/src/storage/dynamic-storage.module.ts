@@ -24,7 +24,10 @@ export class DynamicStorageModule {
         });
       case StorageType.MEMORY:
       default:
-        return MemoryStorageModule.forRoot();
+        return MemoryStorageModule.forRootAsync({
+          useFactory: (config: StorageConfig) => config?.memory || {},
+          inject: [StorageConfig],
+        });
     }
   }
 }
