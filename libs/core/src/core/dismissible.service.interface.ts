@@ -1,6 +1,7 @@
 import { IRequestContext } from '@dismissible/nestjs-request';
 import {
   IGetOrCreateServiceResponse,
+  IBatchGetOrCreateServiceResponse,
   IDismissServiceResponse,
   IRestoreServiceResponse,
 } from './service-responses.interface';
@@ -26,6 +27,18 @@ export interface IDismissibleService {
     userId: string,
     context?: IRequestContext,
   ): Promise<IGetOrCreateServiceResponse>;
+
+  /**
+   * Get existing items or create new ones for multiple item IDs.
+   * @param itemIds Array of item identifiers (max 50)
+   * @param userId The user identifier (required)
+   * @param context Optional request context for tracing
+   */
+  batchGetOrCreate(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchGetOrCreateServiceResponse>;
 
   /**
    * Dismiss an item.

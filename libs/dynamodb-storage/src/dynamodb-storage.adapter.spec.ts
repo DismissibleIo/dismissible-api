@@ -150,4 +150,96 @@ describe('DynamoDBStorageAdapter', () => {
       expect(mockLogger.debug).toHaveBeenCalledWith('DynamoDB storage deleteAll');
     });
   });
+
+  describe('getMany', () => {
+    it('should return empty map when no items found', async () => {
+      mockDynamoDBClientService.getMany.mockResolvedValue([]);
+
+      const result = await adapter.getMany('user-123', ['item-1', 'item-2']);
+
+      expect(result.size).toBe(0);
+      expect(mockDynamoDBClientService.getMany).toHaveBeenCalledWith('user-123', [
+        'item-1',
+        'item-2',
+      ]);
+    });
+
+    it('should return map with found items', async () => {
+      const dbItems = [
+        {
+          id: 'item-1',
+          userId: 'user-123',
+          createdAt: '2024-01-15T10:30:00.000Z',
+          dismissedAt: null,
+        },
+        {
+          id: 'item-2',
+          userId: 'user-123',
+          createdAt: '2024-01-15T10:30:00.000Z',
+          dismissedAt: '2024-01-15T12:00:00.000Z',
+        },
+      ];
+      mockDynamoDBClientService.getMany.mockResolvedValue(dbItems);
+
+      const result = await adapter.getMany('user-123', ['item-1', 'item-2', 'item-3']);
+
+      expect(result.size).toBe(2);
+      expect(result.get('item-1')).toEqual({
+        id: 'item-1',
+        userId: 'user-123',
+        createdAt: new Date('2024-01-15T10:30:00.000Z'),
+        dismissedAt: undefined,
+      });
+      expect(result.get('item-2')).toEqual({
+        id: 'item-2',
+        userId: 'user-123',
+        createdAt: new Date('2024-01-15T10:30:00.000Z'),
+        dismissedAt: new Date('2024-01-15T12:00:00.000Z'),
+      });
+      expect(result.has('item-3')).toBe(false);
+    });
+  });
+
+  describe('createMany', () => {
+    it('should create multiple items', async () => {
+      const items: DismissibleItemDto[] = [
+        {
+          id: 'item-1',
+          userId: 'user-123',
+          createdAt: new Date('2024-01-15T10:30:00.000Z'),
+        },
+        {
+          id: 'item-2',
+          userId: 'user-123',
+          createdAt: new Date('2024-01-15T10:30:00.000Z'),
+        },
+      ];
+      mockDynamoDBClientService.createMany.mockResolvedValue();
+
+      const result = await adapter.createMany(items);
+
+      expect(result).toEqual(items);
+      expect(mockDynamoDBClientService.createMany).toHaveBeenCalledWith([
+        {
+          id: 'item-1',
+          userId: 'user-123',
+          createdAt: '2024-01-15T10:30:00.000Z',
+          dismissedAt: null,
+        },
+        {
+          id: 'item-2',
+          userId: 'user-123',
+          createdAt: '2024-01-15T10:30:00.000Z',
+          dismissedAt: null,
+        },
+      ]);
+    });
+
+    it('should return empty array when creating empty array', async () => {
+      const result = await adapter.createMany([]);
+
+      expect(result).toEqual([]);
+      expect(mockDynamoDBClientService.createMany).not.toHaveBeenCalled();
+    });
+  });
 });

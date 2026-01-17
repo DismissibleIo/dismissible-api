@@ -37,11 +37,12 @@ The API will be available at `http://localhost:3001`.
 
 ### API Endpoints
 
-| Endpoint                          | Method   | Description                          |
-| --------------------------------- | -------- | ------------------------------------ |
-| `/v1/users/:userId/items/:itemId` | `GET`    | Get or create a dismissible item     |
-| `/v1/users/:userId/items/:itemId` | `DELETE` | Dismiss an item (marks as dismissed) |
-| `/v1/users/:userId/items/:itemId` | `POST`   | Restore a previously dismissed item  |
+| Endpoint                          | Method   | Description                                 |
+| --------------------------------- | -------- | ------------------------------------------- |
+| `/v1/users/:userId/items/:itemId` | `GET`    | Get or create a dismissible item            |
+| `/v1/users/:userId/items/:itemId` | `DELETE` | Dismiss an item (marks as dismissed)        |
+| `/v1/users/:userId/items/:itemId` | `POST`   | Restore a previously dismissed item         |
+| `/v1/users/:userId/items`         | `POST`   | Batch get or create multiple items (max 50) |
 
 The API documentation can be found at: [https://dismissible.io/docs/api](https://dismissible.io/docs/api)
 

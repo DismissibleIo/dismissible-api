@@ -93,6 +93,7 @@ Once the API is running, the following endpoints will be available:
 | `/v1/users/{userId}/items/{itemId}` | `GET`    | Get or create a dismissible item; creates if non-existent |
 | `/v1/users/{userId}/items/{itemId}` | `DELETE` | Dismiss an item                                           |
 | `/v1/users/{userId}/items/{itemId}` | `POST`   | Restore a previously dismissed item                       |
+| `/v1/users/{userId}/items`          | `POST`   | Batch get or create multiple items (max 50)               |
 
 > [!TIP]
 > Swagger documentation will be enabled by default or by passing the `DISMISSIBLE_SWAGGER_ENABLED=true` option which will serve interactive API docs [`http://localhost:3001/docs`](http://localhost:3001/docs).

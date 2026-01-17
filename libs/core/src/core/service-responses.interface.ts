@@ -12,6 +12,20 @@ export interface IGetOrCreateServiceResponse {
 }
 
 /**
+ * Response from batchGetOrCreate operation.
+ */
+export interface IBatchGetOrCreateServiceResponse {
+  /** All items (both retrieved and created) */
+  items: DismissibleItemDto[];
+
+  /** Items that were retrieved from storage */
+  retrievedItems: DismissibleItemDto[];
+
+  /** Items that were newly created */
+  createdItems: DismissibleItemDto[];
+}
+
+/**
  * Response from dismiss operation.
  */
 export interface IDismissServiceResponse {

@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { DismissibleModule, IDismissibleModuleOptions } from './dismissible.module';
 import { DismissibleService } from './core/dismissible.service';
-import { IDismissibleLifecycleHook, IHookResult } from '@dismissible/nestjs-hooks';
+import {
+  IDismissibleLifecycleHook,
+  IHookResult,
+  IBatchHookResult,
+} from '@dismissible/nestjs-hooks';
 import { DismissibleItemDto } from '@dismissible/nestjs-item';
 import { IRequestContext } from '@dismissible/nestjs-request';
 import {
@@ -12,6 +16,7 @@ import {
 } from '@dismissible/nestjs-storage';
 import { createTestContext } from './testing/factories';
 import { NullLogger } from '@dismissible/nestjs-logger';
+import { DISMISSIBLE_SERVICE } from './core';
 
 /**
  * Test hook that tracks all lifecycle method invocations.
@@ -141,6 +146,67 @@ class TestLifecycleHook implements IDismissibleLifecycleHook {
   ): Promise<void> {
     this.recordPostCall('onAfterRestore', [itemId, item, userId, context]);
   }
+
+  // Batch hooks
+  private recordBatchCall(method: string, args: unknown[]): IBatchHookResult {
+    TestLifecycleHook.calls.push(method);
+    TestLifecycleHook.callArgs.set(method, args);
+
+    const shouldBlock = TestLifecycleHook.shouldBlock.get(method) ?? false;
+    return {
+      proceed: !shouldBlock,
+      reason: shouldBlock ? TestLifecycleHook.blockReason : undefined,
+    };
+  }
+
+  async onBeforeBatchRequest(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> {
+    return this.recordBatchCall('onBeforeBatchRequest', [itemIds, userId, context]);
+  }
+
+  async onAfterBatchRequest(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    this.recordPostCall('onAfterBatchRequest', [items, userId, context]);
+  }
+
+  async onBeforeBatchGet(
+    itemIds: string[],
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> {
+    return this.recordBatchCall('onBeforeBatchGet', [itemIds, items, userId, context]);
+  }
+
+  async onAfterBatchGet(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    this.recordPostCall('onAfterBatchGet', [items, userId, context]);
+  }
+
+  async onBeforeBatchCreate(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> {
+    return this.recordBatchCall('onBeforeBatchCreate', [itemIds, userId, context]);
+  }
+
+  async onAfterBatchCreate(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    this.recordPostCall('onAfterBatchCreate', [items, userId, context]);
+  }
 }
 
 describe('DismissibleModule Integration - Hook Lifecycle', () => {
@@ -162,7 +228,7 @@ describe('DismissibleModule Integration - Hook Lifecycle', () => {
       imports: [DismissibleModule.forRoot(moduleOptions)],
     }).compile();
 
-    service = module.get<DismissibleService>(DismissibleService);
+    service = module.get<DismissibleService>(DISMISSIBLE_SERVICE);
     storage = module.get<MemoryStorageAdapter>(DISMISSIBLE_STORAGE_ADAPTER);
   });
 
@@ -460,6 +526,249 @@ describe('DismissibleModule Integration - Hook Lifecycle', () => {
     });
   });
 
+  describe('batchGetOrCreate - Create Flow', () => {
+    it('should invoke batch hooks in correct order when creating all new items', async () => {
+      const context = createTestContext();
+      const itemIds = ['batch-item-1', 'batch-item-2', 'batch-item-3'];
+
+      await service.batchGetOrCreate(itemIds, testUserId, context);
+
+      expect(TestLifecycleHook.calls).toEqual([
+        'onBeforeBatchRequest',
+        'onBeforeBatchCreate',
+        'onAfterBatchCreate',
+        'onAfterBatchRequest',
+      ]);
+    });
+
+    it('should pass correct arguments to onBeforeBatchRequest', async () => {
+      const context = createTestContext();
+      const itemIds = ['batch-item-1', 'batch-item-2'];
+
+      await service.batchGetOrCreate(itemIds, testUserId, context);
+
+      const args = TestLifecycleHook.callArgs.get('onBeforeBatchRequest');
+      expect(args).toBeDefined();
+      expect(args![0]).toEqual(itemIds);
+      expect(args![1]).toBe(testUserId);
+      expect(args![2]).toEqual(context);
+    });
+
+    it('should pass correct arguments to onBeforeBatchCreate', async () => {
+      const context = createTestContext();
+      const itemIds = ['batch-item-1', 'batch-item-2'];
+
+      await service.batchGetOrCreate(itemIds, testUserId, context);
+
+      const args = TestLifecycleHook.callArgs.get('onBeforeBatchCreate');
+      expect(args).toBeDefined();
+      expect(args![0]).toEqual(itemIds);
+      expect(args![1]).toBe(testUserId);
+      expect(args![2]).toEqual(context);
+    });
+
+    it('should pass correct arguments to onAfterBatchCreate', async () => {
+      const context = createTestContext();
+      const itemIds = ['batch-item-1', 'batch-item-2'];
+
+      await service.batchGetOrCreate(itemIds, testUserId, context);
+
+      const args = TestLifecycleHook.callArgs.get('onAfterBatchCreate');
+      expect(args).toBeDefined();
+      expect(args![0]).toHaveLength(2);
+      expect((args![0] as DismissibleItemDto[]).map((i) => i.id)).toEqual(itemIds);
+      expect(args![1]).toBe(testUserId);
+      expect(args![2]).toEqual(context);
+    });
+
+    it('should pass correct arguments to onAfterBatchRequest on create', async () => {
+      const context = createTestContext();
+      const itemIds = ['batch-item-1', 'batch-item-2'];
+
+      await service.batchGetOrCreate(itemIds, testUserId, context);
+
+      const args = TestLifecycleHook.callArgs.get('onAfterBatchRequest');
+      expect(args).toBeDefined();
+      expect(args![0]).toHaveLength(2);
+      expect((args![0] as DismissibleItemDto[]).map((i) => i.id)).toEqual(itemIds);
+      expect(args![1]).toBe(testUserId);
+      expect(args![2]).toEqual(context);
+    });
+
+    it('should block operation when onBeforeBatchRequest returns proceed: false', async () => {
+      TestLifecycleHook.shouldBlock.set('onBeforeBatchRequest', true);
+      TestLifecycleHook.blockReason = 'Batch request blocked';
+
+      await expect(
+        service.batchGetOrCreate(['batch-item-1', 'batch-item-2'], testUserId),
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(TestLifecycleHook.calls).toEqual(['onBeforeBatchRequest']);
+    });
+
+    it('should block operation when onBeforeBatchCreate returns proceed: false', async () => {
+      TestLifecycleHook.shouldBlock.set('onBeforeBatchCreate', true);
+      TestLifecycleHook.blockReason = 'Quota exceeded';
+
+      await expect(
+        service.batchGetOrCreate(['batch-item-1', 'batch-item-2'], testUserId),
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(TestLifecycleHook.calls).toEqual(['onBeforeBatchRequest', 'onBeforeBatchCreate']);
+    });
+  });
+
+  describe('batchGetOrCreate - Get Flow', () => {
+    const batchItemIds = ['existing-batch-1', 'existing-batch-2', 'existing-batch-3'];
+
+    beforeEach(async () => {
+      // Pre-create items
+      await service.batchGetOrCreate(batchItemIds, testUserId);
+      TestLifecycleHook.reset();
+    });
+
+    it('should invoke batch hooks in correct order when getting all existing items', async () => {
+      const context = createTestContext();
+
+      await service.batchGetOrCreate(batchItemIds, testUserId, context);
+
+      expect(TestLifecycleHook.calls).toEqual([
+        'onBeforeBatchRequest',
+        'onBeforeBatchGet',
+        'onAfterBatchGet',
+        'onAfterBatchRequest',
+      ]);
+    });
+
+    it('should pass correct arguments to onBeforeBatchGet', async () => {
+      const context = createTestContext();
+
+      await service.batchGetOrCreate(batchItemIds, testUserId, context);
+
+      const args = TestLifecycleHook.callArgs.get('onBeforeBatchGet');
+      expect(args).toBeDefined();
+      expect(args![0]).toEqual(batchItemIds);
+      expect(args![1]).toHaveLength(3);
+      expect((args![1] as DismissibleItemDto[]).map((i) => i.id)).toEqual(batchItemIds);
+      expect(args![2]).toBe(testUserId);
+      expect(args![3]).toEqual(context);
+    });
+
+    it('should pass correct arguments to onAfterBatchGet', async () => {
+      const context = createTestContext();
+
+      await service.batchGetOrCreate(batchItemIds, testUserId, context);
+
+      const args = TestLifecycleHook.callArgs.get('onAfterBatchGet');
+      expect(args).toBeDefined();
+      expect(args![0]).toHaveLength(3);
+      expect((args![0] as DismissibleItemDto[]).map((i) => i.id)).toEqual(batchItemIds);
+      expect(args![1]).toBe(testUserId);
+      expect(args![2]).toEqual(context);
+    });
+
+    it('should block operation when onBeforeBatchGet returns proceed: false', async () => {
+      TestLifecycleHook.shouldBlock.set('onBeforeBatchGet', true);
+      TestLifecycleHook.blockReason = 'Access denied';
+
+      await expect(service.batchGetOrCreate(batchItemIds, testUserId)).rejects.toThrow(
+        ForbiddenException,
+      );
+
+      expect(TestLifecycleHook.calls).toEqual(['onBeforeBatchRequest', 'onBeforeBatchGet']);
+    });
+  });
+
+  describe('batchGetOrCreate - Mixed Flow', () => {
+    const existingItemIds = ['existing-item-1', 'existing-item-2'];
+    const newItemIds = ['new-item-1', 'new-item-2'];
+
+    beforeEach(async () => {
+      // Pre-create some items
+      await service.batchGetOrCreate(existingItemIds, testUserId);
+      TestLifecycleHook.reset();
+    });
+
+    it('should invoke both get and create hooks when batch has mixed items', async () => {
+      const context = createTestContext();
+      const allItemIds = [...existingItemIds, ...newItemIds];
+
+      await service.batchGetOrCreate(allItemIds, testUserId, context);
+
+      expect(TestLifecycleHook.calls).toEqual([
+        'onBeforeBatchRequest',
+        'onBeforeBatchGet',
+        'onAfterBatchGet',
+        'onBeforeBatchCreate',
+        'onAfterBatchCreate',
+        'onAfterBatchRequest',
+      ]);
+    });
+
+    it('should return correct result structure for mixed batch', async () => {
+      const allItemIds = [...existingItemIds, ...newItemIds];
+
+      const result = await service.batchGetOrCreate(allItemIds, testUserId);
+
+      expect(result.items).toHaveLength(4);
+      expect(result.retrievedItems).toHaveLength(2);
+      expect(result.createdItems).toHaveLength(2);
+      expect(result.retrievedItems.map((i) => i.id)).toEqual(existingItemIds);
+      expect(result.createdItems.map((i) => i.id)).toEqual(newItemIds);
+    });
+
+    it('should pass only existing items to onBeforeBatchGet', async () => {
+      const context = createTestContext();
+      const allItemIds = [...existingItemIds, ...newItemIds];
+
+      await service.batchGetOrCreate(allItemIds, testUserId, context);
+
+      const args = TestLifecycleHook.callArgs.get('onBeforeBatchGet');
+      expect(args).toBeDefined();
+      expect(args![0]).toEqual(existingItemIds);
+      expect((args![1] as DismissibleItemDto[]).map((i) => i.id)).toEqual(existingItemIds);
+    });
+
+    it('should pass only new items to onBeforeBatchCreate', async () => {
+      const context = createTestContext();
+      const allItemIds = [...existingItemIds, ...newItemIds];
+
+      await service.batchGetOrCreate(allItemIds, testUserId, context);
+
+      const args = TestLifecycleHook.callArgs.get('onBeforeBatchCreate');
+      expect(args).toBeDefined();
+      expect(args![0]).toEqual(newItemIds);
+    });
+
+    it('should block entire operation when onBeforeBatchGet blocks on mixed batch', async () => {
+      TestLifecycleHook.shouldBlock.set('onBeforeBatchGet', true);
+      const allItemIds = [...existingItemIds, ...newItemIds];
+
+      await expect(service.batchGetOrCreate(allItemIds, testUserId)).rejects.toThrow(
+        ForbiddenException,
+      );
+
+      // Should not proceed to create hooks
+      expect(TestLifecycleHook.calls).not.toContain('onBeforeBatchCreate');
+    });
+
+    it('should block create phase but have already processed get phase', async () => {
+      TestLifecycleHook.shouldBlock.set('onBeforeBatchCreate', true);
+      const allItemIds = [...existingItemIds, ...newItemIds];
+
+      await expect(service.batchGetOrCreate(allItemIds, testUserId)).rejects.toThrow(
+        ForbiddenException,
+      );
+
+      // Get hooks should have run
+      expect(TestLifecycleHook.calls).toContain('onBeforeBatchGet');
+      expect(TestLifecycleHook.calls).toContain('onAfterBatchGet');
+      // Create hook blocked
+      expect(TestLifecycleHook.calls).toContain('onBeforeBatchCreate');
+      expect(TestLifecycleHook.calls).not.toContain('onAfterBatchCreate');
+    });
+  });
+
   describe('full lifecycle flow', () => {
     it('should invoke all hook types through create -> dismiss -> restore cycle', async () => {
       const context = createTestContext();
@@ -616,13 +925,14 @@ describe('DismissibleModule Integration - Multiple Hooks', () => {
     const moduleOptions: IDismissibleModuleOptions = {
       storage: MemoryStorageModule.forRoot(),
       hooks: [ThirdHook, FirstHook, SecondHook], // Intentionally out of order
+      logger: NullLogger,
     };
 
     module = await Test.createTestingModule({
       imports: [DismissibleModule.forRoot(moduleOptions)],
     }).compile();
 
-    service = module.get<DismissibleService>(DismissibleService);
+    service = module.get<DismissibleService>(DISMISSIBLE_SERVICE);
     storage = module.get<MemoryStorageAdapter>(DISMISSIBLE_STORAGE_ADAPTER);
   });
 
@@ -669,13 +979,14 @@ describe('DismissibleModule Integration - No Hooks', () => {
   beforeAll(async () => {
     const moduleOptions: IDismissibleModuleOptions = {
       storage: MemoryStorageModule.forRoot(),
+      logger: NullLogger,
     };
 
     module = await Test.createTestingModule({
       imports: [DismissibleModule.forRoot(moduleOptions)],
     }).compile();
 
-    service = module.get<DismissibleService>(DismissibleService);
+    service = module.get<DismissibleService>(DISMISSIBLE_SERVICE);
     storage = module.get<MemoryStorageAdapter>(DISMISSIBLE_STORAGE_ADAPTER);
   });
 

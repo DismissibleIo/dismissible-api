@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DISMISSIBLE_STORAGE_ADAPTER, IDismissibleStorage } from '@dismissible/nestjs-storage';
 import {
   IGetOrCreateServiceResponse,
+  IBatchGetOrCreateServiceResponse,
   IDismissServiceResponse,
   IRestoreServiceResponse,
 } from './service-responses.interface';
@@ -53,6 +54,19 @@ export class DismissibleCoreService implements IDismissibleCoreService {
   }
 
   /**
+   * Get multiple existing items by user ID and item IDs.
+   * @param itemIds Array of item identifiers
+   * @param userId The user identifier (required)
+   * @returns Map of itemId to item for items that exist
+   */
+  async getMany(itemIds: string[], userId: string): Promise<Map<string, DismissibleItemDto>> {
+    this.logger.debug(`Looking up items in storage`, { itemCount: itemIds.length, userId });
+    const items = await this.storage.getMany(userId, itemIds);
+    this.logger.debug(`Found items`, { requested: itemIds.length, found: items.size, userId });
+    return items;
+  }
+
+  /**
    * Create a new item.
    * @param itemId The item identifier
    * @param userId The user identifier (required)
@@ -81,6 +95,43 @@ export class DismissibleCoreService implements IDismissibleCoreService {
   }
 
   /**
+   * Create multiple new items.
+   * @param itemIds Array of item identifiers
+   * @param userId The user identifier (required)
+   * @returns Array of created items
+   */
+  async createMany(itemIds: string[], userId: string): Promise<DismissibleItemDto[]> {
+    if (itemIds.length === 0) {
+      return [];
+    }
+
+    this.logger.debug(`Creating new items`, {
+      itemCount: itemIds.length,
+      userId,
+    });
+
+    const now = this.dateService.getNow();
+    const itemsToCreate = itemIds.map((itemId) =>
+      this.itemFactory.create({
+        id: itemId,
+        createdAt: now,
+        userId,
+      }),
+    );
+
+    // Validate all items before creating
+    for (const item of itemsToCreate) {
+      await this.validationService.validateInstance(item);
+    }
+
+    const createdItems = await this.storage.createMany(itemsToCreate);
+
+    this.logger.log(`Created new dismissible items`, { itemCount: createdItems.length, userId });
+
+    return createdItems;
+  }
+
+  /**
    * Get an existing item or create a new one.
    * @param itemId The item identifier
    * @param userId The user identifier (required)
@@ -100,6 +151,84 @@ export class DismissibleCoreService implements IDismissibleCoreService {
     return {
       item: createdItem,
       created: true,
+    };
+  }
+
+  /**
+   * Get existing items or create new ones for multiple item IDs.
+   * @param itemIds Array of item identifiers
+   * @param userId The user identifier (required)
+   */
+  async batchGetOrCreate(
+    itemIds: string[],
+    userId: string,
+  ): Promise<IBatchGetOrCreateServiceResponse> {
+    this.logger.debug(`Batch looking up items in storage`, { itemCount: itemIds.length, userId });
+
+    // Get all existing items in one batch query
+    const existingItemsMap = await this.storage.getMany(userId, itemIds);
+
+    // Separate existing items from items to create
+    const retrievedItems: DismissibleItemDto[] = [];
+    const itemIdsToCreate: string[] = [];
+
+    for (const itemId of itemIds) {
+      const existingItem = existingItemsMap.get(itemId);
+      if (existingItem) {
+        retrievedItems.push(existingItem);
+      } else {
+        itemIdsToCreate.push(itemId);
+      }
+    }
+
+    this.logger.debug(`Batch lookup complete`, {
+      userId,
+      requested: itemIds.length,
+      existing: retrievedItems.length,
+      toCreate: itemIdsToCreate.length,
+    });
+
+    // Create missing items
+    let createdItems: DismissibleItemDto[] = [];
+    if (itemIdsToCreate.length > 0) {
+      const now = this.dateService.getNow();
+
+      const itemsToCreate = itemIdsToCreate.map((itemId) =>
+        this.itemFactory.create({
+          id: itemId,
+          createdAt: now,
+          userId,
+        }),
+      );
+
+      // Validate all items before creating
+      for (const item of itemsToCreate) {
+        await this.validationService.validateInstance(item);
+      }
+
+      createdItems = await this.storage.createMany(itemsToCreate);
+
+      this.logger.log(`Batch created new dismissible items`, {
+        userId,
+        created: createdItems.length,
+      });
+    }
+
+    // Combine all items in the original order
+    const allItemsMap = new Map<string, DismissibleItemDto>();
+    for (const item of retrievedItems) {
+      allItemsMap.set(item.id, item);
+    }
+    for (const item of createdItems) {
+      allItemsMap.set(item.id, item);
+    }
+
+    const items = itemIds.map((id) => allItemsMap.get(id)!);
+
+    return {
+      items,
+      retrievedItems,
+      createdItems,
     };
   }
 

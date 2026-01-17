@@ -52,11 +52,46 @@ export class MemoryStorageAdapter implements IDismissibleStorage {
     return item;
   }
 
+  async getMany(userId: string, itemIds: string[]): Promise<Map<string, DismissibleItemDto>> {
+    this.logger.debug(`Storage getMany`, { userId, itemCount: itemIds.length });
+
+    const result = new Map<string, DismissibleItemDto>();
+
+    for (const itemId of itemIds) {
+      const key = this.createKey(userId, itemId);
+      const item = this.storage.get(key);
+      if (item) {
+        result.set(itemId, item);
+      }
+    }
+
+    this.logger.debug(`Storage getMany complete`, {
+      userId,
+      requested: itemIds.length,
+      found: result.size,
+    });
+
+    return result;
+  }
+
   async create(item: DismissibleItemDto): Promise<DismissibleItemDto> {
     const key = this.createKey(item.userId, item.id);
     this.logger.debug(`Storage create`, { userId: item.userId, itemId: item.id, key });
     this.storage.set(key, item);
     return item;
+  }
+
+  async createMany(items: DismissibleItemDto[]): Promise<DismissibleItemDto[]> {
+    this.logger.debug(`Storage createMany`, { itemCount: items.length });
+
+    for (const item of items) {
+      const key = this.createKey(item.userId, item.id);
+      this.storage.set(key, item);
+    }
+
+    this.logger.debug(`Storage createMany complete`, { created: items.length });
+
+    return items;
   }
 
   async update(item: DismissibleItemDto): Promise<DismissibleItemDto> {

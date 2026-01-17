@@ -3,6 +3,7 @@ import {
   DISMISSIBLE_HOOKS,
   IDismissibleLifecycleHook,
   IHookResult,
+  IBatchHookResult,
 } from '@dismissible/nestjs-hooks';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { DismissibleItemDto } from '@dismissible/nestjs-item';
@@ -18,6 +19,26 @@ export interface IHookRunResult {
 
   /** The (potentially mutated) item ID */
   id: string;
+
+  /** The (potentially mutated) user ID */
+  userId: string;
+
+  /** The (potentially mutated) request context */
+  context?: IRequestContext;
+
+  /** Reason for blocking (if proceed is false) */
+  reason?: string;
+}
+
+/**
+ * Result from running batch pre-hooks.
+ */
+export interface IBatchHookRunResult {
+  /** Whether the operation should proceed */
+  proceed: boolean;
+
+  /** The (potentially mutated) item IDs */
+  itemIds: string[];
 
   /** The (potentially mutated) user ID */
   userId: string;
@@ -361,9 +382,276 @@ export class HookRunner implements IHookRunner {
   /**
    * Throw ForbiddenException if the hook result indicates the operation was blocked.
    */
-  static throwIfBlocked(result: IHookRunResult): void {
+  static throwIfBlocked(result: IHookRunResult | IBatchHookRunResult): void {
     if (!result.proceed) {
       throw new ForbiddenException(result.reason ?? 'Operation blocked by lifecycle hook');
+    }
+  }
+
+  // ============================================================
+  // Batch Hook Methods
+  // ============================================================
+
+  /**
+   * Run pre-batch-request hooks (global - runs at start of any batch operation).
+   */
+  async runPreBatchRequest(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookRunResult> {
+    return this.runBatchPreHooks('onBeforeBatchRequest', itemIds, userId, context);
+  }
+
+  /**
+   * Run post-batch-request hooks (global - runs at end of any batch operation).
+   */
+  async runPostBatchRequest(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    await this.runBatchPostHooks('onAfterBatchRequest', items, userId, context);
+  }
+
+  /**
+   * Run pre-batch-get hooks (when items exist and are about to be returned).
+   */
+  async runPreBatchGet(
+    itemIds: string[],
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookRunResult> {
+    return this.runBatchPreHooksWithItems('onBeforeBatchGet', itemIds, items, userId, context);
+  }
+
+  /**
+   * Run post-batch-get hooks (after items are returned).
+   */
+  async runPostBatchGet(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    await this.runBatchPostHooks('onAfterBatchGet', items, userId, context);
+  }
+
+  /**
+   * Run pre-batch-create hooks.
+   */
+  async runPreBatchCreate(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookRunResult> {
+    return this.runBatchPreHooks('onBeforeBatchCreate', itemIds, userId, context);
+  }
+
+  /**
+   * Run post-batch-create hooks.
+   */
+  async runPostBatchCreate(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    await this.runBatchPostHooks('onAfterBatchCreate', items, userId, context);
+  }
+
+  /**
+   * Internal method to run batch pre-hooks.
+   */
+  private async runBatchPreHooks(
+    hookName: keyof IDismissibleLifecycleHook,
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookRunResult> {
+    let currentItemIds = [...itemIds];
+    let currentUserId = userId;
+    let currentContext = context ? { ...context } : undefined;
+
+    for (const hook of this.sortedHooks) {
+      const hookFn = hook[hookName] as
+        | ((
+            itemIds: string[],
+            userId: string,
+            context?: IRequestContext,
+          ) => Promise<IBatchHookResult> | IBatchHookResult)
+        | undefined;
+
+      if (hookFn) {
+        try {
+          const result = await hookFn.call(hook, currentItemIds, currentUserId, currentContext);
+
+          if (!result.proceed) {
+            this.logger.debug(`Hook ${hook.constructor.name}.${hookName} blocked batch operation`, {
+              itemCount: currentItemIds.length,
+              userId: currentUserId,
+              reason: result.reason,
+            });
+
+            return {
+              proceed: false,
+              itemIds: currentItemIds,
+              userId: currentUserId,
+              context: currentContext,
+              reason: result.reason,
+            };
+          }
+
+          if (result.mutations) {
+            if (result.mutations.itemIds !== undefined) {
+              currentItemIds = result.mutations.itemIds;
+            }
+            if (result.mutations.userId !== undefined) {
+              currentUserId = result.mutations.userId;
+            }
+            if (result.mutations.context && currentContext) {
+              currentContext = { ...currentContext, ...result.mutations.context };
+            }
+          }
+        } catch (error) {
+          this.logger.error(
+            `Error in hook ${hook.constructor.name}.${hookName}`,
+            error instanceof Error ? error : new Error(String(error)),
+            {
+              itemCount: currentItemIds.length,
+              userId: currentUserId,
+            },
+          );
+          throw error;
+        }
+      }
+    }
+
+    return {
+      proceed: true,
+      itemIds: currentItemIds,
+      userId: currentUserId,
+      context: currentContext,
+    };
+  }
+
+  /**
+   * Internal method to run batch pre-hooks that receive items (e.g., onBeforeBatchGet).
+   */
+  private async runBatchPreHooksWithItems(
+    hookName: keyof IDismissibleLifecycleHook,
+    itemIds: string[],
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookRunResult> {
+    let currentItemIds = [...itemIds];
+    let currentUserId = userId;
+    let currentContext = context ? { ...context } : undefined;
+
+    for (const hook of this.sortedHooks) {
+      const hookFn = hook[hookName] as
+        | ((
+            itemIds: string[],
+            items: DismissibleItemDto[],
+            userId: string,
+            context?: IRequestContext,
+          ) => Promise<IBatchHookResult> | IBatchHookResult)
+        | undefined;
+
+      if (hookFn) {
+        try {
+          const result = await hookFn.call(
+            hook,
+            currentItemIds,
+            items,
+            currentUserId,
+            currentContext,
+          );
+
+          if (!result.proceed) {
+            this.logger.debug(`Hook ${hook.constructor.name}.${hookName} blocked batch operation`, {
+              itemCount: currentItemIds.length,
+              userId: currentUserId,
+              reason: result.reason,
+            });
+
+            return {
+              proceed: false,
+              itemIds: currentItemIds,
+              userId: currentUserId,
+              context: currentContext,
+              reason: result.reason,
+            };
+          }
+
+          if (result.mutations) {
+            if (result.mutations.itemIds !== undefined) {
+              currentItemIds = result.mutations.itemIds;
+            }
+            if (result.mutations.userId !== undefined) {
+              currentUserId = result.mutations.userId;
+            }
+            if (result.mutations.context && currentContext) {
+              currentContext = { ...currentContext, ...result.mutations.context };
+            }
+          }
+        } catch (error) {
+          this.logger.error(
+            `Error in hook ${hook.constructor.name}.${hookName}`,
+            error instanceof Error ? error : new Error(String(error)),
+            {
+              itemCount: currentItemIds.length,
+              userId: currentUserId,
+            },
+          );
+          throw error;
+        }
+      }
+    }
+
+    return {
+      proceed: true,
+      itemIds: currentItemIds,
+      userId: currentUserId,
+      context: currentContext,
+    };
+  }
+
+  /**
+   * Internal method to run batch post-hooks.
+   * Post-hooks run in reverse priority order.
+   */
+  private async runBatchPostHooks(
+    hookName: keyof IDismissibleLifecycleHook,
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    const reversedHooks = [...this.sortedHooks].reverse();
+
+    for (const hook of reversedHooks) {
+      const hookFn = hook[hookName] as
+        | ((
+            items: DismissibleItemDto[],
+            userId: string,
+            context?: IRequestContext,
+          ) => Promise<void> | void)
+        | undefined;
+
+      if (hookFn) {
+        try {
+          await hookFn.call(hook, items, userId, context);
+        } catch (error) {
+          this.logger.error(
+            `Error in hook ${hook.constructor.name}.${hookName}`,
+            error instanceof Error ? error : new Error(String(error)),
+            {
+              itemCount: items.length,
+              userId,
+            },
+          );
+        }
+      }
     }
   }
 }

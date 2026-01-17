@@ -11,7 +11,9 @@ describe('PostgresStorageAdapter', () => {
   let mockItemFactory: DismissibleItemFactory;
   let mockDismissibleItem: {
     findUnique: jest.Mock;
+    findMany: jest.Mock;
     create: jest.Mock;
+    createMany: jest.Mock;
     update: jest.Mock;
   };
 
@@ -22,7 +24,9 @@ describe('PostgresStorageAdapter', () => {
 
     mockDismissibleItem = {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
+      createMany: jest.fn(),
       update: jest.fn(),
     };
 
@@ -155,6 +159,102 @@ describe('PostgresStorageAdapter', () => {
         userId: 'user-123',
         itemId: 'item-456',
       });
+    });
+  });
+
+  describe('getMany', () => {
+    it('should return empty map when no items found', async () => {
+      mockDismissibleItem.findMany.mockResolvedValue([]);
+
+      const result = await adapter.getMany('user-123', ['item-1', 'item-2']);
+
+      expect(result.size).toBe(0);
+      expect(mockDismissibleItem.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: 'user-123',
+          id: { in: ['item-1', 'item-2'] },
+        },
+      });
+    });
+
+    it('should return map with found items', async () => {
+      const dbItems = [
+        {
+          id: 'item-1',
+          userId: 'user-123',
+          createdAt: new Date('2024-01-15T10:30:00.000Z'),
+          dismissedAt: null,
+        },
+        {
+          id: 'item-2',
+          userId: 'user-123',
+          createdAt: new Date('2024-01-15T10:30:00.000Z'),
+          dismissedAt: new Date('2024-01-15T12:00:00.000Z'),
+        },
+      ];
+      mockDismissibleItem.findMany.mockResolvedValue(dbItems);
+
+      const result = await adapter.getMany('user-123', ['item-1', 'item-2', 'item-3']);
+
+      expect(result.size).toBe(2);
+      expect(result.get('item-1')).toEqual({
+        id: 'item-1',
+        userId: 'user-123',
+        createdAt: new Date('2024-01-15T10:30:00.000Z'),
+        dismissedAt: undefined,
+      });
+      expect(result.get('item-2')).toEqual({
+        id: 'item-2',
+        userId: 'user-123',
+        createdAt: new Date('2024-01-15T10:30:00.000Z'),
+        dismissedAt: new Date('2024-01-15T12:00:00.000Z'),
+      });
+      expect(result.has('item-3')).toBe(false);
+    });
+  });
+
+  describe('createMany', () => {
+    it('should create multiple items', async () => {
+      const items: DismissibleItemDto[] = [
+        {
+          id: 'item-1',
+          userId: 'user-123',
+          createdAt: new Date('2024-01-15T10:30:00.000Z'),
+        },
+        {
+          id: 'item-2',
+          userId: 'user-123',
+          createdAt: new Date('2024-01-15T10:30:00.000Z'),
+        },
+      ];
+      mockDismissibleItem.createMany.mockResolvedValue({ count: 2 });
+
+      const result = await adapter.createMany(items);
+
+      expect(result).toEqual(items);
+      expect(mockDismissibleItem.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            id: 'item-1',
+            userId: 'user-123',
+            createdAt: new Date('2024-01-15T10:30:00.000Z'),
+            dismissedAt: null,
+          },
+          {
+            id: 'item-2',
+            userId: 'user-123',
+            createdAt: new Date('2024-01-15T10:30:00.000Z'),
+            dismissedAt: null,
+          },
+        ],
+      });
+    });
+
+    it('should return empty array when creating empty array', async () => {
+      const result = await adapter.createMany([]);
+
+      expect(result).toEqual([]);
+      expect(mockDismissibleItem.createMany).not.toHaveBeenCalled();
     });
   });
 });

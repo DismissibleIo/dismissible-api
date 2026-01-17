@@ -1,6 +1,7 @@
 import { DismissibleItemDto } from '@dismissible/nestjs-item';
 import {
   IGetOrCreateServiceResponse,
+  IBatchGetOrCreateServiceResponse,
   IDismissServiceResponse,
   IRestoreServiceResponse,
 } from './service-responses.interface';
@@ -24,6 +25,14 @@ export interface IDismissibleCoreService {
   get(itemId: string, userId: string): Promise<DismissibleItemDto | null>;
 
   /**
+   * Get multiple existing items by user ID and item IDs.
+   * @param itemIds Array of item identifiers
+   * @param userId The user identifier (required)
+   * @returns Map of itemId to item for items that exist
+   */
+  getMany(itemIds: string[], userId: string): Promise<Map<string, DismissibleItemDto>>;
+
+  /**
    * Create a new item.
    * @param itemId The item identifier
    * @param userId The user identifier (required)
@@ -32,11 +41,26 @@ export interface IDismissibleCoreService {
   create(itemId: string, userId: string): Promise<DismissibleItemDto>;
 
   /**
+   * Create multiple new items.
+   * @param itemIds Array of item identifiers
+   * @param userId The user identifier (required)
+   * @returns Array of created items
+   */
+  createMany(itemIds: string[], userId: string): Promise<DismissibleItemDto[]>;
+
+  /**
    * Get an existing item or create a new one.
    * @param itemId The item identifier
    * @param userId The user identifier (required)
    */
   getOrCreate(itemId: string, userId: string): Promise<IGetOrCreateServiceResponse>;
+
+  /**
+   * Get existing items or create new ones for multiple item IDs.
+   * @param itemIds Array of item identifiers
+   * @param userId The user identifier (required)
+   */
+  batchGetOrCreate(itemIds: string[], userId: string): Promise<IBatchGetOrCreateServiceResponse>;
 
   /**
    * Dismiss an item.

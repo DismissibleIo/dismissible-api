@@ -35,6 +35,34 @@ export interface IHookResult {
 }
 
 /**
+ * Mutations that can be applied by batch pre-hooks.
+ */
+export interface IBatchHookMutations {
+  /** Mutated item IDs (can filter or transform the array) */
+  itemIds?: string[];
+
+  /** Mutated user ID */
+  userId?: string;
+
+  /** Mutated request context */
+  context?: Partial<IRequestContext>;
+}
+
+/**
+ * Result returned by batch pre-hooks.
+ */
+export interface IBatchHookResult {
+  /** Whether the operation should proceed */
+  proceed: boolean;
+
+  /** Optional reason if the operation is blocked */
+  reason?: string;
+
+  /** Optional mutations to apply */
+  mutations?: IBatchHookMutations;
+}
+
+/**
  * Interface for lifecycle hooks that can intercept dismissible operations.
  */
 export interface IDismissibleLifecycleHook {
@@ -142,6 +170,72 @@ export interface IDismissibleLifecycleHook {
   onAfterRestore?(
     itemId: string,
     item: DismissibleItemDto,
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> | void;
+
+  // ============================================================
+  // Batch Hooks - for batch operations (batchGetOrCreate)
+  // ============================================================
+
+  /**
+   * Called at the start of any batch operation.
+   * Use for global concerns like authentication, rate limiting, request validation.
+   * Can filter or transform the itemIds array via mutations.
+   */
+  onBeforeBatchRequest?(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> | IBatchHookResult;
+
+  /**
+   * Called at the end of any batch operation.
+   * Use for global concerns like audit logging, metrics, cleanup.
+   */
+  onAfterBatchRequest?(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> | void;
+
+  /**
+   * Called before returning existing items in a batch operation.
+   * Only called when items exist in storage.
+   * Use for access control based on item state.
+   */
+  onBeforeBatchGet?(
+    itemIds: string[],
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> | IBatchHookResult;
+
+  /**
+   * Called after returning existing items in a batch operation.
+   */
+  onAfterBatchGet?(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> | void;
+
+  /**
+   * Called before creating new items in a batch operation.
+   * Only receives IDs for items that don't exist yet.
+   * Use for plan limits, quota checks, etc.
+   */
+  onBeforeBatchCreate?(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> | IBatchHookResult;
+
+  /**
+   * Called after creating new items in a batch operation.
+   */
+  onAfterBatchCreate?(
+    items: DismissibleItemDto[],
     userId: string,
     context?: IRequestContext,
   ): Promise<void> | void;
