@@ -8,6 +8,7 @@ import {
   DeleteCommand,
   ScanCommand,
   BatchWriteCommand,
+  BatchGetCommand,
 } from '@aws-sdk/lib-dynamodb';
 import {
   DynamoDBStorageConfig,
@@ -67,6 +68,34 @@ export class DynamoDBClientService implements OnModuleInit, OnModuleDestroy {
     return response.Item ?? null;
   }
 
+  async getMany(userId: string, itemIds: string[]): Promise<Record<string, any>[]> {
+    if (itemIds.length === 0) {
+      return [];
+    }
+
+    const results: Record<string, any>[] = [];
+    const batches = this.chunkArray(itemIds, 100); // DynamoDB BatchGetItem limit is 100
+
+    for (const batch of batches) {
+      const keys = batch.map((itemId) => ({ userId, id: itemId }));
+
+      const response = await this.documentClient.send(
+        new BatchGetCommand({
+          RequestItems: {
+            [this.config.tableName]: {
+              Keys: keys,
+            },
+          },
+        }),
+      );
+
+      const items = response.Responses?.[this.config.tableName] ?? [];
+      results.push(...items);
+    }
+
+    return results;
+  }
+
   async create(item: Record<string, any>): Promise<void> {
     await this.documentClient.send(
       new PutCommand({
@@ -74,6 +103,30 @@ export class DynamoDBClientService implements OnModuleInit, OnModuleDestroy {
         Item: item,
       }),
     );
+  }
+
+  async createMany(items: Record<string, any>[]): Promise<void> {
+    if (items.length === 0) {
+      return;
+    }
+
+    const batches = this.chunkArray(items, 25); // DynamoDB BatchWriteItem limit is 25
+
+    for (const batch of batches) {
+      const putRequests = batch.map((item) => ({
+        PutRequest: {
+          Item: item,
+        },
+      }));
+
+      await this.documentClient.send(
+        new BatchWriteCommand({
+          RequestItems: {
+            [this.config.tableName]: putRequests,
+          },
+        }),
+      );
+    }
   }
 
   async update(userId: string, itemId: string, dismissedAt: string | null): Promise<void> {

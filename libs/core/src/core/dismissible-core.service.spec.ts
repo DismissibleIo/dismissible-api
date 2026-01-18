@@ -122,6 +122,222 @@ describe('DismissibleCoreService', () => {
     });
   });
 
+  describe('getMany', () => {
+    it('should return a map of existing items', async () => {
+      const userId = 'user-123';
+      const item1 = createTestItem({ id: 'item-1', userId });
+      const item2 = createTestItem({ id: 'item-2', userId });
+      const itemsMap = new Map([
+        ['item-1', item1],
+        ['item-2', item2],
+      ]);
+
+      storage.getMany.mockResolvedValue(itemsMap);
+
+      const result = await service.getMany(['item-1', 'item-2'], userId);
+
+      expect(result.size).toBe(2);
+      expect(result.get('item-1')).toEqual(item1);
+      expect(result.get('item-2')).toEqual(item2);
+      expect(storage.getMany).toHaveBeenCalledWith(userId, ['item-1', 'item-2']);
+    });
+
+    it('should return empty map when no items exist', async () => {
+      const userId = 'user-123';
+      storage.getMany.mockResolvedValue(new Map());
+
+      const result = await service.getMany(['non-existent-1', 'non-existent-2'], userId);
+
+      expect(result.size).toBe(0);
+    });
+
+    it('should return partial map when some items exist', async () => {
+      const userId = 'user-123';
+      const existingItem = createTestItem({ id: 'existing', userId });
+      const itemsMap = new Map([['existing', existingItem]]);
+
+      storage.getMany.mockResolvedValue(itemsMap);
+
+      const result = await service.getMany(['existing', 'non-existent'], userId);
+
+      expect(result.size).toBe(1);
+      expect(result.get('existing')).toEqual(existingItem);
+      expect(result.get('non-existent')).toBeUndefined();
+    });
+  });
+
+  describe('createMany', () => {
+    it('should create multiple new items', async () => {
+      const userId = 'user-123';
+      const testDate = new Date('2024-01-15T10:00:00.000Z');
+      const item1 = createTestItem({ id: 'item-1', userId, createdAt: testDate });
+      const item2 = createTestItem({ id: 'item-2', userId, createdAt: testDate });
+
+      mockDateService.getNow.mockReturnValue(testDate);
+      itemFactory.create.mockReturnValueOnce(item1).mockReturnValueOnce(item2);
+      storage.createMany.mockResolvedValue([item1, item2]);
+
+      const result = await service.createMany(['item-1', 'item-2'], userId);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('item-1');
+      expect(result[1].id).toBe('item-2');
+      expect(storage.createMany).toHaveBeenCalledWith([item1, item2]);
+    });
+
+    it('should return empty array when no itemIds provided', async () => {
+      const userId = 'user-123';
+
+      const result = await service.createMany([], userId);
+
+      expect(result).toEqual([]);
+      expect(storage.createMany).not.toHaveBeenCalled();
+    });
+
+    it('should validate all items before creating', async () => {
+      const userId = 'user-123';
+      const testDate = new Date('2024-01-15T10:00:00.000Z');
+      const item1 = createTestItem({ id: 'item-1', userId, createdAt: testDate });
+      const item2 = createTestItem({ id: 'item-2', userId, createdAt: testDate });
+
+      mockDateService.getNow.mockReturnValue(testDate);
+      itemFactory.create.mockReturnValueOnce(item1).mockReturnValueOnce(item2);
+      storage.createMany.mockResolvedValue([item1, item2]);
+
+      await service.createMany(['item-1', 'item-2'], userId);
+
+      expect(validationService.validateInstance).toHaveBeenCalledTimes(2);
+      expect(validationService.validateInstance).toHaveBeenCalledWith(item1);
+      expect(validationService.validateInstance).toHaveBeenCalledWith(item2);
+    });
+
+    it('should throw BadRequestException when validation fails', async () => {
+      const userId = 'user-123';
+      const testDate = new Date('2024-01-15T10:00:00.000Z');
+      const item1 = createTestItem({ id: 'item-1', userId, createdAt: testDate });
+
+      mockDateService.getNow.mockReturnValue(testDate);
+      itemFactory.create.mockReturnValue(item1);
+      validationService.validateInstance.mockRejectedValue(new BadRequestException('Invalid item'));
+
+      await expect(service.createMany(['item-1'], userId)).rejects.toThrow(BadRequestException);
+      expect(storage.createMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('batchGetOrCreate', () => {
+    it('should return all existing items when all exist', async () => {
+      const userId = 'user-123';
+      const item1 = createTestItem({ id: 'item-1', userId });
+      const item2 = createTestItem({ id: 'item-2', userId });
+      const existingMap = new Map([
+        ['item-1', item1],
+        ['item-2', item2],
+      ]);
+
+      storage.getMany.mockResolvedValue(existingMap);
+
+      const result = await service.batchGetOrCreate(['item-1', 'item-2'], userId);
+
+      expect(result.items).toHaveLength(2);
+      expect(result.retrievedItems).toHaveLength(2);
+      expect(result.createdItems).toHaveLength(0);
+      expect(storage.createMany).not.toHaveBeenCalled();
+    });
+
+    it('should create all items when none exist', async () => {
+      const userId = 'user-123';
+      const testDate = new Date('2024-01-15T10:00:00.000Z');
+      const item1 = createTestItem({ id: 'item-1', userId, createdAt: testDate });
+      const item2 = createTestItem({ id: 'item-2', userId, createdAt: testDate });
+
+      storage.getMany.mockResolvedValue(new Map());
+      mockDateService.getNow.mockReturnValue(testDate);
+      itemFactory.create.mockReturnValueOnce(item1).mockReturnValueOnce(item2);
+      storage.createMany.mockResolvedValue([item1, item2]);
+
+      const result = await service.batchGetOrCreate(['item-1', 'item-2'], userId);
+
+      expect(result.items).toHaveLength(2);
+      expect(result.retrievedItems).toHaveLength(0);
+      expect(result.createdItems).toHaveLength(2);
+      expect(storage.createMany).toHaveBeenCalled();
+    });
+
+    it('should handle mixed existing and new items', async () => {
+      const userId = 'user-123';
+      const testDate = new Date('2024-01-15T10:00:00.000Z');
+      const existingItem = createTestItem({ id: 'existing', userId });
+      const newItem = createTestItem({ id: 'new-item', userId, createdAt: testDate });
+
+      storage.getMany.mockResolvedValue(new Map([['existing', existingItem]]));
+      mockDateService.getNow.mockReturnValue(testDate);
+      itemFactory.create.mockReturnValue(newItem);
+      storage.createMany.mockResolvedValue([newItem]);
+
+      const result = await service.batchGetOrCreate(['existing', 'new-item'], userId);
+
+      expect(result.items).toHaveLength(2);
+      expect(result.retrievedItems).toHaveLength(1);
+      expect(result.retrievedItems[0].id).toBe('existing');
+      expect(result.createdItems).toHaveLength(1);
+      expect(result.createdItems[0].id).toBe('new-item');
+    });
+
+    it('should preserve original order of items', async () => {
+      const userId = 'user-123';
+      const testDate = new Date('2024-01-15T10:00:00.000Z');
+      const item1 = createTestItem({ id: 'item-1', userId });
+      const item2 = createTestItem({ id: 'item-2', userId, createdAt: testDate });
+      const item3 = createTestItem({ id: 'item-3', userId });
+
+      storage.getMany.mockResolvedValue(
+        new Map([
+          ['item-1', item1],
+          ['item-3', item3],
+        ]),
+      );
+      mockDateService.getNow.mockReturnValue(testDate);
+      itemFactory.create.mockReturnValue(item2);
+      storage.createMany.mockResolvedValue([item2]);
+
+      const result = await service.batchGetOrCreate(['item-1', 'item-2', 'item-3'], userId);
+
+      expect(result.items.map((i) => i.id)).toEqual(['item-1', 'item-2', 'item-3']);
+    });
+
+    it('should validate items before creating', async () => {
+      const userId = 'user-123';
+      const testDate = new Date('2024-01-15T10:00:00.000Z');
+      const newItem = createTestItem({ id: 'new-item', userId, createdAt: testDate });
+
+      storage.getMany.mockResolvedValue(new Map());
+      mockDateService.getNow.mockReturnValue(testDate);
+      itemFactory.create.mockReturnValue(newItem);
+      storage.createMany.mockResolvedValue([newItem]);
+
+      await service.batchGetOrCreate(['new-item'], userId);
+
+      expect(validationService.validateInstance).toHaveBeenCalledWith(newItem);
+    });
+
+    it('should throw BadRequestException when validation fails', async () => {
+      const userId = 'user-123';
+      const testDate = new Date('2024-01-15T10:00:00.000Z');
+      const newItem = createTestItem({ id: 'new-item', userId, createdAt: testDate });
+
+      storage.getMany.mockResolvedValue(new Map());
+      mockDateService.getNow.mockReturnValue(testDate);
+      itemFactory.create.mockReturnValue(newItem);
+      validationService.validateInstance.mockRejectedValue(new BadRequestException('Invalid item'));
+
+      await expect(service.batchGetOrCreate(['new-item'], userId)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(storage.createMany).not.toHaveBeenCalled();
+    });
+  });
+
   describe('getOrCreate', () => {
     it('should create a new item when it does not exist', async () => {
       const testDate = new Date('2024-01-15T10:00:00.000Z');

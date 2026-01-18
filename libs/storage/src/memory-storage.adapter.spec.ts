@@ -104,6 +104,87 @@ describe('MemoryStorageAdapter', () => {
     });
   });
 
+  describe('getMany', () => {
+    it('should return empty map when no items exist', async () => {
+      const result = await adapter.getMany('user-1', ['item-1', 'item-2']);
+
+      expect(result.size).toBe(0);
+      expect(mockLogger.debug).toHaveBeenCalledWith('Storage getMany', {
+        userId: 'user-1',
+        itemCount: 2,
+      });
+    });
+
+    it('should return map with existing items only', async () => {
+      const item1 = itemFactory.create({
+        id: 'item-1',
+        userId: 'user-1',
+        createdAt: new Date('2024-01-15T10:00:00.000Z'),
+      });
+      const item2 = itemFactory.create({
+        id: 'item-2',
+        userId: 'user-1',
+        createdAt: new Date('2024-01-15T10:00:00.000Z'),
+      });
+
+      await adapter.create(item1);
+      await adapter.create(item2);
+
+      const result = await adapter.getMany('user-1', ['item-1', 'item-2', 'item-3']);
+
+      expect(result.size).toBe(2);
+      expect(result.get('item-1')).toEqual(item1);
+      expect(result.get('item-2')).toEqual(item2);
+      expect(result.has('item-3')).toBe(false);
+    });
+
+    it('should not return items for different user', async () => {
+      const item = itemFactory.create({
+        id: 'item-1',
+        userId: 'user-1',
+        createdAt: new Date('2024-01-15T10:00:00.000Z'),
+      });
+
+      await adapter.create(item);
+
+      const result = await adapter.getMany('user-2', ['item-1']);
+
+      expect(result.size).toBe(0);
+    });
+  });
+
+  describe('createMany', () => {
+    it('should create multiple items at once', async () => {
+      const items = [
+        itemFactory.create({
+          id: 'item-1',
+          userId: 'user-1',
+          createdAt: new Date('2024-01-15T10:00:00.000Z'),
+        }),
+        itemFactory.create({
+          id: 'item-2',
+          userId: 'user-1',
+          createdAt: new Date('2024-01-15T10:00:00.000Z'),
+        }),
+      ];
+
+      const result = await adapter.createMany(items);
+
+      expect(result).toEqual(items);
+      expect(adapter.size).toBe(2);
+      expect(mockLogger.debug).toHaveBeenCalledWith('Storage createMany', {
+        itemCount: 2,
+      });
+    });
+
+    it('should return empty array when creating empty array', async () => {
+      const result = await adapter.createMany([]);
+
+      expect(result).toEqual([]);
+      expect(adapter.size).toBe(0);
+    });
+  });
+
   describe('update', () => {
     it('should update an existing item', async () => {
       const item = itemFactory.create({

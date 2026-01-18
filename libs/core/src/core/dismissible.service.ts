@@ -9,6 +9,7 @@ import { IHookRunner, DISMISSIBLE_HOOK_RUNNER } from './hook-runner.interface';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import {
   IGetOrCreateServiceResponse,
+  IBatchGetOrCreateServiceResponse,
   IDismissServiceResponse,
   IRestoreServiceResponse,
 } from './service-responses.interface';
@@ -23,6 +24,7 @@ import {
 } from '../events';
 import { IValidationService, DISMISSIBLE_VALIDATION_SERVICE } from '@dismissible/nestjs-validation';
 import { DismissibleInputDto } from '../validation';
+import { DismissibleItemDto } from '@dismissible/nestjs-item';
 
 /**
  * Main orchestration service for dismissible operations.
@@ -128,6 +130,123 @@ export class DismissibleService implements IDismissibleService {
     return {
       item: createdItem,
       created: true,
+    };
+  }
+
+  /**
+   * Get existing items or create new ones for multiple item IDs.
+   * @param itemIds Array of item identifiers (max 50)
+   * @param userId The user identifier (required)
+   * @param context Optional request context for tracing
+   */
+  async batchGetOrCreate(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchGetOrCreateServiceResponse> {
+    this.logger.debug(`batchGetOrCreate called`, { itemCount: itemIds.length, userId });
+
+    // Validate all inputs
+    for (const itemId of itemIds) {
+      await this.validateInput(itemId, userId);
+    }
+
+    // Run pre-batch-request hook (can block or filter itemIds)
+    const preBatchRequestResult = await this.hookRunner.runPreBatchRequest(
+      itemIds,
+      userId,
+      context,
+    );
+    HookRunner.throwIfBlocked(preBatchRequestResult);
+
+    const resolvedItemIds = preBatchRequestResult.itemIds;
+    const resolvedUserId = preBatchRequestResult.userId;
+    const resolvedContext = preBatchRequestResult.context;
+
+    // Get existing items
+    const existingItemsMap = await this.coreService.getMany(resolvedItemIds, resolvedUserId);
+
+    // Separate existing and missing items
+    const retrievedItems: DismissibleItemDto[] = [];
+    const existingItemIds: string[] = [];
+    const itemIdsToCreate: string[] = [];
+
+    for (const itemId of resolvedItemIds) {
+      const existingItem = existingItemsMap.get(itemId);
+      if (existingItem) {
+        retrievedItems.push(existingItem);
+        existingItemIds.push(itemId);
+      } else {
+        itemIdsToCreate.push(itemId);
+      }
+    }
+
+    // Run pre-batch-get hook if there are existing items (can block)
+    if (retrievedItems.length > 0) {
+      const preBatchGetResult = await this.hookRunner.runPreBatchGet(
+        existingItemIds,
+        retrievedItems,
+        resolvedUserId,
+        resolvedContext,
+      );
+      HookRunner.throwIfBlocked(preBatchGetResult);
+
+      // Emit events for each retrieved item
+      for (const item of retrievedItems) {
+        this.eventEmitter.emit(
+          DismissibleEvents.ITEM_RETRIEVED,
+          new ItemRetrievedEvent(item.id, item, resolvedUserId, resolvedContext),
+        );
+      }
+
+      await this.hookRunner.runPostBatchGet(retrievedItems, resolvedUserId, resolvedContext);
+    }
+
+    // Create missing items
+    let createdItems: DismissibleItemDto[] = [];
+    if (itemIdsToCreate.length > 0) {
+      // Run pre-batch-create hook (can block or filter itemIds to create)
+      const preBatchCreateResult = await this.hookRunner.runPreBatchCreate(
+        itemIdsToCreate,
+        resolvedUserId,
+        resolvedContext,
+      );
+      HookRunner.throwIfBlocked(preBatchCreateResult);
+
+      const finalItemIdsToCreate = preBatchCreateResult.itemIds;
+
+      if (finalItemIdsToCreate.length > 0) {
+        // Create items via core service
+        createdItems = await this.coreService.createMany(finalItemIdsToCreate, resolvedUserId);
+
+        // Emit events for each created item
+        for (const item of createdItems) {
+          this.eventEmitter.emit(
+            DismissibleEvents.ITEM_CREATED,
+            new ItemCreatedEvent(item.id, item, resolvedUserId, resolvedContext),
+          );
+        }
+
+        await this.hookRunner.runPostBatchCreate(createdItems, resolvedUserId, resolvedContext);
+      }
+    }
+
+    // Combine all items
+    const items = [...retrievedItems, ...createdItems];
+
+    // Run post-batch-request hook
+    await this.hookRunner.runPostBatchRequest(items, resolvedUserId, resolvedContext);
+
+    this.logger.debug(`batchGetOrCreate completed`, {
+      itemCount: items.length,
+      retrieved: retrievedItems.length,
+      created: createdItems.length,
+    });
+
+    return {
+      items,
+      retrievedItems,
+      createdItems,
     };
   }
 

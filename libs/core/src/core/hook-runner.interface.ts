@@ -1,6 +1,6 @@
 import { DismissibleItemDto } from '@dismissible/nestjs-item';
 import { IRequestContext } from '@dismissible/nestjs-request';
-import { IHookRunResult } from './hook-runner.service';
+import { IHookRunResult, IBatchHookRunResult } from './hook-runner.service';
 
 /**
  * Injection token for the hook runner provider.
@@ -91,6 +91,68 @@ export interface IHookRunner {
   runPostRestore(
     itemId: string,
     item: DismissibleItemDto,
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void>;
+
+  // ============================================================
+  // Batch Hook Methods
+  // ============================================================
+
+  /**
+   * Run pre-batch-request hooks (global - runs at start of any batch operation).
+   * Use for authentication, rate limiting, request validation.
+   */
+  runPreBatchRequest(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookRunResult>;
+
+  /**
+   * Run post-batch-request hooks (global - runs at end of any batch operation).
+   * Use for audit logging, metrics, cleanup.
+   */
+  runPostBatchRequest(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void>;
+
+  /**
+   * Run pre-batch-get hooks (when items exist and are about to be returned).
+   * Receives the items for access control based on item state.
+   */
+  runPreBatchGet(
+    itemIds: string[],
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookRunResult>;
+
+  /**
+   * Run post-batch-get hooks (after items are returned).
+   */
+  runPostBatchGet(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void>;
+
+  /**
+   * Run pre-batch-create hooks.
+   */
+  runPreBatchCreate(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookRunResult>;
+
+  /**
+   * Run post-batch-create hooks.
+   */
+  runPostBatchCreate(
+    items: DismissibleItemDto[],
     userId: string,
     context?: IRequestContext,
   ): Promise<void>;

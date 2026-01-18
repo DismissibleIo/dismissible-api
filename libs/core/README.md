@@ -78,6 +78,7 @@ The module automatically registers REST endpoints for all operations:
 - `GET /v1/users/:userId/items/:itemId` - Get or create an item
 - `DELETE /v1/users/:userId/items/:itemId` - Dismiss an item
 - `POST /v1/users/:userId/items/:itemId` - Restore a dismissed item
+- `POST /v1/users/:userId/items` - Batch get or create multiple items (max 50)
 
 Example request:
 
@@ -90,6 +91,11 @@ curl -X DELETE http://localhost:3000/v1/users/user-123/items/welcome-banner
 
 # Restore a dismissed item
 curl -X POST http://localhost:3000/v1/users/user-123/items/welcome-banner
+
+# Batch get or create multiple items
+curl -X POST http://localhost:3000/v1/users/user-123/items \
+  -H "Content-Type: application/json" \
+  -d '{"items": ["welcome-banner", "onboarding-tip-1", "feature-announcement"]}'
 ```
 
 ### React Client Integration
@@ -446,6 +452,12 @@ export class FeaturesController {
   async restoreItem(@Param('userId') userId: string, @Param('itemId') itemId: string) {
     const result = await this.dismissibleService.restore(itemId, userId);
     return { item: result.item };
+  }
+
+  @Post(':userId/items')
+  async batchGetOrCreate(@Param('userId') userId: string, @Body() body: { items: string[] }) {
+    const result = await this.dismissibleService.batchGetOrCreate(body.items, userId);
+    return { items: result.items };
   }
 }
 ```

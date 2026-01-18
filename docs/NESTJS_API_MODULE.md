@@ -171,11 +171,12 @@ export class AppModule {}
 
 The module automatically registers REST endpoints for all operations:
 
-| Endpoint                          | Method   | Description                          |
-| --------------------------------- | -------- | ------------------------------------ |
-| `/v1/users/:userId/items/:itemId` | `GET`    | Get or create a dismissible item     |
-| `/v1/users/:userId/items/:itemId` | `DELETE` | Dismiss an item (marks as dismissed) |
-| `/v1/users/:userId/items/:itemId` | `POST`   | Restore a previously dismissed item  |
+| Endpoint                          | Method   | Description                                 |
+| --------------------------------- | -------- | ------------------------------------------- |
+| `/v1/users/:userId/items/:itemId` | `GET`    | Get or create a dismissible item            |
+| `/v1/users/:userId/items/:itemId` | `DELETE` | Dismiss an item (marks as dismissed)        |
+| `/v1/users/:userId/items/:itemId` | `POST`   | Restore a previously dismissed item         |
+| `/v1/users/:userId/items`         | `POST`   | Batch get or create multiple items (max 50) |
 
 ### Example Requests
 
@@ -188,6 +189,11 @@ curl -X DELETE "http://localhost:3001/v1/users/user-123/items/welcome-banner"
 
 # Restore a dismissed item
 curl -X POST "http://localhost:3001/v1/users/user-123/items/welcome-banner"
+
+# Batch get or create multiple items
+curl -X POST "http://localhost:3001/v1/users/user-123/items" \
+  -H "Content-Type: application/json" \
+  -d '{"items": ["welcome-banner", "onboarding-tip-1", "feature-announcement"]}'
 ```
 
 ### Response Format
@@ -206,6 +212,35 @@ All endpoints return a consistent response format:
     },
     "created": true
   }
+}
+```
+
+### Batch Response Format
+
+The batch endpoint returns an array of items:
+
+```json
+{
+  "data": [
+    {
+      "id": "welcome-banner",
+      "userId": "user-123",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "dismissedAt": null
+    },
+    {
+      "id": "onboarding-tip-1",
+      "userId": "user-123",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "dismissedAt": "2024-01-16T14:20:00.000Z"
+    },
+    {
+      "id": "feature-announcement",
+      "userId": "user-123",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "dismissedAt": null
+    }
+  ]
 }
 ```
 
@@ -1121,6 +1156,24 @@ Returns: `Promise<IRestoreServiceResponse>`
 ```typescript
 interface IRestoreServiceResponse {
   item: DismissibleItemDto;
+}
+```
+
+#### `batchGetOrCreate(itemIds, userId, context?)`
+
+Retrieves existing items or creates new ones for multiple item IDs in a single request.
+
+| Parameter | Type              | Required | Description                            |
+| --------- | ----------------- | -------- | -------------------------------------- |
+| `itemIds` | `string[]`        | Yes      | Array of item identifiers (1-50 items) |
+| `userId`  | `string`          | Yes      | User identifier                        |
+| `context` | `IRequestContext` | No       | Request context for tracing            |
+
+Returns: `Promise<IBatchGetOrCreateServiceResponse>`
+
+```typescript
+interface IBatchGetOrCreateServiceResponse {
+  items: DismissibleItemDto[];
 }
 ```
 

@@ -26,6 +26,25 @@ export class DynamoDBStorageAdapter implements IDismissibleStorage {
     return this.mapToDto(item);
   }
 
+  async getMany(userId: string, itemIds: string[]): Promise<Map<string, DismissibleItemDto>> {
+    this.logger.debug('DynamoDB storage getMany', { userId, itemCount: itemIds.length });
+
+    const items = await this.dynamoDB.getMany(userId, itemIds);
+
+    const result = new Map<string, DismissibleItemDto>();
+    for (const item of items) {
+      result.set(item.id, this.mapToDto(item));
+    }
+
+    this.logger.debug('DynamoDB storage getMany complete', {
+      userId,
+      requested: itemIds.length,
+      found: result.size,
+    });
+
+    return result;
+  }
+
   async create(item: DismissibleItemDto): Promise<DismissibleItemDto> {
     this.logger.debug('DynamoDB storage create', { userId: item.userId, itemId: item.id });
 
@@ -37,6 +56,27 @@ export class DynamoDBStorageAdapter implements IDismissibleStorage {
     });
 
     return item;
+  }
+
+  async createMany(items: DismissibleItemDto[]): Promise<DismissibleItemDto[]> {
+    this.logger.debug('DynamoDB storage createMany', { itemCount: items.length });
+
+    if (items.length === 0) {
+      return [];
+    }
+
+    const dynamoItems = items.map((item) => ({
+      userId: item.userId,
+      id: item.id,
+      createdAt: item.createdAt.toISOString(),
+      dismissedAt: item.dismissedAt?.toISOString() ?? null,
+    }));
+
+    await this.dynamoDB.createMany(dynamoItems);
+
+    this.logger.debug('DynamoDB storage createMany complete', { created: items.length });
+
+    return items;
   }
 
   async update(item: DismissibleItemDto): Promise<DismissibleItemDto> {

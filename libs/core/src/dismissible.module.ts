@@ -1,6 +1,7 @@
 import { Module, DynamicModule, Type, Provider, ForwardReference } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GetOrCreateController } from './api/use-cases/get-or-create/get-or-create.controller';
+import { BatchGetOrCreateController } from './api/use-cases/batch-get-or-create/batch-get-or-create.controller';
 import { DismissController } from './api/use-cases/dismiss/dismiss.controller';
 import { RestoreController } from './api/use-cases/restore/restore.controller';
 import { DismissibleService } from './core/dismissible.service';
@@ -34,7 +35,12 @@ export type IDismissibleModuleOptions = IDismissibleLoggerModuleOptions &
     controllers?: Type<any>[];
   };
 
-const defaultControllers = [GetOrCreateController, DismissController, RestoreController];
+const defaultControllers = [
+  GetOrCreateController,
+  BatchGetOrCreateController,
+  DismissController,
+  RestoreController,
+];
 
 @Module({})
 export class DismissibleModule {

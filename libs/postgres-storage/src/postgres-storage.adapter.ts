@@ -38,6 +38,30 @@ export class PostgresStorageAdapter implements IDismissibleStorage {
     return this.mapToDto(item);
   }
 
+  async getMany(userId: string, itemIds: string[]): Promise<Map<string, DismissibleItemDto>> {
+    this.logger.debug('PostgreSQL storage getMany', { userId, itemCount: itemIds.length });
+
+    const items = await this.prisma.dismissibleItem.findMany({
+      where: {
+        userId,
+        id: { in: itemIds },
+      },
+    });
+
+    const result = new Map<string, DismissibleItemDto>();
+    for (const item of items) {
+      result.set(item.id, this.mapToDto(item));
+    }
+
+    this.logger.debug('PostgreSQL storage getMany complete', {
+      userId,
+      requested: itemIds.length,
+      found: result.size,
+    });
+
+    return result;
+  }
+
   async create(item: DismissibleItemDto): Promise<DismissibleItemDto> {
     this.logger.debug('PostgreSQL storage create', { userId: item.userId, itemId: item.id });
 
@@ -51,6 +75,29 @@ export class PostgresStorageAdapter implements IDismissibleStorage {
     });
 
     return this.mapToDto(created);
+  }
+
+  async createMany(items: DismissibleItemDto[]): Promise<DismissibleItemDto[]> {
+    this.logger.debug('PostgreSQL storage createMany', { itemCount: items.length });
+
+    if (items.length === 0) {
+      return [];
+    }
+
+    await this.prisma.dismissibleItem.createMany({
+      data: items.map((item) => ({
+        id: item.id,
+        userId: item.userId,
+        createdAt: item.createdAt,
+        dismissedAt: item.dismissedAt ?? null,
+      })),
+    });
+
+    this.logger.debug('PostgreSQL storage createMany complete', { created: items.length });
+
+    // Prisma createMany doesn't return the created records, so we return the input items
+    // The items already have all the data we need since they were constructed by the factory
+    return items;
   }
 
   async update(item: DismissibleItemDto): Promise<DismissibleItemDto> {

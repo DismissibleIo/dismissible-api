@@ -109,12 +109,13 @@ export class AppModule {}
 
 The API provides the following REST endpoints:
 
-| Endpoint                            | Method | Description                         |
-| ----------------------------------- | ------ | ----------------------------------- |
-| `/health`                           | GET    | Health check endpoint               |
-| `/v1/users/{userId}/items/{itemId}` | GET    | Get or create a dismissible item    |
-| `/v1/users/{userId}/items/{itemId}` | DELETE | Dismiss an item                     |
-| `/v1/users/{userId}/items/{itemId}` | POST   | Restore a previously dismissed item |
+| Endpoint                            | Method | Description                                 |
+| ----------------------------------- | ------ | ------------------------------------------- |
+| `/health`                           | GET    | Health check endpoint                       |
+| `/v1/users/{userId}/items/{itemId}` | GET    | Get or create a dismissible item            |
+| `/v1/users/{userId}/items/{itemId}` | DELETE | Dismiss an item                             |
+| `/v1/users/{userId}/items/{itemId}` | POST   | Restore a previously dismissed item         |
+| `/v1/users/{userId}/items`          | POST   | Batch get or create multiple items (max 50) |
 
 Enable Swagger documentation by setting `DISMISSIBLE_SWAGGER_ENABLED=true` and visit `/docs` for interactive API docs.
 
