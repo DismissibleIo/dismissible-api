@@ -281,6 +281,14 @@ See configuration.
 | `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE`  | Match method: `exact`, `substring`, `regex` | `exact`  |
 | `DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX` | Regex pattern (required if type=regex)      | `""`     |
 
+#### User ID Match Types
+
+- **`exact`**: Token claim must exactly match URL user ID
+- **`substring`**: URL user ID must be contained in token claim
+- **`regex`**: Pattern is applied to token claim; if a capture group exists, the first capture group is extracted and compared to URL user ID, otherwise the full match is used
+
+See the [@dismissible/nestjs-jwt-auth-hook README](../libs/jwt-auth-hook/README.md#user-id-match-types) for detailed examples.
+
 ### Security Headers (Helmet)
 
 | Variable                                     | Description                         | Default    |

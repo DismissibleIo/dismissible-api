@@ -130,7 +130,13 @@ export class JwtAuthHookConfig {
   /**
    * Optional: Regex pattern for user ID matching.
    * Required when userIdMatchType is 'regex'.
-   * The pattern is tested against the tokenUserId from the JWT claim.
+   *
+   * The pattern is matched against the tokenUserId from the JWT claim.
+   * If the pattern contains a capture group, the first captured group is
+   * extracted and compared against the URL's userId.
+   * If no capture group exists, the full match is compared.
+   *
+   * Example: "^(.+)@clients$" extracts everything before "@clients"
    */
   @ValidateIf((o) => o.userIdMatchType === UserIdMatchType.REGEX)
   @IsString()

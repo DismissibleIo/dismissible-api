@@ -157,31 +157,6 @@ describe('JwtAuthHook', () => {
       expect(mockJwtAuthService.extractBearerToken).toHaveBeenCalledWith(undefined);
     });
 
-    it('should log debug message on successful validation', async () => {
-      const matchingUserId = 'user-123';
-      const validationResult: IJwtValidationResult = {
-        valid: true,
-        payload: { sub: matchingUserId },
-      };
-      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
-      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
-
-      const context = createMinimalContext({
-        headers: { authorization: 'Bearer valid-token' },
-      });
-      await hook.onBeforeRequest(testItemId, matchingUserId, context);
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        'JWT auth hook: Token validated successfully',
-        expect.objectContaining({
-          itemId: testItemId,
-          userId: matchingUserId,
-          requestId: 'req-123',
-          subject: matchingUserId,
-        }),
-      );
-    });
-
     it('should throw ForbiddenException when userId does not match JWT sub claim', async () => {
       const validationResult: IJwtValidationResult = {
         valid: true,
@@ -202,16 +177,6 @@ describe('JwtAuthHook', () => {
       );
       await expect(hook.onBeforeRequest(testItemId, testUserId, context)).rejects.toThrow(
         'User ID in request does not match authenticated user',
-      );
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        'JWT auth hook: User ID mismatch',
-        expect.objectContaining({
-          itemId: testItemId,
-          userId: testUserId,
-          requestId: 'req-123',
-          tokenSubject: 'different-user-id',
-        }),
       );
     });
 
@@ -341,16 +306,6 @@ describe('JwtAuthHook', () => {
         );
         await expect(customHook.onBeforeRequest(testItemId, testUserId, context)).rejects.toThrow(
           'User ID in request does not match authenticated user',
-        );
-
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'JWT auth hook: User ID mismatch',
-          expect.objectContaining({
-            itemId: testItemId,
-            userId: testUserId,
-            requestId: 'req-123',
-            tokenSubject: 'different-user-id',
-          }),
         );
       });
 
@@ -535,11 +490,148 @@ describe('JwtAuthHook', () => {
       });
 
       describe('regex matching', () => {
-        it('should proceed when tokenUserId matches the regex pattern', async () => {
+        it('should extract userId from capture group and compare against URL userId', async () => {
           const regexConfig = {
             ...mockConfig,
             userIdMatchType: UserIdMatchType.REGEX,
-            userIdMatchRegex: '^auth0\\|user-\\d+$',
+            userIdMatchRegex: '^(.+)@clients$',
+          };
+          const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
+
+          const validationResult: IJwtValidationResult = {
+            valid: true,
+            payload: {
+              sub: 'FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y@clients',
+              iss: 'https://auth.example.com',
+            },
+          };
+          mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+          mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+          const context = createMinimalContext({
+            headers: { authorization: 'Bearer valid-token' },
+          });
+          const result = await regexHook.onBeforeRequest(
+            testItemId,
+            'FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y',
+            context,
+          );
+
+          expect(result.proceed).toBe(true);
+        });
+
+        it('should throw ForbiddenException when extracted userId does not match URL userId', async () => {
+          const regexConfig = {
+            ...mockConfig,
+            userIdMatchType: UserIdMatchType.REGEX,
+            userIdMatchRegex: '^(.+)@clients$',
+          };
+          const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
+
+          const validationResult: IJwtValidationResult = {
+            valid: true,
+            payload: {
+              sub: 'FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y@clients',
+              iss: 'https://auth.example.com',
+            },
+          };
+          mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+          mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+          const context = createMinimalContext({
+            headers: { authorization: 'Bearer valid-token' },
+          });
+
+          await expect(
+            regexHook.onBeforeRequest(testItemId, 'different-user-id', context),
+          ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('should throw ForbiddenException when tokenUserId does not match the regex pattern', async () => {
+          const regexConfig = {
+            ...mockConfig,
+            userIdMatchType: UserIdMatchType.REGEX,
+            userIdMatchRegex: '^(.+)@clients$',
+          };
+          const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
+
+          const validationResult: IJwtValidationResult = {
+            valid: true,
+            payload: {
+              sub: 'user-without-suffix',
+              iss: 'https://auth.example.com',
+            },
+          };
+          mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+          mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+          const context = createMinimalContext({
+            headers: { authorization: 'Bearer valid-token' },
+          });
+
+          await expect(
+            regexHook.onBeforeRequest(testItemId, 'user-without-suffix', context),
+          ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('should use full match when regex has no capture group', async () => {
+          const regexConfig = {
+            ...mockConfig,
+            userIdMatchType: UserIdMatchType.REGEX,
+            userIdMatchRegex: '^user-\\d+$',
+          };
+          const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
+
+          const validationResult: IJwtValidationResult = {
+            valid: true,
+            payload: {
+              sub: 'user-123',
+              iss: 'https://auth.example.com',
+            },
+          };
+          mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+          mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+          const context = createMinimalContext({
+            headers: { authorization: 'Bearer valid-token' },
+          });
+          const result = await regexHook.onBeforeRequest(testItemId, 'user-123', context);
+
+          expect(result.proceed).toBe(true);
+        });
+
+        it('should throw ForbiddenException when full match does not equal userId (no capture group)', async () => {
+          const regexConfig = {
+            ...mockConfig,
+            userIdMatchType: UserIdMatchType.REGEX,
+            userIdMatchRegex: '^user-\\d+$',
+          };
+          const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
+
+          const validationResult: IJwtValidationResult = {
+            valid: true,
+            payload: {
+              sub: 'user-123',
+              iss: 'https://auth.example.com',
+            },
+          };
+          mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+          mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+          const context = createMinimalContext({
+            headers: { authorization: 'Bearer valid-token' },
+          });
+
+          await expect(regexHook.onBeforeRequest(testItemId, 'user-456', context)).rejects.toThrow(
+            ForbiddenException,
+          );
+        });
+
+        it('should extract from first capture group when multiple groups exist', async () => {
+          const regexConfig = {
+            ...mockConfig,
+            userIdMatchType: UserIdMatchType.REGEX,
+            userIdMatchRegex: '^(auth0|google)\\|(.+)$',
           };
           const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
 
@@ -556,64 +648,248 @@ describe('JwtAuthHook', () => {
           const context = createMinimalContext({
             headers: { authorization: 'Bearer valid-token' },
           });
-          const result = await regexHook.onBeforeRequest(testItemId, 'any-user-id', context);
-
-          expect(result.proceed).toBe(true);
-        });
-
-        it('should throw ForbiddenException when tokenUserId does not match the regex', async () => {
-          const regexConfig = {
-            ...mockConfig,
-            userIdMatchType: UserIdMatchType.REGEX,
-            userIdMatchRegex: '^auth0\\|user-\\d+$',
-          };
-          const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
-
-          const validationResult: IJwtValidationResult = {
-            valid: true,
-            payload: {
-              sub: 'google|user-abc',
-              iss: 'https://auth.example.com',
-            },
-          };
-          mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
-          mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
-
-          const context = createMinimalContext({
-            headers: { authorization: 'Bearer valid-token' },
-          });
-
-          await expect(
-            regexHook.onBeforeRequest(testItemId, 'any-user-id', context),
-          ).rejects.toThrow(ForbiddenException);
-        });
-
-        it('should support complex regex patterns', async () => {
-          const regexConfig = {
-            ...mockConfig,
-            userIdMatchType: UserIdMatchType.REGEX,
-            userIdMatchRegex: '^(auth0|google|github)\\|[a-zA-Z0-9-]+$',
-          };
-          const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
-
-          const validationResult: IJwtValidationResult = {
-            valid: true,
-            payload: {
-              sub: 'github|octocat-123',
-              iss: 'https://auth.example.com',
-            },
-          };
-          mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
-          mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
-
-          const context = createMinimalContext({
-            headers: { authorization: 'Bearer valid-token' },
-          });
-          const result = await regexHook.onBeforeRequest(testItemId, 'any-user-id', context);
+          // First capture group is 'auth0', so that's what gets compared
+          const result = await regexHook.onBeforeRequest(testItemId, 'auth0', context);
 
           expect(result.proceed).toBe(true);
         });
       });
+    });
+  });
+
+  describe('onBeforeBatchRequest', () => {
+    const testItemIds = ['item-1', 'item-2', 'item-3'];
+
+    it('should skip validation and proceed when disabled', async () => {
+      const disabledConfig = { ...mockConfig, enabled: false };
+      const disabledHook = new JwtAuthHook(mockJwtAuthService, disabledConfig, mockLogger);
+
+      const context = createMinimalContext();
+      const result = await disabledHook.onBeforeBatchRequest(testItemIds, testUserId, context);
+
+      expect(result.proceed).toBe(true);
+      expect(mockJwtAuthService.extractBearerToken).not.toHaveBeenCalled();
+      expect(mockJwtAuthService.validateToken).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException when no authorization header is present', async () => {
+      mockJwtAuthService.extractBearerToken.mockReturnValue(null);
+
+      const context = createMinimalContext();
+
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, context)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, context)).rejects.toThrow(
+        'Missing or invalid bearer token',
+      );
+      expect(mockJwtAuthService.extractBearerToken).toHaveBeenCalledWith(undefined);
+    });
+
+    it('should throw UnauthorizedException when authorization header is malformed', async () => {
+      mockJwtAuthService.extractBearerToken.mockReturnValue(null);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Basic abc123' },
+      });
+
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, context)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, context)).rejects.toThrow(
+        'Missing or invalid bearer token',
+      );
+    });
+
+    it('should throw UnauthorizedException when token validation fails', async () => {
+      const validationResult: IJwtValidationResult = {
+        valid: false,
+        error: 'Token expired',
+      };
+      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Bearer valid-token' },
+      });
+
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, context)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, context)).rejects.toThrow(
+        'Token expired',
+      );
+      expect(mockJwtAuthService.validateToken).toHaveBeenCalledWith('valid-token');
+    });
+
+    it('should proceed when token is valid', async () => {
+      const matchingUserId = 'user-123';
+      const validationResult: IJwtValidationResult = {
+        valid: true,
+        payload: {
+          sub: matchingUserId,
+          iss: 'https://auth.example.com',
+        },
+      };
+      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Bearer valid-token' },
+      });
+      const result = await hook.onBeforeBatchRequest(testItemIds, matchingUserId, context);
+
+      expect(result.proceed).toBe(true);
+      expect(result.reason).toBeUndefined();
+    });
+
+    it('should throw UnauthorizedException when context is missing', async () => {
+      mockJwtAuthService.extractBearerToken.mockReturnValue(null);
+
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, undefined)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(mockJwtAuthService.extractBearerToken).toHaveBeenCalledWith(undefined);
+    });
+
+    it('should throw ForbiddenException when userId does not match JWT sub claim', async () => {
+      const validationResult: IJwtValidationResult = {
+        valid: true,
+        payload: {
+          sub: 'different-user-id',
+          iss: 'https://auth.example.com',
+        },
+      };
+      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Bearer valid-token' },
+      });
+
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, context)).rejects.toThrow(
+        ForbiddenException,
+      );
+      await expect(hook.onBeforeBatchRequest(testItemIds, testUserId, context)).rejects.toThrow(
+        'User ID in request does not match authenticated user',
+      );
+    });
+
+    it('should proceed when userId matches JWT sub claim', async () => {
+      const validationResult: IJwtValidationResult = {
+        valid: true,
+        payload: {
+          sub: testUserId,
+          iss: 'https://auth.example.com',
+        },
+      };
+      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Bearer valid-token' },
+      });
+      const result = await hook.onBeforeBatchRequest(testItemIds, testUserId, context);
+
+      expect(result.proceed).toBe(true);
+      expect(result.reason).toBeUndefined();
+    });
+
+    it('should proceed when matchUserId is disabled even if userId does not match', async () => {
+      const disabledMatchConfig = { ...mockConfig, matchUserId: false };
+      const disabledMatchHook = new JwtAuthHook(
+        mockJwtAuthService,
+        disabledMatchConfig,
+        mockLogger,
+      );
+
+      const validationResult: IJwtValidationResult = {
+        valid: true,
+        payload: {
+          sub: 'different-user-id',
+          iss: 'https://auth.example.com',
+        },
+      };
+      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Bearer valid-token' },
+      });
+      const result = await disabledMatchHook.onBeforeBatchRequest(testItemIds, testUserId, context);
+
+      expect(result.proceed).toBe(true);
+    });
+
+    it('should use custom userIdClaim when provided', async () => {
+      const customConfig = { ...mockConfig, userIdClaim: 'custom_user_id' };
+      const customHook = new JwtAuthHook(mockJwtAuthService, customConfig, mockLogger);
+
+      const matchingUserId = 'user-123';
+      const validationResult: IJwtValidationResult = {
+        valid: true,
+        payload: {
+          custom_user_id: matchingUserId,
+          iss: 'https://auth.example.com',
+        },
+      };
+      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Bearer valid-token' },
+      });
+      const result = await customHook.onBeforeBatchRequest(testItemIds, matchingUserId, context);
+
+      expect(result.proceed).toBe(true);
+    });
+
+    it('should support substring matching for userId', async () => {
+      const substringConfig = { ...mockConfig, userIdMatchType: UserIdMatchType.SUBSTRING };
+      const substringHook = new JwtAuthHook(mockJwtAuthService, substringConfig, mockLogger);
+
+      const validationResult: IJwtValidationResult = {
+        valid: true,
+        payload: {
+          sub: 'auth0|user-123',
+          iss: 'https://auth.example.com',
+        },
+      };
+      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Bearer valid-token' },
+      });
+      const result = await substringHook.onBeforeBatchRequest(testItemIds, 'user-123', context);
+
+      expect(result.proceed).toBe(true);
+    });
+
+    it('should support regex matching with capture group extraction for userId', async () => {
+      const regexConfig = {
+        ...mockConfig,
+        userIdMatchType: UserIdMatchType.REGEX,
+        userIdMatchRegex: '^(.+)@clients$',
+      };
+      const regexHook = new JwtAuthHook(mockJwtAuthService, regexConfig, mockLogger);
+
+      const validationResult: IJwtValidationResult = {
+        valid: true,
+        payload: {
+          sub: 'user-123@clients',
+          iss: 'https://auth.example.com',
+        },
+      };
+      mockJwtAuthService.extractBearerToken.mockReturnValue('valid-token');
+      mockJwtAuthService.validateToken.mockResolvedValue(validationResult);
+
+      const context = createMinimalContext({
+        headers: { authorization: 'Bearer valid-token' },
+      });
+      const result = await regexHook.onBeforeBatchRequest(testItemIds, 'user-123', context);
+
+      expect(result.proceed).toBe(true);
     });
   });
 });

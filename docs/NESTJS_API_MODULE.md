@@ -22,6 +22,7 @@ The `@dismissible/nestjs-api` package provides a complete NestJS module for mana
 - [Lifecycle Hooks](#lifecycle-hooks)
   - [Creating a Hook](#creating-a-hook)
   - [Hook Methods](#hook-methods)
+  - [Batch Hook Methods](#batch-hook-methods)
   - [Hook Priority](#hook-priority)
   - [Blocking Operations](#blocking-operations)
   - [Mutating Parameters](#mutating-parameters)
@@ -676,6 +677,130 @@ Get hooks only run when an item already exists in storage. Use for access contro
 | ------------------- | ------------------------ | --------- | ---------- |
 | `onBeforeRestore()` | Before restoring an item | Yes       | Yes        |
 | `onAfterRestore()`  | After restoring an item  | No        | No         |
+
+### Batch Hook Methods
+
+Batch hooks are invoked during batch operations (e.g., `batchGetOrCreate`). They follow the same patterns as single-item hooks but operate on arrays of items.
+
+#### Global Batch Request Hooks (run on ALL batch operations)
+
+| Method                   | When Called                         | Can Block | Can Mutate |
+| ------------------------ | ----------------------------------- | --------- | ---------- |
+| `onBeforeBatchRequest()` | At the start of any batch operation | Yes       | Yes        |
+| `onAfterBatchRequest()`  | At the end of any batch operation   | No        | No         |
+
+Use global batch hooks for cross-cutting concerns like authentication, rate limiting, audit logging, and metrics on batch operations.
+
+#### Batch Get Hooks (when retrieving existing items)
+
+| Method               | When Called                     | Can Block | Can Mutate |
+| -------------------- | ------------------------------- | --------- | ---------- |
+| `onBeforeBatchGet()` | Before returning existing items | Yes       | Yes        |
+| `onAfterBatchGet()`  | After returning existing items  | No        | No         |
+
+Batch get hooks run when items already exist in storage. Use for access control based on item state.
+
+#### Batch Create Hooks (when creating new items)
+
+| Method                  | When Called               | Can Block | Can Mutate |
+| ----------------------- | ------------------------- | --------- | ---------- |
+| `onBeforeBatchCreate()` | Before creating new items | Yes       | Yes        |
+| `onAfterBatchCreate()`  | After creating new items  | No        | No         |
+
+#### Batch Hook Example
+
+Here's an example hook implementing batch operations:
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import {
+  IDismissibleLifecycleHook,
+  IBatchHookResult,
+  IRequestContext,
+} from '@dismissible/nestjs-api';
+import { DismissibleItemDto } from '@dismissible/nestjs-item';
+
+@Injectable()
+export class BatchAuditHook implements IDismissibleLifecycleHook {
+  readonly priority = 10;
+
+  // Validate batch requests before any batch operation
+  async onBeforeBatchRequest(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> {
+    // Validate batch size
+    if (itemIds.length > 50) {
+      return {
+        proceed: false,
+        reason: 'Batch size exceeds maximum of 50 items',
+      };
+    }
+
+    // Optionally mutate item IDs (e.g., normalize)
+    return {
+      proceed: true,
+      mutations: {
+        ids: itemIds.map((id) => id.toLowerCase().trim()),
+      },
+    };
+  }
+
+  // Audit log after batch operations complete
+  async onAfterBatchRequest(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    console.log(`[AUDIT] Batch operation completed: ${items.length} items for user ${userId}`);
+  }
+
+  // Access control for batch get operations
+  async onBeforeBatchGet(
+    itemIds: string[],
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> {
+    // Filter out items the user shouldn't access
+    const accessibleItems = items.filter((item) => this.canAccess(item, userId));
+
+    if (accessibleItems.length !== items.length) {
+      console.log(
+        `[ACCESS] Filtered ${items.length - accessibleItems.length} items for user ${userId}`,
+      );
+    }
+
+    return { proceed: true };
+  }
+
+  // Track batch creations
+  async onAfterBatchCreate(
+    items: DismissibleItemDto[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<void> {
+    console.log(`[AUDIT] Batch created: ${items.length} items for user ${userId}`);
+  }
+
+  private canAccess(item: DismissibleItemDto, userId: string): boolean {
+    return item.userId === userId;
+  }
+}
+```
+
+#### Batch Hook Execution Order
+
+For a `batchGetOrCreate` operation:
+
+1. `onBeforeBatchRequest()` - Global batch pre-hook
+2. For each item being retrieved: `onBeforeBatchGet()` - Get-specific pre-hook
+3. For each item being created: `onBeforeBatchCreate()` - Create-specific pre-hook
+4. _Items are retrieved/created in storage_
+5. For retrieved items: `onAfterBatchGet()` - Get-specific post-hook
+6. For created items: `onAfterBatchCreate()` - Create-specific post-hook
+7. `onAfterBatchRequest()` - Global batch post-hook
 
 ### Hook Execution Order
 

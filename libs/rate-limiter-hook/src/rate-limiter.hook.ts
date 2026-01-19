@@ -1,5 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IDismissibleLifecycleHook, IHookResult } from '@dismissible/nestjs-hooks';
+import {
+  IDismissibleLifecycleHook,
+  IHookResult,
+  IBatchHookResult,
+} from '@dismissible/nestjs-hooks';
 import { IRequestContext } from '@dismissible/nestjs-request';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
 import { RateLimiterService } from './rate-limiter.service';
@@ -94,6 +98,69 @@ export class RateLimiterHook implements IDismissibleLifecycleHook {
 
     this.logger.debug('Request allowed', {
       itemId,
+      userId,
+      keys,
+      requestId: context?.requestId,
+      remainingPoints: result.remainingPoints,
+    });
+
+    return {
+      proceed: true,
+    };
+  }
+
+  /**
+   * Check rate limit before processing a batch request.
+   * Runs before any batch dismissible operation.
+   * Consumes 1 point per batch (treats the batch as a single request).
+   */
+  async onBeforeBatchRequest(
+    itemIds: string[],
+    userId: string,
+    context?: IRequestContext,
+  ): Promise<IBatchHookResult> {
+    if (!this.config.enabled) {
+      return { proceed: true };
+    }
+
+    // Check if request should be ignored (whitelisted)
+    if (this.rateLimiterService.isIgnored(context)) {
+      this.logger.debug('Rate limit bypassed (ignored key) (batch)', {
+        itemCount: itemIds.length,
+        userId,
+        requestId: context?.requestId,
+      });
+      return { proceed: true };
+    }
+
+    const keys = this.rateLimiterService.generateKeys(context);
+
+    this.logger.debug('Checking rate limit (batch)', {
+      itemCount: itemIds.length,
+      userId,
+      keys,
+      requestId: context?.requestId,
+    });
+
+    const result = await this.rateLimiterService.consumeAll(keys);
+
+    if (!result.allowed) {
+      this.logger.debug('Rate limit exceeded (batch)', {
+        itemCount: itemIds.length,
+        userId,
+        keys,
+        requestId: context?.requestId,
+        msBeforeNext: result.msBeforeNext,
+      });
+
+      throw new TooManyRequestsException(
+        'Rate limit exceeded. Please try again later.',
+        result.msBeforeNext,
+      );
+    }
+
+    this.logger.debug('Request allowed (batch)', {
+      itemCount: itemIds.length,
       userId,
       keys,
       requestId: context?.requestId,
