@@ -35,7 +35,20 @@
   },
   "release": {
     "releaseTagPattern": "v{version}",
-    "projects": ["api", "libs/*"],
+    "projects": [
+      "api",
+      "core",
+      "dynamodb-storage",
+      "hooks",
+      "item",
+      "jwt-auth-hook",
+      "logger",
+      "postgres-storage",
+      "rate-limiter-hook",
+      "request",
+      "storage",
+      "validation"
+    ],
     "projectsRelationship": "fixed",
     "version": {
       "preVersionCommand": "npx nx run-many -t build",
