@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-rate-limiter-hook",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "Rate limiting hook for Dismissible applications using in-memory rate limiting",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -17,10 +17,10 @@
     "LICENSE.md"
   ],
   "dependencies": {
-    "@dismissible/nestjs-hooks": "^2.0.3",
-    "@dismissible/nestjs-request": "^2.0.3",
-    "@dismissible/nestjs-logger": "^2.0.3",
-    "@dismissible/nestjs-validation": "^2.0.3",
+    "@dismissible/nestjs-hooks": "^3.0.0",
+    "@dismissible/nestjs-request": "^3.0.0",
+    "@dismissible/nestjs-logger": "^3.0.0",
+    "@dismissible/nestjs-validation": "^3.0.0",
     "rate-limiter-flexible": "^5.0.4"
   },
   "peerDependencies": {

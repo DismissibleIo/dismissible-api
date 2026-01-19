@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-request",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "Request context decorator for Dismissible applications",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",

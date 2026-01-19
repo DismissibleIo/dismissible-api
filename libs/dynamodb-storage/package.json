@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-dynamodb-storage",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "DynamoDB storage adapter for Dismissible using AWS SDK v3",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -32,9 +32,9 @@
     "@aws-sdk/client-dynamodb": "^3.958.0",
     "@aws-sdk/lib-dynamodb": "^3.958.0",
     "@aws-sdk/util-waiter": "^3.370.0",
-    "@dismissible/nestjs-item": "^2.0.3",
-    "@dismissible/nestjs-logger": "^2.0.3",
-    "@dismissible/nestjs-storage": "^2.0.3"
+    "@dismissible/nestjs-item": "^3.0.0",
+    "@dismissible/nestjs-logger": "^3.0.0",
+    "@dismissible/nestjs-storage": "^3.0.0"
   },
   "keywords": [
     "nestjs",
