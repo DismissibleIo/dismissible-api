@@ -137,6 +137,14 @@ function WelcomeBanner() {
 
 The React client automatically uses the built-in REST API endpoints, so no additional configuration is needed on the backend.
 
+#### Automatic Request Batching
+
+When multiple `useDismissible` hooks are rendered on the same page, the React client automatically batches them into a single API request. This optimization reduces network overhead and improves performance, especially for pages with many dismissible components.
+
+For example, if your page renders components using `useDismissible('welcome-banner')`, `useDismissible('onboarding-tip')`, and `useDismissible('feature-announcement')`, the client will automatically combine these into a single batch request to the `POST /v1/users/:userId/items` endpoint instead of making three separate API calls.
+
+The batch endpoint supports up to **50 items per request**. If more than 50 items are requested, the client will split them into multiple batch requests automatically.
+
 ## Configuration Options
 
 All configuration is done through `DismissibleModule.forRoot()`. The following options are available:

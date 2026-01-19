@@ -8,6 +8,8 @@ export default {
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../coverage/api-e2e',
   testMatch: ['**/*.e2e-spec.ts'],
-  transformIgnorePatterns: ['node_modules/(?!(nest-typed-config|uuid)/)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(nest-typed-config|uuid|mock-jwks|msw|@mswjs|until-async|@bundled-es-modules)/)',
+  ],
   maxWorkers: 1,
 };

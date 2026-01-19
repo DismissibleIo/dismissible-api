@@ -105,6 +105,27 @@ export class AppModule {}
 
 \*\* `userIdMatchRegex` is required when `userIdMatchType` is `regex`.
 
+### User ID Match Types
+
+The `userIdMatchType` option controls how the user ID from the JWT token claim is compared to the `userId` in the request URL path:
+
+- **`exact`** (default): The token claim value must exactly match the URL user ID.
+- **`substring`**: The URL user ID must be contained within the token claim value.
+- **`regex`**: The regex pattern is applied to the token claim value. If a capture group is present, the **first capture group** is extracted and compared to the URL user ID. If no capture group is present, the **full match** is used.
+
+#### Regex Matching Examples
+
+For a token with `sub` claim value `FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y@clients`:
+
+| Pattern           | Extracted Value                    | URL userId                         | Result   |
+| ----------------- | ---------------------------------- | ---------------------------------- | -------- |
+| `^(.+)@clients$`  | `FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y` | `FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y` | Match    |
+| `^(\w+)@clients$` | `FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y` | `FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y` | Match    |
+| `clients$`        | `clients`                          | `clients`                          | Match    |
+| `@clients$`       | `@clients`                         | `FfXHGud25MDOUGjQyBZnCWkkWlFDCS0Y` | No Match |
+
+> **Tip:** Use capture groups to extract the meaningful part of the token claim value for comparison with the URL user ID.
+
 ## Environment Variables
 
 When using the Dismissible API Docker image or the standalone API, these environment variables configure JWT authentication:
