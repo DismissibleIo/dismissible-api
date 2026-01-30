@@ -1,4 +1,4 @@
-import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
+import { DynamicModule, InjectionToken, Module, ModuleMetadata } from '@nestjs/common';
 import { DISMISSIBLE_STORAGE_ADAPTER } from '@dismissible/nestjs-storage';
 import { DynamoDBStorageAdapter } from './dynamodb-storage.adapter';
 import { DynamoDBClientService } from './dynamodb-client.service';
@@ -19,7 +19,7 @@ export interface DynamoDBStorageModuleOptions {
 }
 
 export interface DynamoDBStorageModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
-  inject?: any[];
+  inject?: InjectionToken[];
   useFactory: (
     ...args: any[]
   ) => DynamoDBStorageModuleOptions | Promise<DynamoDBStorageModuleOptions>;

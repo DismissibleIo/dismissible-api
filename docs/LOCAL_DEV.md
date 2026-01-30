@@ -113,6 +113,14 @@ docker run -p 3001:3001 \
 docker run --rm -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_TYPE="memory" \
   dismissible-api
+
+
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_CACHE_TYPE="redis" \
+  -e DISMISSIBLE_CACHE_REDIS_URL="redis://localhost:6379" \
+  -e DISMISSIBLE_STORAGE_TYPE="postgres" \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://postgres:postgres@host.docker.internal:5432/dismissible" \
+  dismissible-api
 ```
 
 ### Run the container with interactive terminal
@@ -341,12 +349,13 @@ Expected response:
 
 ### API Endpoints
 
-| Endpoint                            | Method   | Description                      |
-| ----------------------------------- | -------- | -------------------------------- |
-| `/health`                           | `GET`    | Health check endpoint            |
-| `/v1/users/{userId}/items/{itemId}` | `GET`    | Get or create a dismissible item |
-| `/v1/users/{userId}/items/{itemId}` | `DELETE` | Dismiss an item                  |
-| `/v1/users/{userId}/items/{itemId}` | `POST`   | Restore a dismissed item         |
+| Endpoint                            | Method   | Description                                 |
+| ----------------------------------- | -------- | ------------------------------------------- |
+| `/health`                           | `GET`    | Health check endpoint                       |
+| `/v1/users/{userId}/items/{itemId}` | `GET`    | Get or create a dismissible item            |
+| `/v1/users/{userId}/items/{itemId}` | `DELETE` | Dismiss an item                             |
+| `/v1/users/{userId}/items/{itemId}` | `POST`   | Restore a dismissed item                    |
+| `/v1/users/{userId}/items`          | `POST`   | Batch get or create multiple items (max 50) |
 
 ### Test the API
 

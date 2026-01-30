@@ -1,0 +1,51 @@
+{
+  "name": "@dismissible/nestjs-memory-cache",
+  "version": "3.0.0",
+  "description": "In-memory LRU cache adapter for Dismissible",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "dependencies": {
+    "@dismissible/nestjs-cache": "^3.0.0",
+    "@dismissible/nestjs-item": "^3.0.0",
+    "@dismissible/nestjs-logger": "^3.0.0",
+    "@dismissible/nestjs-validation": "^3.0.0",
+    "lru-cache": "^10.4.3"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": false
+    }
+  },
+  "keywords": [
+    "nestjs",
+    "dismissible",
+    "cache",
+    "memory",
+    "lru",
+    "adapter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DismissibleIo/dismissible-api"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

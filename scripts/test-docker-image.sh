@@ -1,9 +1,61 @@
 #!/bin/bash
+# Test Docker image for dismissible-api
+#
+# Usage:
+#   ./test-docker-image.sh [--no-build|--skip-build] [IMAGE_TAG]
+#
+# Examples:
+#   ./test-docker-image.sh                           # Build and test with default tag
+#   ./test-docker-image.sh custom-tag                # Build and test with custom tag
+#   ./test-docker-image.sh --no-build                # Test existing image (skip build)
+#   ./test-docker-image.sh --no-build custom-tag     # Test existing custom image
+#
+# Default image tag: dismissible-api:pr-check
+
 set -e
 
-IMAGE_TAG="${1:-dismissible-api:pr-check}"
+# Parse command line arguments
+BUILD_IMAGE=true
+IMAGE_TAG=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --no-build|--skip-build)
+      BUILD_IMAGE=false
+      shift
+      ;;
+    *)
+      IMAGE_TAG="$1"
+      shift
+      ;;
+  esac
+done
+
+# Set default tag if not provided
+if [ -z "$IMAGE_TAG" ]; then
+  IMAGE_TAG="dismissible-api:pr-check"
+fi
+
 MAX_WAIT_SECONDS=60
 HEALTH_ENDPOINT="${HEALTH_ENDPOINT:-http://localhost:3001/health}"
+
+# Build Docker image unless --no-build flag was provided
+if [ "$BUILD_IMAGE" = true ]; then
+  echo "Building Docker image: $IMAGE_TAG"
+  echo ""
+
+  docker build -t "$IMAGE_TAG" .
+  BUILD_EXIT_CODE=$?
+
+  echo ""
+  if [ $BUILD_EXIT_CODE -ne 0 ]; then
+    echo "✗ Docker build failed"
+    exit 1
+  fi
+
+  echo "✓ Docker image built successfully"
+  echo ""
+fi
 
 # Run container in detached mode
 CONTAINER_ID=$(docker run -d \

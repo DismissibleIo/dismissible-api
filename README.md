@@ -4,7 +4,7 @@
 
 <p align="center">Never Show The Same Thing Twice!</p>
 <p align="center">
-    <a href="https://www.npmjs.com/package/@dismissible/nestjs-core" target="_blank"><img src="https://img.shields.io/npm/v/@dismissible/nestjs-core.svg" alt="NPM Version" /></a>
+    <a href="https://www.npmjs.com/package/@dismissible/nestjs-api" target="_blank"><img src="https://img.shields.io/npm/v/@dismissible/nestjs-api.svg" alt="NPM Version" /></a>
     <a href="https://hub.docker.com/r/dismissibleio/dismissible-api" target="_blank"><img src="https://img.shields.io/docker/v/dismissibleio/dismissible-api.svg" alt="Docker Version" /></a>
     <a href="https://github.com/dismissibleio/dismissible-api/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/npm/l/@dismissible/nestjs-core.svg" alt="Package License" /></a>
     <a href="https://www.npmjs.com/package/@dismissible/nestjs-core" target="_blank"><img src="https://img.shields.io/npm/dm/@dismissible/nestjs-core.svg" alt="NPM Downloads" /></a>
@@ -39,7 +39,6 @@ A place to keep the dismissible state. The Dismissible API defines a storage ada
 - **PostgreSQL**: the simplest storage option which is highly performant.
 - **DynamoDB**: the AWS document store that scales infinitely.
 - **In memory**: a quick way to get up an running, but isn't recommended for production systems.
-- **Redis**: coming soon.
 - **MySQL**: coming soon.
 - **Custom**: you can create your own adapter to store the dismissible state whereever you like.
 
@@ -110,13 +109,14 @@ The Dismissible project is jam packed with features!
     - All in one NestJS application
     - Core dismissible NestJS module
 - Customization
+  - Redis Cache
   - Hooks
   - Events
   - Storage adapters
   - Custom loggers
   - Rate limiter
   - JWT Auth
-  - CORS / Helmut security
+  - CORS / [Helmut security](https://www.npmjs.com/package/helmet)
 
 ## Documentation
 

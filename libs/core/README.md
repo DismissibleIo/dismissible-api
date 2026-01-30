@@ -600,7 +600,19 @@ class CustomDismissibleService implements IDismissibleService {
   ): Promise<IGetOrCreateServiceResponse> {
     // Add custom logic before/after core operation
     console.log('Custom getOrCreate called');
-    return this.coreService.getOrCreate(itemId, userId);
+
+    let item = await this.coreService.get(itemId, userId);
+    let created = false;
+
+    if (!item) {
+      item = await this.coreService.create(itemId, userId);
+      created = true;
+    }
+
+    return {
+      item,
+      created,
+    };
   }
 
   async dismiss(

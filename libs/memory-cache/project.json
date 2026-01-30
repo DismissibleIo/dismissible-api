@@ -1,0 +1,50 @@
+{
+  "name": "memory-cache",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/memory-cache/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/memory-cache",
+        "main": "libs/memory-cache/src/index.ts",
+        "tsConfig": "libs/memory-cache/tsconfig.lib.json",
+        "assets": ["libs/memory-cache/package.json", "libs/memory-cache/README.md"],
+        "generatePackageJson": true,
+        "includeNodeModules": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/memory-cache/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/memory-cache"],
+      "options": {
+        "jestConfig": "libs/memory-cache/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/memory-cache"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/memory-cache"
+      }
+    }
+  }
+}

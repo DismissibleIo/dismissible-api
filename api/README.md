@@ -161,6 +161,38 @@ Depending how your IAMs is configured will depend what config you need to pass. 
 
 No configuration required. This storage backend is intended for testing and development purposes only.
 
+### Cache Settings
+
+Caching improves performance by storing frequently accessed dismissible items in memory or Redis, reducing database queries. By default, caching is disabled (null cache adapter). To enable caching, set `DISMISSIBLE_CACHE_TYPE` to either `redis` or `memory`.
+
+#### Redis Cache
+
+Redis is a high-performance in-memory data store that's perfect for distributed caching. It's ideal for production environments where you need shared caching across multiple instances. To enable Redis cache, set `DISMISSIBLE_CACHE_TYPE=redis` and provide a Redis connection URL.
+
+| Variable                                     | Description                                   | Default |
+| -------------------------------------------- | --------------------------------------------- | ------- |
+| `DISMISSIBLE_CACHE_REDIS_URL`                | Redis connection URL (required if type=redis) | -       |
+| `DISMISSIBLE_CACHE_REDIS_KEY_PREFIX`         | Optional prefix for cache keys                | -       |
+| `DISMISSIBLE_CACHE_REDIS_TTL_MS`             | Time-to-live for cached items (milliseconds)  | -       |
+| `DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK` | Enable Redis ready check                      | -       |
+| `DISMISSIBLE_CACHE_REDIS_MAX_RETRIES`        | Maximum retries per request                   | -       |
+
+> [!TIP]
+> An example Redis URL is: `redis://localhost:6379` or `redis://user:password@host:6379` for authenticated connections.
+
+#### Memory Cache
+
+Memory cache stores items in the application's memory. It's fast but limited to a single instance and doesn't persist across restarts. Ideal for development or single-instance deployments. To enable memory cache, set `DISMISSIBLE_CACHE_TYPE=memory`.
+
+| Variable                             | Description                                  | Default |
+| ------------------------------------ | -------------------------------------------- | ------- |
+| `DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS` | Maximum number of items to cache             | -       |
+| `DISMISSIBLE_CACHE_MEMORY_TTL_MS`    | Time-to-live for cached items (milliseconds) | -       |
+
+#### Cache Disabled (Default)
+
+When `DISMISSIBLE_CACHE_TYPE` is not set or empty, caching is disabled. The system uses a null cache adapter that performs no operations. This is the default behavior and requires no configuration.
+
 ### Swagger
 
 When enabled, Swagger documentation is published to the path specified by `DISMISSIBLE_SWAGGER_PATH` (defaults to `/docs`). The OpenAPI schema is available at `${PATH}-json` (JSON format) and `${PATH}-yaml` (YAML format). For example:
@@ -277,6 +309,19 @@ storage:
     accessKeyId: ${DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID:-}
     secretAccessKey: ${DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY:-}
     sessionToken: ${DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN:-}
+
+cache:
+  # redis | memory | null (or omit for null)
+  type: ${DISMISSIBLE_CACHE_TYPE:-}
+  memory:
+    maxItems: ${DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS:-}
+    ttlMs: ${DISMISSIBLE_CACHE_MEMORY_TTL_MS:-}
+  redis:
+    url: ${DISMISSIBLE_CACHE_REDIS_URL:-}
+    keyPrefix: ${DISMISSIBLE_CACHE_REDIS_KEY_PREFIX:-}
+    ttlMs: ${DISMISSIBLE_CACHE_REDIS_TTL_MS:-}
+    enableReadyCheck: ${DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK:-}
+    maxRetriesPerRequest: ${DISMISSIBLE_CACHE_REDIS_MAX_RETRIES:-}
 
 jwtAuth:
   enabled: ${DISMISSIBLE_JWT_AUTH_ENABLED:-false}

@@ -6,6 +6,7 @@ services:
     depends_on:
       - dismissible-postgres
       - dismissible-dynamodb
+      - dismissible-redis
     environment:
       # Server
       DISMISSIBLE_PORT: 3001
@@ -23,6 +24,19 @@ services:
       DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
       DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID: test
       DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
+
+      # Cache Configuration
+      # Set to 'redis' to enable Redis cache, 'memory' for memory cache, or leave empty for no cache
+      DISMISSIBLE_CACHE_TYPE: redis
+      # Redis Cache
+      DISMISSIBLE_CACHE_REDIS_URL: redis://dismissible-redis:6379
+      DISMISSIBLE_CACHE_REDIS_KEY_PREFIX: ''
+      DISMISSIBLE_CACHE_REDIS_TTL_MS: ''
+      DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK: ''
+      DISMISSIBLE_CACHE_REDIS_MAX_RETRIES: ''
+      # Memory Cache (used when DISMISSIBLE_CACHE_TYPE=memory)
+      DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS: ''
+      DISMISSIBLE_CACHE_MEMORY_TTL_MS: ''
 
       # JWT Authentication (disabled for local development)
       DISMISSIBLE_JWT_AUTH_ENABLED: false
@@ -88,6 +102,16 @@ services:
     networks:
       - default
 
+  dismissible-redis:
+    image: redis:latest
+    container_name: dismissible-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
 networks:
   default:
     name: dismissible-network
@@ -95,3 +119,4 @@ networks:
 volumes:
   postgres_data:
   dismissible_dynamodb_data:
+  redis_data:
