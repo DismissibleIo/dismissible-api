@@ -69,6 +69,10 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
         currentStep: Math.max(0, state.currentStep - 1),
       };
     case 'UPDATE_CONFIG': {
+      // Note: Shallow merge is safe here because useConfigSection already performs
+      // deep merge at the section level before dispatching. Each payload typically
+      // contains only one top-level key (e.g., { cors: {...} }), so nested objects
+      // are already properly merged.
       const nextConfig = {
         ...state.config,
         ...action.payload,

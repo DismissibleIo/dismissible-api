@@ -1,6 +1,7 @@
 import { forwardRef, useState } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { FormField } from './FormField';
+import { generateInputId } from './index';
 
 interface PasswordInputProps {
   label: string;
@@ -16,7 +17,7 @@ interface PasswordInputProps {
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ label, value, onChange, helpText, placeholder, required, error, name }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
-    const inputId = name || label.toLowerCase().replace(/\s+/g, '-');
+    const inputId = generateInputId(name, label);
 
     return (
       <FormField

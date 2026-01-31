@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { FormField } from './FormField';
+import { generateInputId } from './index';
 
 interface MultiSelectInputProps {
   label: string;
@@ -14,7 +15,7 @@ interface MultiSelectInputProps {
 
 export const MultiSelectInput = forwardRef<HTMLInputElement, MultiSelectInputProps>(
   ({ label, value, onChange, helpText, placeholder, required, error, name }, ref) => {
-    const inputId = name || label.toLowerCase().replace(/\s+/g, '-');
+    const inputId = generateInputId(name, label);
 
     return (
       <FormField

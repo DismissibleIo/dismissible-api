@@ -17,14 +17,15 @@ export function FormField({ label, error, helpText, required, children, htmlFor 
   // Add aria-describedby to child input if we have an error or help text
   const enhancedChildren = Children.map(children, (child) => {
     if (isValidElement(child) && (error || helpText)) {
-      const describedBy = [errorId && error ? errorId : null, helpId]
-        .filter(Boolean)
-        .join(' ');
+      const describedBy = [errorId && error ? errorId : null, helpId].filter(Boolean).join(' ');
       if (describedBy) {
-        return cloneElement(child as React.ReactElement<{ 'aria-describedby'?: string; 'aria-invalid'?: boolean }>, {
-          'aria-describedby': describedBy,
-          'aria-invalid': !!error,
-        });
+        return cloneElement(
+          child as React.ReactElement<{ 'aria-describedby'?: string; 'aria-invalid'?: boolean }>,
+          {
+            'aria-describedby': describedBy,
+            'aria-invalid': !!error,
+          },
+        );
       }
     }
     return child;

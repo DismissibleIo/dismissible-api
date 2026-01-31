@@ -25,7 +25,7 @@ export function CoreStep() {
   const handleStorageTypeChange = (value: string) => {
     const storageType = value as 'postgres' | 'dynamodb' | 'memory';
     const newStorage = STORAGE_TYPE_DEFAULTS[storageType] || STORAGE_TYPE_DEFAULTS.memory;
-    
+
     dispatch({
       type: 'UPDATE_CONFIG',
       payload: {

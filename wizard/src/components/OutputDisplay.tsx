@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react';
 import { Tab } from '@headlessui/react';
-import { ClipboardDocumentIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { useWizard } from '../hooks/useWizardState';
 import { generateEnvFile } from '../utils/envGenerator';
 import { generateDockerCommand } from '../utils/dockerGenerator';
 import { classNames } from '../utils/classNames';
+import { CopyButton } from './CopyButton';
 
 export function OutputDisplay() {
   const { state } = useWizard();
@@ -30,15 +31,20 @@ export function OutputDisplay() {
   }, []);
 
   const downloadEnvFile = () => {
-    const blob = new Blob([envFile], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '.env';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const blob = new Blob([envFile], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '.env';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download .env file:', err);
+      // Could show user feedback here (toast notification, etc.)
+    }
   };
 
   return (
@@ -91,14 +97,11 @@ export function OutputDisplay() {
         <Tab.Panels className="mt-4">
           <Tab.Panel className="rounded-xl bg-dark-600 border border-dark-500 p-4">
             <div className="flex justify-end gap-2 mb-3">
-              <button
+              <CopyButton
                 onClick={() => copyToClipboard(envFile, 'env')}
+                copied={copiedState.env}
                 aria-label={copiedState.env ? 'Copied to clipboard' : 'Copy .env file to clipboard'}
-                className="inline-flex items-center px-4 py-2 border border-dark-400 text-xs font-medium rounded-lg text-gray-300 bg-dark-500 hover:bg-dark-400 hover:text-white transition-all"
-              >
-                <ClipboardDocumentIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                {copiedState.env ? 'Copied!' : 'Copy'}
-              </button>
+              />
               <button
                 onClick={downloadEnvFile}
                 aria-label="Download .env file"
@@ -118,14 +121,13 @@ export function OutputDisplay() {
           </Tab.Panel>
           <Tab.Panel className="rounded-xl bg-dark-600 border border-dark-500 p-4">
             <div className="flex justify-end gap-2 mb-3">
-              <button
+              <CopyButton
                 onClick={() => copyToClipboard(dockerCmd, 'docker')}
-                aria-label={copiedState.docker ? 'Copied to clipboard' : 'Copy Docker command to clipboard'}
-                className="inline-flex items-center px-4 py-2 border border-dark-400 text-xs font-medium rounded-lg text-gray-300 bg-dark-500 hover:bg-dark-400 hover:text-white transition-all"
-              >
-                <ClipboardDocumentIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                {copiedState.docker ? 'Copied!' : 'Copy'}
-              </button>
+                copied={copiedState.docker}
+                aria-label={
+                  copiedState.docker ? 'Copied to clipboard' : 'Copy Docker command to clipboard'
+                }
+              />
             </div>
             <pre
               className="bg-dark-700 border border-dark-500 rounded-lg p-4 overflow-x-auto text-xs font-mono text-gray-300"

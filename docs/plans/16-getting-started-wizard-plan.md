@@ -1,8 +1,41 @@
 # Implementation Plan: Getting Started Wizard
 
+**Status**: ✅ Implementation Complete (pending production deployment)
+**Last Updated**: 2026-02-01
+
+> **Note**: This plan has been updated to reflect the actual implementation. Items marked with [ ] are complete. Additional features beyond the original plan are documented in the "Key Features Implemented Beyond Original Plan" section.
+
 ## Overview
 
 Create a client-side interactive wizard that guides developers through configuring the Dismissible API. The wizard will generate `.env` files and `docker run` commands based on user selections. It must run entirely in the browser with no server communication, deployable to https://dismissible.io/ and runnable locally.
+
+## Key Features Implemented Beyond Original Plan
+
+The following features were added during development that weren't in the original specification:
+
+### 1. Shareable Configuration URLs
+- Complete wizard state can be encoded in a URL using base64url encoding
+- "Copy share URL" button on the Review step allows easy sharing of configurations
+- URLs are parsed and validated on page load to restore saved configurations
+- Security features: size limits, prototype pollution protection, Zod schema validation
+
+### 2. Enhanced Security
+- **Shell injection protection**: All docker command values are properly escaped
+- **Env file injection protection**: Values with special characters are automatically quoted and escaped
+- **Prototype pollution prevention**: Deep filtering of dangerous keys (__proto__, constructor, prototype)
+- Comprehensive input sanitization throughout
+
+### 3. Improved UX Components
+- **StepHeader**: Consistent header component used across all wizard steps
+- **CopyButton**: Reusable copy-to-clipboard button with visual feedback
+- **AlertBox**: Info/warning/error alert boxes for user guidance
+- **StepIndicator**: Visual progress indicator with step names
+- **FormField**: Wrapper component for consistent form field layout
+
+### 4. Design Decisions
+- **No password masking in output**: All values (including secrets) are shown in plaintext in generated output for developer convenience
+- **Sensitive data protection in UI only**: Connection strings and credentials are masked (***) in the Review step summary, but shown fully in generated output
+- **Default value toggle applies to .env only**: Docker commands always include all values for clarity
 
 ## Technology Decisions
 
@@ -48,28 +81,30 @@ Rationale:
 
 - [ ] Create `wizard/` directory structure
 - [ ] Initialize Vite + React + TypeScript project
-  ```bash
-  npm create vite@latest apps/wizard -- --template react-ts
-  ```
 - [ ] Install dependencies:
   - Tailwind CSS for styling
-  - React Router (if multi-page) or state management for steps
-  - `copy-to-clipboard` or similar for clipboard functionality
-- [ ] Set up Tailwind CSS configuration
-- [ ] Create basic project structure:
+  - Headless UI for accessible components
+  - Heroicons for icons
+  - Zod for schema validation
+  - Native clipboard API (no external library needed)
+- [ ] Set up Tailwind CSS configuration with custom dark theme
+- [ ] Create project structure:
   ```
   wizard/
   ├── src/
-  │   ├── components/     # UI components
+  │   ├── components/     # UI components (forms, layout, etc.)
   │   ├── config/         # Configuration schema and defaults
   │   ├── steps/          # Wizard step components
-  │   ├── utils/          # Helper functions (generators, validators)
+  │   ├── hooks/          # React hooks (useWizardState)
+  │   ├── utils/          # Helper functions (generators, validators, escaping)
   │   ├── App.tsx
   │   └── main.tsx
   ├── public/
   ├── index.html
   ├── package.json
   ├── tsconfig.json
+  ├── tailwind.config.js
+  ├── postcss.config.js
   ├── vite.config.ts
   └── README.md
   ```
@@ -78,8 +113,8 @@ Rationale:
 
 - [ ] Create TypeScript types/interfaces for all configuration options based on `docs/CONFIGURATION.md`:
   - `CoreConfig`
-  - `StorageConfig` (with union types for Postgres/DynamoDB/Memory)
-  - `CacheConfig` (with union types for Redis/Memory/None)
+  - `StorageConfig` (with discriminated union types for Postgres/DynamoDB/Memory)
+  - `CacheConfig` (with discriminated union types for Redis/Memory/None)
   - `SwaggerConfig`
   - `JwtAuthConfig`
   - `CorsConfig`
@@ -88,13 +123,17 @@ Rationale:
   - `RateLimiterConfig`
 - [ ] Create a `WizardConfig` type that combines all sections
 - [ ] Define default values matching `docs/CONFIGURATION.md`
-- [ ] Create a constants file with:
+- [ ] Use Zod schemas for runtime validation and type safety
+- [ ] Create constants file with:
   - Environment variable names
   - Default values
   - Help text/descriptions from CONFIGURATION.md
-  - Validation rules (required fields, formats)
+  - Field metadata and labels
 
-File location: `wizard/src/config/schema.ts`
+File locations:
+- `wizard/src/config/schema.ts` (Zod schemas and types)
+- `wizard/src/config/defaults.ts` (default configuration)
+- `wizard/src/config/constants.ts` (env var names and metadata)
 
 ### Phase 2: Core Wizard UI
 
@@ -102,14 +141,17 @@ File location: `wizard/src/config/schema.ts`
 
 - [ ] Build main wizard container component with:
   - Progress indicator (step X of Y)
-  - Navigation buttons (Previous, Next, Review)
+  - Navigation buttons (Previous, Next)
   - State management for current step
   - State management for user selections
+  - "Start Over" button on final step
 - [ ] Implement step navigation logic:
   - Forward/backward navigation
   - Preserve answers when navigating
   - Validate current step before proceeding
+  - Direct navigation to any step (for edit buttons)
 - [ ] Create responsive layout (mobile + desktop)
+- [ ] Full ARIA accessibility attributes
 
 File location: `wizard/src/components/WizardShell.tsx`
 
@@ -122,14 +164,23 @@ File location: `wizard/src/components/WizardShell.tsx`
 - [ ] `MultiSelectInput` - for comma-separated lists (CORS origins, allowed headers)
 - [ ] `PasswordInput` - for sensitive values (connection strings, secrets) with show/hide toggle
 - [ ] `HelpTooltip` - for inline help text from CONFIGURATION.md
+- [ ] `FormField` - wrapper component for consistent field layout
 
-Each component should:
+Each component:
 
-- Accept a `value`, `onChange`, `label`, `helpText`, `required` props
-- Show validation errors
-- Support default values
+- Accepts `value`, `onChange`, `label`, `helpText`, `required` props
+- Shows validation errors
+- Supports default values
+- Fully accessible with ARIA attributes
 
-File location: `wizard/src/components/forms/`
+Additional UI components created:
+
+- [ ] `StepHeader` - consistent header for each wizard step
+- [ ] `CopyButton` - reusable copy-to-clipboard button with feedback
+- [ ] `AlertBox` - info/warning/error alert boxes
+- [ ] `StepIndicator` - progress indicator showing current step
+
+File location: `wizard/src/components/`
 
 ### Phase 3: Wizard Steps Implementation
 
@@ -163,7 +214,6 @@ File: `wizard/src/steps/StorageStep.tsx`
 
 #### 3.3 Step 3: Cache Configuration
 
-- [ ] Enable cache toggle
 - [ ] Cache type (`DISMISSIBLE_CACHE_TYPE`) - select: redis, memory, or none
 - [ ] **If Redis**:
   - URL (`DISMISSIBLE_CACHE_REDIS_URL`) - password input
@@ -193,7 +243,7 @@ File: `wizard/src/steps/SwaggerStep.tsx`
   - Well-known URL (`DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`) - required if enabled
   - Issuer (`DISMISSIBLE_JWT_AUTH_ISSUER`)
   - Audience (`DISMISSIBLE_JWT_AUTH_AUDIENCE`)
-  - Algorithms (`DISMISSIBLE_JWT_AUTH_ALGORITHMS`) - multi-select or text input
+  - Algorithms (`DISMISSIBLE_JWT_AUTH_ALGORITHMS`) - text input (comma-separated)
   - JWKS cache duration (`DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION`)
   - Request timeout (`DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT`)
   - Priority (`DISMISSIBLE_JWT_AUTH_PRIORITY`)
@@ -208,9 +258,9 @@ File: `wizard/src/steps/JwtAuthStep.tsx`
 
 - [ ] Enable CORS (`DISMISSIBLE_CORS_ENABLED`) - toggle
 - [ ] **If enabled**:
-  - Origins (`DISMISSIBLE_CORS_ORIGINS`) - comma-separated list
-  - Methods (`DISMISSIBLE_CORS_METHODS`) - comma-separated list
-  - Allowed headers (`DISMISSIBLE_CORS_ALLOWED_HEADERS`) - comma-separated list
+  - Origins (`DISMISSIBLE_CORS_ORIGINS`) - text input (comma-separated)
+  - Methods (`DISMISSIBLE_CORS_METHODS`) - text input (comma-separated)
+  - Allowed headers (`DISMISSIBLE_CORS_ALLOWED_HEADERS`) - text input (comma-separated)
   - Credentials (`DISMISSIBLE_CORS_CREDENTIALS`) - toggle
   - Max age (`DISMISSIBLE_CORS_MAX_AGE`)
 
@@ -246,7 +296,7 @@ File: `wizard/src/steps/ValidationStep.tsx`
   - Block duration (`DISMISSIBLE_RATE_LIMITER_BLOCK_DURATION`)
   - Key type (`DISMISSIBLE_RATE_LIMITER_KEY_TYPE`) - multi-select: ip, origin, referrer
   - Key mode (`DISMISSIBLE_RATE_LIMITER_KEY_MODE`) - select: and, or, any
-  - Ignored keys (`DISMISSIBLE_RATE_LIMITER_IGNORED_KEYS`) - comma-separated list
+  - Ignored keys (`DISMISSIBLE_RATE_LIMITER_IGNORED_KEYS`) - text input (comma-separated)
   - Priority (`DISMISSIBLE_RATE_LIMITER_PRIORITY`)
 
 File: `wizard/src/steps/RateLimiterStep.tsx`
@@ -254,9 +304,10 @@ File: `wizard/src/steps/RateLimiterStep.tsx`
 #### 3.10 Step 10: Review Summary
 
 - [ ] Display all selected configuration values grouped by section
-- [ ] Show which values differ from defaults (highlight or badge)
-- [ ] Allow user to go back and edit any step
-- [ ] "Generate Configuration" button to proceed to output
+- [ ] Clickable edit buttons to return to any previous step
+- [ ] "Copy share URL" button to share configuration
+- [ ] Sensitive values masked in review (e.g., connection strings show as ***)
+- [ ] Integrated OutputDisplay component (no separate "Generate" step needed)
 
 File: `wizard/src/steps/ReviewStep.tsx`
 
@@ -267,9 +318,10 @@ File: `wizard/src/steps/ReviewStep.tsx`
 - [ ] Create utility function to generate `.env` file content:
   - Iterate through all config values
   - Format as `KEY=value`
-  - Include comments for default values (e.g., `# Default: 3001`)
   - Group by section with comment headers
-  - Handle sensitive values (mask or include as-is based on user preference)
+  - Toggle to include/exclude default values
+  - Secure .env value escaping (quotes special characters, prevents injection)
+  - Values always shown in plaintext (no masking)
 - [ ] Add download functionality (blob + download link)
 - [ ] Add copy-to-clipboard functionality
 
@@ -278,11 +330,11 @@ File: `wizard/src/utils/envGenerator.ts`
 #### 4.2 docker run Command Generator
 
 - [ ] Create utility function to generate `docker run` command:
-  - Start with base: `docker run -d -p {PORT}:3001 dismissibleio/dismissible-api`
+  - Start with base: `docker run -d --name dismissible-api -p {PORT}:3001 dismissibleio/dismissible-api:latest`
   - Add `-e KEY=value` for each configured variable
-  - Optionally omit default values (with toggle)
+  - Always includes all configured values (no default toggle)
   - Format for readability (line breaks with `\`)
-  - Handle sensitive values (mask or include as-is based on user preference)
+  - Secure shell escaping to prevent injection attacks
 - [ ] Add copy-to-clipboard functionality
 
 File: `wizard/src/utils/dockerGenerator.ts`
@@ -292,11 +344,44 @@ File: `wizard/src/utils/dockerGenerator.ts`
 - [ ] Create output page/step with tabs or sections:
   - `.env` file content (with download + copy buttons)
   - `docker run` command (with copy button)
-  - Toggle to show/hide default values
-  - Toggle to show/hide sensitive values (mask with `***`)
-- [ ] Add "Start Over" button to reset wizard
+  - Toggle to show/hide default values (affects .env file only)
+  - No password masking - all values shown in plaintext for usability
+- [ ] Add "Start Over" button to reset wizard (in WizardShell on last step)
 
 File: `wizard/src/components/OutputDisplay.tsx`
+
+#### 4.4 Shareable Configuration URLs
+
+- [ ] Create utility to encode/decode wizard configuration in URLs:
+  - Base64url encoding for URL safety (no +, /, or padding)
+  - Encode entire config as query parameter `?wizard=<base64>`
+  - Parse and restore config from URL on page load
+  - Security features:
+    - Size limits (4000 char encoded, 16KB decoded)
+    - Prototype pollution protection
+    - Schema validation with Zod
+    - Sanitization of unknown keys
+  - Handle URL corruption (e.g., spaces from + in query strings)
+- [ ] Add "Copy share URL" button to Review step
+- [ ] Auto-restore configuration from URL parameter on wizard load
+
+File: `wizard/src/utils/shareUrl.ts`
+
+#### 4.5 Security Utilities
+
+- [ ] Shell value escaping for docker commands:
+  - Escape: $ ` \ " ! newlines and carriage returns
+  - Prevents command injection in docker run commands
+- [ ] .env value escaping:
+  - Auto-quote values with special characters
+  - Escape backslashes, quotes, newlines
+  - Leave simple alphanumeric values unquoted
+- [ ] Prototype pollution protection:
+  - Filter dangerous keys (__proto__, constructor, prototype)
+  - Deep safe copy function for nested objects
+  - Used in URL parsing and config restoration
+
+File: `wizard/src/utils/escaping.ts`
 
 ### Phase 5: Polish & UX
 
@@ -397,15 +482,38 @@ File: `wizard/src/components/OutputDisplay.tsx`
   - Add binary script to launch local server
   - Publish to npm as `@dismissible/wizard` or similar
 
+## Implementation Status
+
+### Completed (All Core Features)
+
+All phases from the original plan have been completed:
+
+- ✅ **Phase 1**: Project setup with Vite + React + TypeScript + Tailwind
+- ✅ **Phase 2**: Core wizard UI with navigation and form components
+- ✅ **Phase 3**: All 10 wizard steps implemented with conditional logic
+- ✅ **Phase 4**: Output generation (.env, docker, shareable URLs)
+- ✅ **Phase 5**: Polish & UX (validation, help text, responsive design, state management)
+- ✅ **Phase 6**: Testing & documentation (README, inline help)
+- ⏸️ **Phase 7**: Deployment (pending GitHub Pages / hosting setup)
+
+### Additional Work Beyond Plan
+
+- ✅ Shareable URLs with base64 encoding
+- ✅ Enhanced security utilities (escaping, prototype pollution protection)
+- ✅ Additional UI components (StepHeader, CopyButton, AlertBox)
+- ✅ Zod schema validation for runtime type safety
+- ✅ URL state restoration with validation
+
 ## Future Enhancements (Out of Scope)
 
 - [ ] Generate `docker-compose.yml` output
 - [ ] Generate `.env.yaml` output (for NestJS module users)
 - [ ] Import existing `.env` file to pre-populate wizard
 - [ ] "Quick Start" templates (dev, production, AWS, GCP, etc.)
-- [ ] Dark mode toggle
+- [ ] Dark mode toggle (currently dark theme only)
 - [ ] Internationalization (i18n) for multiple languages
 - [ ] Analytics (privacy-respecting, opt-in only)
+- [ ] LocalStorage persistence (currently URL-based sharing only)
 
 ## Success Criteria
 
@@ -413,12 +521,15 @@ File: `wizard/src/components/OutputDisplay.tsx`
 - [ ] All configuration options from `docs/CONFIGURATION.md` are supported
 - [ ] Generated `.env` files are valid and can be used directly
 - [ ] Generated `docker run` commands are valid and can be executed directly
-- [ ] Wizard is deployed to https://dismissible.io/ and accessible online
+- [ ] Wizard is deployed to https://dismissible.io/ and accessible online *(pending)*
 - [ ] Wizard can be run locally without internet connection
 - [ ] Responsive design works on mobile, tablet, and desktop
-- [ ] Documentation is clear and complete
+- [ ] Documentation is clear and complete (README.md included)
+- [ ] **Bonus**: Shareable configuration URLs for easy collaboration
 
-## Estimated Effort
+## Estimated vs Actual Effort
+
+### Original Estimate
 
 - Phase 1 (Setup): 2-4 hours
 - Phase 2 (Core UI): 4-6 hours
@@ -428,4 +539,12 @@ File: `wizard/src/components/OutputDisplay.tsx`
 - Phase 6 (Testing): 4-6 hours
 - Phase 7 (Deployment): 2-4 hours
 
-**Total: 28-44 hours**
+**Original Total: 28-44 hours**
+
+### Additional Work
+
+- Shareable URLs feature: ~4-6 hours
+- Security utilities (escaping, validation): ~3-4 hours
+- Additional UI components: ~2-3 hours
+
+**Note**: The wizard implementation is complete and functional. Deployment to production hosting is the only remaining task.

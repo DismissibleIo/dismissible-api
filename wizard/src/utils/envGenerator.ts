@@ -40,7 +40,10 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
   lines.push('# Storage Settings');
   if (config.storage.type === 'postgres') {
     lines.push(
-      envLine(ENV_VAR_NAMES.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING, config.storage.connectionString),
+      envLine(
+        ENV_VAR_NAMES.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING,
+        config.storage.connectionString,
+      ),
     );
   } else if (config.storage.type === 'dynamodb') {
     lines.push(
@@ -51,17 +54,26 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
     );
     if (config.storage.awsAccessKeyId) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID, config.storage.awsAccessKeyId),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID,
+          config.storage.awsAccessKeyId,
+        ),
       );
     }
     if (config.storage.awsSecretAccessKey) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY, config.storage.awsSecretAccessKey),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY,
+          config.storage.awsSecretAccessKey,
+        ),
       );
     }
     if (config.storage.awsSessionToken) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN, config.storage.awsSessionToken),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN,
+          config.storage.awsSessionToken,
+        ),
       );
     }
     if (config.storage.endpoint) {
@@ -89,14 +101,19 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
     if (config.cache.type === 'redis') {
       lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_URL, config.cache.url));
       if (includeDefaults || config.cache.keyPrefix !== 'dismissible:cache:') {
-        lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_KEY_PREFIX, config.cache.keyPrefix));
+        lines.push(
+          envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_KEY_PREFIX, config.cache.keyPrefix),
+        );
       }
       if (includeDefaults || config.cache.ttlMs !== 21600000) {
         lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_TTL_MS, config.cache.ttlMs));
       }
       if (includeDefaults || !config.cache.enableReadyCheck) {
         lines.push(
-          envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK, config.cache.enableReadyCheck),
+          envLine(
+            ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK,
+            config.cache.enableReadyCheck,
+          ),
         );
       }
       if (includeDefaults || config.cache.maxRetries !== 3) {
@@ -106,12 +123,17 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
       }
       if (includeDefaults || config.cache.connectionTimeoutMs !== 5000) {
         lines.push(
-          envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_CONNECTION_TIMEOUT_MS, config.cache.connectionTimeoutMs),
+          envLine(
+            ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_CONNECTION_TIMEOUT_MS,
+            config.cache.connectionTimeoutMs,
+          ),
         );
       }
     } else if (config.cache.type === 'memory') {
       if (includeDefaults || config.cache.maxItems !== 5000) {
-        lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS, config.cache.maxItems));
+        lines.push(
+          envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS, config.cache.maxItems),
+        );
       }
       if (includeDefaults || config.cache.ttlMs !== 21600000) {
         lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_CACHE_MEMORY_TTL_MS, config.cache.ttlMs));
@@ -148,7 +170,10 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
     }
     if (includeDefaults || config.jwtAuth.jwksCacheDuration !== 600000) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION, config.jwtAuth.jwksCacheDuration),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION,
+          config.jwtAuth.jwksCacheDuration,
+        ),
       );
     }
     if (includeDefaults || config.jwtAuth.requestTimeout !== 30000) {
@@ -171,12 +196,18 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
     }
     if (includeDefaults || config.jwtAuth.userIdMatchType !== 'exact') {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE, config.jwtAuth.userIdMatchType),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_TYPE,
+          config.jwtAuth.userIdMatchType,
+        ),
       );
     }
     if (config.jwtAuth.userIdMatchRegex) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX, config.jwtAuth.userIdMatchRegex),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX,
+          config.jwtAuth.userIdMatchRegex,
+        ),
       );
     }
     lines.push('');
@@ -196,7 +227,9 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
       includeDefaults ||
       config.cors.allowedHeaders !== 'Content-Type,Authorization,x-request-id'
     ) {
-      lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_CORS_ALLOWED_HEADERS, config.cors.allowedHeaders));
+      lines.push(
+        envLine(ENV_VAR_NAMES.DISMISSIBLE_CORS_ALLOWED_HEADERS, config.cors.allowedHeaders),
+      );
     }
     if (includeDefaults || !config.cors.credentials) {
       lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_CORS_CREDENTIALS, config.cors.credentials));
@@ -219,15 +252,22 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
         lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_HELMET_COEP, config.helmet.coep));
       }
       if (includeDefaults || config.helmet.hstsMaxAge !== 31536000) {
-        lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_MAX_AGE, config.helmet.hstsMaxAge));
+        lines.push(
+          envLine(ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_MAX_AGE, config.helmet.hstsMaxAge),
+        );
       }
       if (includeDefaults || !config.helmet.hstsIncludeSubdomains) {
         lines.push(
-          envLine(ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_INCLUDE_SUBDOMAINS, config.helmet.hstsIncludeSubdomains),
+          envLine(
+            ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_INCLUDE_SUBDOMAINS,
+            config.helmet.hstsIncludeSubdomains,
+          ),
         );
       }
       if (includeDefaults || config.helmet.hstsPreload) {
-        lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_PRELOAD, config.helmet.hstsPreload));
+        lines.push(
+          envLine(ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_PRELOAD, config.helmet.hstsPreload),
+        );
       }
     }
     lines.push('');
@@ -244,7 +284,10 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
     lines.push('# Validation');
     if (includeDefaults || !config.validation.disableErrorMessages) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES, config.validation.disableErrorMessages),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES,
+          config.validation.disableErrorMessages,
+        ),
       );
     }
     if (includeDefaults || !config.validation.whitelist) {
@@ -254,7 +297,10 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
     }
     if (includeDefaults || !config.validation.forbidNonWhitelisted) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED, config.validation.forbidNonWhitelisted),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED,
+          config.validation.forbidNonWhitelisted,
+        ),
       );
     }
     if (includeDefaults || !config.validation.transform) {
@@ -279,7 +325,10 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
     }
     if (includeDefaults || config.rateLimiter.blockDuration !== 60) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_BLOCK_DURATION, config.rateLimiter.blockDuration),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_BLOCK_DURATION,
+          config.rateLimiter.blockDuration,
+        ),
       );
     }
     if (includeDefaults || config.rateLimiter.keyType !== 'ip,origin,referrer') {
@@ -294,7 +343,10 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
     }
     if (config.rateLimiter.ignoredKeys) {
       lines.push(
-        envLine(ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_IGNORED_KEYS, config.rateLimiter.ignoredKeys),
+        envLine(
+          ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_IGNORED_KEYS,
+          config.rateLimiter.ignoredKeys,
+        ),
       );
     }
     if (includeDefaults || config.rateLimiter.priority !== -101) {

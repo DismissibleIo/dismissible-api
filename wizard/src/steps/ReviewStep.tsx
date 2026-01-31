@@ -4,6 +4,19 @@ import { PencilIcon, LinkIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { OutputDisplay } from '../components/OutputDisplay';
 import { buildShareUrl } from '../utils/shareUrl';
 
+/** Step indices for navigation */
+const STEP_INDICES = {
+  CORE: 0,
+  STORAGE: 1,
+  CACHE: 2,
+  SWAGGER: 3,
+  JWT_AUTH: 4,
+  CORS: 5,
+  HELMET: 6,
+  VALIDATION: 7,
+  RATE_LIMITER: 8,
+} as const;
+
 export function ReviewStep() {
   const { state, dispatch } = useWizard();
   const { config } = state;
@@ -20,9 +33,12 @@ export function ReviewStep() {
     }
   }, [config]);
 
-  const editStep = (step: number) => {
-    dispatch({ type: 'SET_STEP', payload: step });
-  };
+  const editStep = useCallback(
+    (step: number) => {
+      dispatch({ type: 'GO_TO_STEP', payload: step });
+    },
+    [dispatch],
+  );
 
   return (
     <div>
@@ -74,8 +90,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(0)}
+              onClick={() => editStep(STEP_INDICES.CORE)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit Core Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -127,8 +144,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(1)}
+              onClick={() => editStep(STEP_INDICES.STORAGE)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit Storage Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -150,8 +168,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(2)}
+              onClick={() => editStep(STEP_INDICES.CACHE)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit Cache Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -177,8 +196,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(3)}
+              onClick={() => editStep(STEP_INDICES.SWAGGER)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit Swagger Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -198,8 +218,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(4)}
+              onClick={() => editStep(STEP_INDICES.JWT_AUTH)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit JWT Auth Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -219,8 +240,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(5)}
+              onClick={() => editStep(STEP_INDICES.CORS)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit CORS Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -240,8 +262,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(6)}
+              onClick={() => editStep(STEP_INDICES.HELMET)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit Security Headers Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -263,8 +286,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(7)}
+              onClick={() => editStep(STEP_INDICES.VALIDATION)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit Validation Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -284,8 +308,9 @@ export function ReviewStep() {
               </dl>
             </div>
             <button
-              onClick={() => editStep(8)}
+              onClick={() => editStep(STEP_INDICES.RATE_LIMITER)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
+              aria-label="Edit Rate Limiter Settings"
             >
               <PencilIcon className="w-5 h-5" />
             </button>

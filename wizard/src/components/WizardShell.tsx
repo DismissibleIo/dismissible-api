@@ -72,7 +72,11 @@ export function WizardShell({
 
           <div className="mt-8 mb-8">{children}</div>
 
-          <div className="flex justify-between border-t border-dark-500 pt-6" role="navigation" aria-label="Wizard navigation">
+          <div
+            className="flex justify-between border-t border-dark-500 pt-6"
+            role="navigation"
+            aria-label="Wizard navigation"
+          >
             {!isLastStep && (
               <button
                 type="button"

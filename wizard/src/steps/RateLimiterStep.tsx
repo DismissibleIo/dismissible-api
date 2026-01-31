@@ -3,7 +3,11 @@ import { ToggleInput, NumberInput, SelectInput, MultiSelectInput } from '../comp
 import { HELP_TEXT } from '../config/constants';
 
 export function RateLimiterStep() {
-  const { section: rateLimiter, update: updateRateLimiter, getError } = useConfigSection('rateLimiter');
+  const {
+    section: rateLimiter,
+    update: updateRateLimiter,
+    getError,
+  } = useConfigSection('rateLimiter');
 
   return (
     <div>

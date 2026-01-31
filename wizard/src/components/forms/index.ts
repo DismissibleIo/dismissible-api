@@ -1,3 +1,11 @@
+/**
+ * Generate a unique input ID from a name or label.
+ * Used consistently across all form input components.
+ */
+export function generateInputId(name?: string, label?: string): string {
+  return name || (label ? label.toLowerCase().replace(/\s+/g, '-') : '');
+}
+
 export { FormField } from './FormField';
 export { HelpTooltip } from './HelpTooltip';
 export { TextInput } from './TextInput';

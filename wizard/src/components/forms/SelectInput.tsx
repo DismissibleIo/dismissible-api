@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import { Listbox } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid';
 import { FormField } from './FormField';
+import { generateInputId } from './index';
 
 interface SelectOption {
   value: string;
@@ -21,7 +22,7 @@ interface SelectInputProps {
 
 export const SelectInput = forwardRef<HTMLButtonElement, SelectInputProps>(
   ({ label, value, onChange, options, helpText, required, error, name }, ref) => {
-    const inputId = name || label.toLowerCase().replace(/\s+/g, '-');
+    const inputId = generateInputId(name, label);
 
     const normalizedOptions: SelectOption[] = options.map((opt) =>
       typeof opt === 'string' ? { value: opt, label: opt } : opt,

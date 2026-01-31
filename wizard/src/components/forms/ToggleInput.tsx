@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { Switch } from '@headlessui/react';
 import { FormField } from './FormField';
+import { generateInputId } from './index';
 
 interface ToggleInputProps {
   label: string;
@@ -13,7 +14,7 @@ interface ToggleInputProps {
 
 export const ToggleInput = forwardRef<HTMLButtonElement, ToggleInputProps>(
   ({ label, value, onChange, helpText, error, name }, ref) => {
-    const inputId = name || label.toLowerCase().replace(/\s+/g, '-');
+    const inputId = generateInputId(name, label);
 
     return (
       <FormField label={label} error={error} helpText={helpText} htmlFor={inputId}>

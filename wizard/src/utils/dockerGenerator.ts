@@ -21,7 +21,10 @@ export function generateDockerCommand(config: WizardConfig): string {
   // Storage Settings
   if (config.storage.type === 'postgres') {
     envVars.push(
-      envVar(ENV_VAR_NAMES.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING, config.storage.connectionString),
+      envVar(
+        ENV_VAR_NAMES.DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING,
+        config.storage.connectionString,
+      ),
     );
   } else if (config.storage.type === 'dynamodb') {
     envVars.push(
@@ -32,17 +35,26 @@ export function generateDockerCommand(config: WizardConfig): string {
     );
     if (config.storage.awsAccessKeyId) {
       envVars.push(
-        envVar(ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID, config.storage.awsAccessKeyId),
+        envVar(
+          ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID,
+          config.storage.awsAccessKeyId,
+        ),
       );
     }
     if (config.storage.awsSecretAccessKey) {
       envVars.push(
-        envVar(ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY, config.storage.awsSecretAccessKey),
+        envVar(
+          ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY,
+          config.storage.awsSecretAccessKey,
+        ),
       );
     }
     if (config.storage.awsSessionToken) {
       envVars.push(
-        envVar(ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN, config.storage.awsSessionToken),
+        envVar(
+          ENV_VAR_NAMES.DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN,
+          config.storage.awsSessionToken,
+        ),
       );
     }
     if (config.storage.endpoint) {
@@ -62,16 +74,24 @@ export function generateDockerCommand(config: WizardConfig): string {
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_TYPE, config.cache.type));
     if (config.cache.type === 'redis') {
       envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_URL, config.cache.url));
-      envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_KEY_PREFIX, config.cache.keyPrefix));
+      envVars.push(
+        envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_KEY_PREFIX, config.cache.keyPrefix),
+      );
       envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_TTL_MS, config.cache.ttlMs));
       envVars.push(
-        envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK, config.cache.enableReadyCheck),
+        envVar(
+          ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK,
+          config.cache.enableReadyCheck,
+        ),
       );
       envVars.push(
         envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_MAX_RETRIES, config.cache.maxRetries),
       );
       envVars.push(
-        envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_CONNECTION_TIMEOUT_MS, config.cache.connectionTimeoutMs),
+        envVar(
+          ENV_VAR_NAMES.DISMISSIBLE_CACHE_REDIS_CONNECTION_TIMEOUT_MS,
+          config.cache.connectionTimeoutMs,
+        ),
       );
     } else if (config.cache.type === 'memory') {
       envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS, config.cache.maxItems));
@@ -99,7 +119,10 @@ export function generateDockerCommand(config: WizardConfig): string {
     }
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_ALGORITHMS, config.jwtAuth.algorithms));
     envVars.push(
-      envVar(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION, config.jwtAuth.jwksCacheDuration),
+      envVar(
+        ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_JWKS_CACHE_DURATION,
+        config.jwtAuth.jwksCacheDuration,
+      ),
     );
     envVars.push(
       envVar(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_REQUEST_TIMEOUT, config.jwtAuth.requestTimeout),
@@ -116,7 +139,10 @@ export function generateDockerCommand(config: WizardConfig): string {
     );
     if (config.jwtAuth.userIdMatchRegex) {
       envVars.push(
-        envVar(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX, config.jwtAuth.userIdMatchRegex),
+        envVar(
+          ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_USER_ID_MATCH_REGEX,
+          config.jwtAuth.userIdMatchRegex,
+        ),
       );
     }
   }
@@ -128,7 +154,9 @@ export function generateDockerCommand(config: WizardConfig): string {
       envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CORS_ORIGINS, config.cors.origins));
     }
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CORS_METHODS, config.cors.methods));
-    envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CORS_ALLOWED_HEADERS, config.cors.allowedHeaders));
+    envVars.push(
+      envVar(ENV_VAR_NAMES.DISMISSIBLE_CORS_ALLOWED_HEADERS, config.cors.allowedHeaders),
+    );
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CORS_CREDENTIALS, config.cors.credentials));
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_CORS_MAX_AGE, config.cors.maxAge));
   }
@@ -140,30 +168,44 @@ export function generateDockerCommand(config: WizardConfig): string {
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_HELMET_COEP, config.helmet.coep));
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_MAX_AGE, config.helmet.hstsMaxAge));
     envVars.push(
-      envVar(ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_INCLUDE_SUBDOMAINS, config.helmet.hstsIncludeSubdomains),
+      envVar(
+        ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_INCLUDE_SUBDOMAINS,
+        config.helmet.hstsIncludeSubdomains,
+      ),
     );
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_HELMET_HSTS_PRELOAD, config.helmet.hstsPreload));
   }
 
   // Validation
   envVars.push(
-    envVar(ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES, config.validation.disableErrorMessages),
+    envVar(
+      ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES,
+      config.validation.disableErrorMessages,
+    ),
   );
   envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_WHITELIST, config.validation.whitelist));
   envVars.push(
-    envVar(ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED, config.validation.forbidNonWhitelisted),
+    envVar(
+      ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED,
+      config.validation.forbidNonWhitelisted,
+    ),
   );
   envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_VALIDATION_TRANSFORM, config.validation.transform));
 
   // Rate Limiter
   if (config.rateLimiter.enabled) {
-    envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_ENABLED, config.rateLimiter.enabled));
+    envVars.push(
+      envVar(ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_ENABLED, config.rateLimiter.enabled),
+    );
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_POINTS, config.rateLimiter.points));
     envVars.push(
       envVar(ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_DURATION, config.rateLimiter.duration),
     );
     envVars.push(
-      envVar(ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_BLOCK_DURATION, config.rateLimiter.blockDuration),
+      envVar(
+        ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_BLOCK_DURATION,
+        config.rateLimiter.blockDuration,
+      ),
     );
     envVars.push(
       envVar(ENV_VAR_NAMES.DISMISSIBLE_RATE_LIMITER_KEY_TYPE, config.rateLimiter.keyType),

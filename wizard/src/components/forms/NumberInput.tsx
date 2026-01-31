@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { FormField } from './FormField';
+import { generateInputId } from './index';
 
 interface NumberInputProps {
   label: string;
@@ -20,7 +21,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     { label, value, onChange, helpText, placeholder, required, error, name, min, max, step },
     ref,
   ) => {
-    const inputId = name || label.toLowerCase().replace(/\s+/g, '-');
+    const inputId = generateInputId(name, label);
 
     return (
       <FormField
