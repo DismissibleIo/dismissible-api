@@ -1,0 +1,32 @@
+{
+  "name": "wizard",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "wizard/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{workspaceRoot}/dist/wizard"],
+      "options": {
+        "outputPath": "dist/wizard",
+        "configFile": "wizard/vite.config.ts"
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "buildTarget": "wizard:build",
+        "port": 3002,
+        "hmr": true
+      }
+    },
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "options": {
+        "buildTarget": "wizard:build",
+        "port": 3002
+      }
+    }
+  }
+}

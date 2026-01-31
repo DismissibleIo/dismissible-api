@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-800 text-gray-100;
+  }
+
+  * {
+    @apply border-dark-500;
+  }
+}
+
+@layer components {
+  /* Input field styles */
+  .input-field {
+    @apply block w-full rounded-lg border border-dark-500 bg-dark-600 px-4 py-2.5 text-gray-100 placeholder-gray-500 shadow-sm transition-all duration-200;
+    @apply focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none;
+    @apply hover:border-dark-400;
+  }
+
+  /* Button styles */
+  .btn-primary {
+    @apply inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 shadow-lg shadow-primary-600/30;
+    @apply hover:bg-primary-500 hover:shadow-primary-500/40;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-700 focus:ring-primary-500;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600;
+    @apply transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center px-6 py-2.5 border border-dark-400 text-sm font-medium rounded-lg text-gray-300 bg-dark-600;
+    @apply hover:bg-dark-500 hover:border-dark-300 hover:text-gray-100;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-700 focus:ring-primary-500;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply transition-all duration-200;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-dark-700 rounded-xl shadow-2xl border border-dark-500;
+  }
+}

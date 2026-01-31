@@ -5,7 +5,8 @@
   "private": true,
   "workspaces": [
     "api",
-    "libs/*"
+    "libs/*",
+    "wizard"
   ],
   "scripts": {
     "build": "nx run-many --target=build --projects=libs/*,api",
@@ -43,7 +44,10 @@
     "storage:stop:dynamodb": "docker-compose stop dismissible-dynamodb",
     "storage:stop:redis": "docker-compose stop dismissible-redis",
     "nx:reset": "nx reset",
-    "commit": "cz"
+    "commit": "cz",
+    "wizard": "nx serve wizard",
+    "wizard:build": "nx build wizard",
+    "wizard:preview": "nx preview wizard"
   },
   "overrides": {
     "lru-cache": "^10.4.3",
@@ -64,11 +68,14 @@
     "@nx/js": "^22.3.3",
     "@nx/nest": "^22.3.3",
     "@nx/node": "^22.3.3",
+    "@nx/react": "^22.4.4",
+    "@nx/vite": "^22.4.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.4",
     "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.50.1",
     "@typescript-eslint/parser": "^8.50.1",
+    "@vitejs/plugin-react": "^5.1.2",
     "autocannon": "^8.0.0",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
@@ -86,7 +93,8 @@
     "ts-jest-mocker": "^1.3.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   },
   "config": {
     "commitizen": {

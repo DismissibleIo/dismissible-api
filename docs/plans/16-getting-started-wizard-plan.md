@@ -7,9 +7,11 @@ Create a client-side interactive wizard that guides developers through configuri
 ## Technology Decisions
 
 ### Framework Choice
+
 **Recommendation: Vite + React + TypeScript**
 
 Rationale:
+
 - Fast dev server and build times
 - Can be built as a single-page static site
 - TypeScript provides type safety for configuration schema
@@ -18,18 +20,22 @@ Rationale:
 - Can be run locally with `npm run dev` or served as static files
 
 ### UI Component Library
+
 **Recommendation: Tailwind CSS + Headless UI or shadcn/ui**
 
 Rationale:
+
 - Lightweight and customizable
 - Good mobile responsiveness out of the box
 - No heavy framework dependencies
 - Easy to create step-based forms
 
 ### Repository Location
+
 **Recommendation: `wizard/`**
 
 Rationale:
+
 - Follows the monorepo pattern if using NX/Turborepo
 - Keeps wizard separate from API code
 - Easy to deploy independently
@@ -39,6 +45,7 @@ Rationale:
 ### Phase 1: Project Setup
 
 #### 1.1 Initialize Wizard App
+
 - [ ] Create `wizard/` directory structure
 - [ ] Initialize Vite + React + TypeScript project
   ```bash
@@ -68,6 +75,7 @@ Rationale:
   ```
 
 #### 1.2 Define Configuration Schema
+
 - [ ] Create TypeScript types/interfaces for all configuration options based on `docs/CONFIGURATION.md`:
   - `CoreConfig`
   - `StorageConfig` (with union types for Postgres/DynamoDB/Memory)
@@ -91,6 +99,7 @@ File location: `wizard/src/config/schema.ts`
 ### Phase 2: Core Wizard UI
 
 #### 2.1 Create Wizard Shell
+
 - [ ] Build main wizard container component with:
   - Progress indicator (step X of Y)
   - Navigation buttons (Previous, Next, Review)
@@ -105,6 +114,7 @@ File location: `wizard/src/config/schema.ts`
 File location: `wizard/src/components/WizardShell.tsx`
 
 #### 2.2 Build Reusable Form Components
+
 - [ ] `TextInput` - for strings (ports, URLs, prefixes)
 - [ ] `NumberInput` - for numeric values (TTL, max items, timeouts)
 - [ ] `SelectInput` - for enum choices (storage type, cache type)
@@ -114,6 +124,7 @@ File location: `wizard/src/components/WizardShell.tsx`
 - [ ] `HelpTooltip` - for inline help text from CONFIGURATION.md
 
 Each component should:
+
 - Accept a `value`, `onChange`, `label`, `helpText`, `required` props
 - Show validation errors
 - Support default values
@@ -125,6 +136,7 @@ File location: `wizard/src/components/forms/`
 Implement each step as a separate component that renders the appropriate form fields:
 
 #### 3.1 Step 1: Core Settings
+
 - [ ] Port (`DISMISSIBLE_PORT`)
 - [ ] Storage type (`DISMISSIBLE_STORAGE_TYPE`) - select: postgres, dynamodb, memory
 - [ ] Run setup (`DISMISSIBLE_STORAGE_RUN_SETUP`) - toggle
@@ -132,6 +144,7 @@ Implement each step as a separate component that renders the appropriate form fi
 File: `wizard/src/steps/CoreStep.tsx`
 
 #### 3.2 Step 2: Storage Configuration
+
 - [ ] Conditional rendering based on storage type selected in Step 1
 - [ ] **If Postgres**:
   - Connection string (`DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING`) - password input with help text showing example format
@@ -149,6 +162,7 @@ File: `wizard/src/steps/CoreStep.tsx`
 File: `wizard/src/steps/StorageStep.tsx`
 
 #### 3.3 Step 3: Cache Configuration
+
 - [ ] Enable cache toggle
 - [ ] Cache type (`DISMISSIBLE_CACHE_TYPE`) - select: redis, memory, or none
 - [ ] **If Redis**:
@@ -165,6 +179,7 @@ File: `wizard/src/steps/StorageStep.tsx`
 File: `wizard/src/steps/CacheStep.tsx`
 
 #### 3.4 Step 4: Swagger Configuration
+
 - [ ] Enable Swagger (`DISMISSIBLE_SWAGGER_ENABLED`) - toggle
 - [ ] Swagger path (`DISMISSIBLE_SWAGGER_PATH`)
 - [ ] Help text explaining the paths (e.g., `/docs`, `/docs-json`, `/docs-yaml`)
@@ -172,6 +187,7 @@ File: `wizard/src/steps/CacheStep.tsx`
 File: `wizard/src/steps/SwaggerStep.tsx`
 
 #### 3.5 Step 5: JWT Authentication
+
 - [ ] Enable JWT auth (`DISMISSIBLE_JWT_AUTH_ENABLED`) - toggle
 - [ ] **If enabled**:
   - Well-known URL (`DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL`) - required if enabled
@@ -189,6 +205,7 @@ File: `wizard/src/steps/SwaggerStep.tsx`
 File: `wizard/src/steps/JwtAuthStep.tsx`
 
 #### 3.6 Step 6: CORS Configuration
+
 - [ ] Enable CORS (`DISMISSIBLE_CORS_ENABLED`) - toggle
 - [ ] **If enabled**:
   - Origins (`DISMISSIBLE_CORS_ORIGINS`) - comma-separated list
@@ -200,6 +217,7 @@ File: `wizard/src/steps/JwtAuthStep.tsx`
 File: `wizard/src/steps/CorsStep.tsx`
 
 #### 3.7 Step 7: Security Headers (Helmet)
+
 - [ ] Enable Helmet (`DISMISSIBLE_HELMET_ENABLED`) - toggle
 - [ ] **If enabled**:
   - CSP (`DISMISSIBLE_HELMET_CSP`) - toggle
@@ -211,6 +229,7 @@ File: `wizard/src/steps/CorsStep.tsx`
 File: `wizard/src/steps/HelmetStep.tsx`
 
 #### 3.8 Step 8: Validation Settings
+
 - [ ] Disable error messages (`DISMISSIBLE_VALIDATION_DISABLE_ERROR_MESSAGES`) - toggle
 - [ ] Whitelist (`DISMISSIBLE_VALIDATION_WHITELIST`) - toggle
 - [ ] Forbid non-whitelisted (`DISMISSIBLE_VALIDATION_FORBID_NON_WHITELISTED`) - toggle
@@ -219,6 +238,7 @@ File: `wizard/src/steps/HelmetStep.tsx`
 File: `wizard/src/steps/ValidationStep.tsx`
 
 #### 3.9 Step 9: Rate Limiter Configuration
+
 - [ ] Enable rate limiter (`DISMISSIBLE_RATE_LIMITER_ENABLED`) - toggle
 - [ ] **If enabled**:
   - Points (`DISMISSIBLE_RATE_LIMITER_POINTS`)
@@ -232,6 +252,7 @@ File: `wizard/src/steps/ValidationStep.tsx`
 File: `wizard/src/steps/RateLimiterStep.tsx`
 
 #### 3.10 Step 10: Review Summary
+
 - [ ] Display all selected configuration values grouped by section
 - [ ] Show which values differ from defaults (highlight or badge)
 - [ ] Allow user to go back and edit any step
@@ -242,6 +263,7 @@ File: `wizard/src/steps/ReviewStep.tsx`
 ### Phase 4: Output Generation
 
 #### 4.1 .env File Generator
+
 - [ ] Create utility function to generate `.env` file content:
   - Iterate through all config values
   - Format as `KEY=value`
@@ -254,6 +276,7 @@ File: `wizard/src/steps/ReviewStep.tsx`
 File: `wizard/src/utils/envGenerator.ts`
 
 #### 4.2 docker run Command Generator
+
 - [ ] Create utility function to generate `docker run` command:
   - Start with base: `docker run -d -p {PORT}:3001 dismissibleio/dismissible-api`
   - Add `-e KEY=value` for each configured variable
@@ -265,6 +288,7 @@ File: `wizard/src/utils/envGenerator.ts`
 File: `wizard/src/utils/dockerGenerator.ts`
 
 #### 4.3 Output Display Component
+
 - [ ] Create output page/step with tabs or sections:
   - `.env` file content (with download + copy buttons)
   - `docker run` command (with copy button)
@@ -277,6 +301,7 @@ File: `wizard/src/components/OutputDisplay.tsx`
 ### Phase 5: Polish & UX
 
 #### 5.1 Validation & Error Handling
+
 - [ ] Add field-level validation:
   - Required fields
   - Format validation (URLs, connection strings, numbers)
@@ -286,24 +311,28 @@ File: `wizard/src/components/OutputDisplay.tsx`
 - [ ] Add validation to Review step (final check)
 
 #### 5.2 Help Text & Documentation
+
 - [ ] Extract all descriptions from `docs/CONFIGURATION.md`
 - [ ] Add tooltips/help icons for each field
 - [ ] Link to relevant sections in CONFIGURATION.md (external link)
 - [ ] Add examples for complex fields (connection strings, regex patterns)
 
 #### 5.3 Responsive Design
+
 - [ ] Test and optimize for mobile (< 768px)
 - [ ] Test and optimize for tablet (768px - 1024px)
 - [ ] Test and optimize for desktop (> 1024px)
 - [ ] Ensure form inputs are touch-friendly on mobile
 
 #### 5.4 Progress Indicator
+
 - [ ] Visual step indicator (1 of 10, 2 of 10, etc.)
 - [ ] Breadcrumb or stepper component showing all steps
 - [ ] Mark completed steps
 - [ ] Allow clicking on completed steps to navigate back
 
 #### 5.5 State Persistence (Optional Enhancement)
+
 - [ ] Save wizard state to localStorage
 - [ ] Restore state on page refresh
 - [ ] Add "Clear" button to reset localStorage
@@ -312,6 +341,7 @@ File: `wizard/src/components/OutputDisplay.tsx`
 ### Phase 6: Testing & Documentation
 
 #### 6.1 Testing
+
 - [ ] Manual testing of all wizard flows:
   - All storage types (Postgres, DynamoDB, Memory)
   - All cache types (Redis, Memory, None)
@@ -327,6 +357,7 @@ File: `wizard/src/components/OutputDisplay.tsx`
 - [ ] Test on different devices and screen sizes
 
 #### 6.2 Documentation
+
 - [ ] Create `wizard/README.md` with:
   - Overview of the wizard
   - Local development instructions
@@ -339,6 +370,7 @@ File: `wizard/src/components/OutputDisplay.tsx`
 ### Phase 7: Deployment
 
 #### 7.1 Build Configuration
+
 - [ ] Configure Vite build for production:
   - Optimize bundle size
   - Configure base path for deployment
@@ -346,6 +378,7 @@ File: `wizard/src/components/OutputDisplay.tsx`
 - [ ] Test production build locally
 
 #### 7.2 Hosting Setup
+
 **Recommendation: GitHub Pages or Cloudflare Pages**
 
 - [ ] Choose hosting platform GitHub Pages
@@ -355,6 +388,7 @@ File: `wizard/src/components/OutputDisplay.tsx`
   - Deploy preview for pull requests (optional)
 
 #### 7.3 Local Distribution
+
 - [ ] Document how to run locally:
   - Clone repo and run `npm run wizard` in `wizard/`
   - Or: Serve `dist/` folder with any static server after build
