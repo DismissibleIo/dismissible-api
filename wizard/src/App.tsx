@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { WizardProvider, useWizard } from './hooks/useWizardState';
 import { WizardShell } from './components/WizardShell';
+import Header from './components/Header';
 import { hasStepErrors } from './utils/validateWizard';
 import { parseShareUrl } from './utils/shareUrl';
 import {
@@ -40,6 +41,7 @@ function App() {
   const initialConfig = useMemo(() => parseShareUrl(), []);
   return (
     <WizardProvider initialConfig={initialConfig}>
+      <Header />
       <WizardContent />
     </WizardProvider>
   );

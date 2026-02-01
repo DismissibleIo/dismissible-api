@@ -6,9 +6,9 @@ interface AlertBoxProps {
 }
 
 const variantStyles = {
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
-  warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
+  info: 'bg-primary-500/10 border-primary-500/30 text-primary-400',
+  warning: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400',
+  error: 'bg-red-500/10 border-red-500/30 text-red-400',
 };
 
 export function AlertBox({ variant, children }: AlertBoxProps) {

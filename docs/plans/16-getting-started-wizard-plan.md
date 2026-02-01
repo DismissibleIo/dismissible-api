@@ -14,18 +14,21 @@ Create a client-side interactive wizard that guides developers through configuri
 The following features were added during development that weren't in the original specification:
 
 ### 1. Shareable Configuration URLs
+
 - Complete wizard state can be encoded in a URL using base64url encoding
 - "Copy share URL" button on the Review step allows easy sharing of configurations
 - URLs are parsed and validated on page load to restore saved configurations
 - Security features: size limits, prototype pollution protection, Zod schema validation
 
 ### 2. Enhanced Security
+
 - **Shell injection protection**: All docker command values are properly escaped
 - **Env file injection protection**: Values with special characters are automatically quoted and escaped
-- **Prototype pollution prevention**: Deep filtering of dangerous keys (__proto__, constructor, prototype)
+- **Prototype pollution prevention**: Deep filtering of dangerous keys (**proto**, constructor, prototype)
 - Comprehensive input sanitization throughout
 
 ### 3. Improved UX Components
+
 - **StepHeader**: Consistent header component used across all wizard steps
 - **CopyButton**: Reusable copy-to-clipboard button with visual feedback
 - **AlertBox**: Info/warning/error alert boxes for user guidance
@@ -33,8 +36,9 @@ The following features were added during development that weren't in the origina
 - **FormField**: Wrapper component for consistent form field layout
 
 ### 4. Design Decisions
+
 - **No password masking in output**: All values (including secrets) are shown in plaintext in generated output for developer convenience
-- **Sensitive data protection in UI only**: Connection strings and credentials are masked (***) in the Review step summary, but shown fully in generated output
+- **Sensitive data protection in UI only**: Connection strings and credentials are masked (\*\*\*) in the Review step summary, but shown fully in generated output
 - **Default value toggle applies to .env only**: Docker commands always include all values for clarity
 
 ## Technology Decisions
@@ -131,6 +135,7 @@ Rationale:
   - Field metadata and labels
 
 File locations:
+
 - `wizard/src/config/schema.ts` (Zod schemas and types)
 - `wizard/src/config/defaults.ts` (default configuration)
 - `wizard/src/config/constants.ts` (env var names and metadata)
@@ -306,7 +311,7 @@ File: `wizard/src/steps/RateLimiterStep.tsx`
 - [ ] Display all selected configuration values grouped by section
 - [ ] Clickable edit buttons to return to any previous step
 - [ ] "Copy share URL" button to share configuration
-- [ ] Sensitive values masked in review (e.g., connection strings show as ***)
+- [ ] Sensitive values masked in review (e.g., connection strings show as \*\*\*)
 - [ ] Integrated OutputDisplay component (no separate "Generate" step needed)
 
 File: `wizard/src/steps/ReviewStep.tsx`
@@ -377,7 +382,7 @@ File: `wizard/src/utils/shareUrl.ts`
   - Escape backslashes, quotes, newlines
   - Leave simple alphanumeric values unquoted
 - [ ] Prototype pollution protection:
-  - Filter dangerous keys (__proto__, constructor, prototype)
+  - Filter dangerous keys (**proto**, constructor, prototype)
   - Deep safe copy function for nested objects
   - Used in URL parsing and config restoration
 
@@ -521,7 +526,7 @@ All phases from the original plan have been completed:
 - [ ] All configuration options from `docs/CONFIGURATION.md` are supported
 - [ ] Generated `.env` files are valid and can be used directly
 - [ ] Generated `docker run` commands are valid and can be executed directly
-- [ ] Wizard is deployed to https://dismissible.io/ and accessible online *(pending)*
+- [ ] Wizard is deployed to https://dismissible.io/ and accessible online _(pending)_
 - [ ] Wizard can be run locally without internet connection
 - [ ] Responsive design works on mobile, tablet, and desktop
 - [ ] Documentation is clear and complete (README.md included)

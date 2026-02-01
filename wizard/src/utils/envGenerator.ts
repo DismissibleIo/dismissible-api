@@ -156,9 +156,11 @@ export function generateEnvFile(config: WizardConfig, options: EnvGeneratorOptio
   if (config.jwtAuth.enabled) {
     lines.push('# JWT Authentication');
     lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_ENABLED, config.jwtAuth.enabled));
-    lines.push(
-      envLine(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL, config.jwtAuth.wellKnownUrl),
-    );
+    if (config.jwtAuth.wellKnownUrl) {
+      lines.push(
+        envLine(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL, config.jwtAuth.wellKnownUrl),
+      );
+    }
     if (config.jwtAuth.issuer) {
       lines.push(envLine(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_ISSUER, config.jwtAuth.issuer));
     }

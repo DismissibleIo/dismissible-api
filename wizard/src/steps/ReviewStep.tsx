@@ -47,12 +47,12 @@ export function ReviewStep() {
         Review your configuration before generating output files.
       </p>
 
-      <div className="mb-6 p-4 rounded-lg border border-dark-500 bg-dark-600 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-gray-400">Share this configuration:</span>
+      <div className="mb-6 p-6 rounded-2xl border border-white/10 bg-white/5 flex flex-wrap items-center gap-3">
+        <span className="text-sm text-white/70">Share this configuration:</span>
         <button
           type="button"
           onClick={copyShareUrl}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-primary-200 bg-dark-500 hover:bg-dark-500/80 border border-dark-400 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10 hover:text-white transition-all duration-200"
         >
           {copied ? (
             <>
@@ -68,9 +68,9 @@ export function ReviewStep() {
         </button>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-6">
         {/* Core Settings */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">Core Settings</h3>
@@ -100,7 +100,7 @@ export function ReviewStep() {
         </div>
 
         {/* Storage */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">Storage</h3>
@@ -154,7 +154,7 @@ export function ReviewStep() {
         </div>
 
         {/* Cache */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">Cache</h3>
@@ -178,7 +178,7 @@ export function ReviewStep() {
         </div>
 
         {/* Swagger */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">Swagger</h3>
@@ -206,7 +206,7 @@ export function ReviewStep() {
         </div>
 
         {/* JWT Auth */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">JWT Authentication</h3>
@@ -228,7 +228,7 @@ export function ReviewStep() {
         </div>
 
         {/* CORS */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">CORS</h3>
@@ -250,7 +250,7 @@ export function ReviewStep() {
         </div>
 
         {/* Helmet */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">Security Headers</h3>
@@ -272,7 +272,7 @@ export function ReviewStep() {
         </div>
 
         {/* Validation */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">Validation</h3>
@@ -296,7 +296,7 @@ export function ReviewStep() {
         </div>
 
         {/* Rate Limiter */}
-        <div className="border border-dark-500 rounded-lg p-4 bg-dark-600 hover:bg-dark-500 transition-colors">
+        <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h3 className="font-semibold text-white mb-3">Rate Limiter</h3>

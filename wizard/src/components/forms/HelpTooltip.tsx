@@ -31,7 +31,7 @@ export function HelpTooltip({ text, id }: HelpTooltipProps) {
         className="focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded-full"
       >
         <QuestionMarkCircleIcon
-          className="w-4 h-4 text-gray-400 hover:text-gray-300 cursor-help"
+          className="w-4 h-4 text-white/40 hover:text-white/70 cursor-help"
           aria-hidden="true"
         />
       </button>
@@ -42,10 +42,10 @@ export function HelpTooltip({ text, id }: HelpTooltipProps) {
           isOpen ? 'block' : 'hidden group-hover:block'
         }`}
       >
-        <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-lg">
+        <div className="bg-dark-900 border border-white/10 text-white text-xs rounded-lg py-2 px-3 shadow-lg">
           {text}
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-            <div className="border-4 border-transparent border-t-gray-900" />
+            <div className="border-4 border-transparent border-t-dark-900" />
           </div>
         </div>
       </div>

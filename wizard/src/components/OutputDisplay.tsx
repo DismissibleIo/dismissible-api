@@ -57,24 +57,24 @@ export function OutputDisplay() {
             type="checkbox"
             checked={includeDefaults}
             onChange={(e) => setIncludeDefaults(e.target.checked)}
-            className="rounded border-dark-400 bg-dark-600 text-primary-600 focus:ring-primary-500 focus:ring-offset-dark-700 transition-colors"
+            className="rounded border-white/20 bg-white/5 text-primary-600 focus:ring-primary-500 focus:ring-offset-[#05070f] transition-colors"
           />
-          <span className="ml-3 text-sm text-gray-300 group-hover:text-gray-100 transition-colors">
+          <span className="ml-3 text-sm text-white/70 group-hover:text-white transition-colors">
             Include default values
           </span>
         </label>
       </div>
 
       <Tab.Group>
-        <Tab.List className="flex space-x-2 rounded-xl bg-dark-600 p-1.5 border border-dark-500">
+        <Tab.List className="flex space-x-2 rounded-xl bg-white/5 p-1.5 border border-white/10">
           <Tab
             className={({ selected }) =>
               classNames(
                 'w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-700',
+                'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-[#05070f]',
                 selected
                   ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
-                  : 'text-gray-400 hover:bg-dark-500 hover:text-gray-200',
+                  : 'text-white/70 hover:bg-white/10 hover:text-white',
               )
             }
           >
@@ -84,10 +84,10 @@ export function OutputDisplay() {
             className={({ selected }) =>
               classNames(
                 'w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-700',
+                'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-[#05070f]',
                 selected
                   ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
-                  : 'text-gray-400 hover:bg-dark-500 hover:text-gray-200',
+                  : 'text-white/70 hover:bg-white/10 hover:text-white',
               )
             }
           >
@@ -95,7 +95,7 @@ export function OutputDisplay() {
           </Tab>
         </Tab.List>
         <Tab.Panels className="mt-4">
-          <Tab.Panel className="rounded-xl bg-dark-600 border border-dark-500 p-4">
+          <Tab.Panel className="rounded-xl bg-white/5 border border-white/10 p-4">
             <div className="flex justify-end gap-2 mb-3">
               <CopyButton
                 onClick={() => copyToClipboard(envFile, 'env')}
@@ -105,21 +105,21 @@ export function OutputDisplay() {
               <button
                 onClick={downloadEnvFile}
                 aria-label="Download .env file"
-                className="inline-flex items-center px-4 py-2 border border-dark-400 text-xs font-medium rounded-lg text-gray-300 bg-dark-500 hover:bg-dark-400 hover:text-white transition-all"
+                className="inline-flex items-center px-4 py-2 border border-white/20 text-xs font-medium rounded-lg text-white/70 bg-white/5 hover:bg-white/10 hover:text-white transition-all"
               >
                 <ArrowDownTrayIcon className="w-4 h-4 mr-2" aria-hidden="true" />
                 Download
               </button>
             </div>
             <pre
-              className="bg-dark-700 border border-dark-500 rounded-lg p-4 overflow-x-auto text-xs font-mono text-gray-300"
+              className="bg-[#05070f] border border-white/10 rounded-lg p-4 overflow-x-auto text-xs font-mono text-white/90"
               aria-label="Generated .env file content"
               tabIndex={0}
             >
               {envFile}
             </pre>
           </Tab.Panel>
-          <Tab.Panel className="rounded-xl bg-dark-600 border border-dark-500 p-4">
+          <Tab.Panel className="rounded-xl bg-white/5 border border-white/10 p-4">
             <div className="flex justify-end gap-2 mb-3">
               <CopyButton
                 onClick={() => copyToClipboard(dockerCmd, 'docker')}
@@ -130,7 +130,7 @@ export function OutputDisplay() {
               />
             </div>
             <pre
-              className="bg-dark-700 border border-dark-500 rounded-lg p-4 overflow-x-auto text-xs font-mono text-gray-300"
+              className="bg-[#05070f] border border-white/10 rounded-lg p-4 overflow-x-auto text-xs font-mono text-white/90"
               aria-label="Generated Docker command"
               tabIndex={0}
             >

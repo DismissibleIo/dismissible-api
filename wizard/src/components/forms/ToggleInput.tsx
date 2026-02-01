@@ -23,8 +23,8 @@ export const ToggleInput = forwardRef<HTMLButtonElement, ToggleInputProps>(
           checked={value}
           onChange={onChange}
           className={`${
-            value ? 'bg-primary-600' : 'bg-dark-500'
-          } relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-700 shadow-inner`}
+            value ? 'bg-primary-600' : 'bg-white/20'
+          } relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-[#05070f] shadow-inner`}
         >
           <span className="sr-only">{label}</span>
           <span

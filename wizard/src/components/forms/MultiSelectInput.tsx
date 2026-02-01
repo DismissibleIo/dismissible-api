@@ -35,7 +35,7 @@ export const MultiSelectInput = forwardRef<HTMLInputElement, MultiSelectInputPro
           placeholder={placeholder}
           className="input-field"
         />
-        <p className="mt-2 text-xs text-gray-400">Separate multiple values with commas</p>
+        <p className="mt-2 text-xs text-white/50">Separate multiple values with commas</p>
       </FormField>
     );
   },

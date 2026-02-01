@@ -108,9 +108,11 @@ export function generateDockerCommand(config: WizardConfig): string {
   // JWT Auth
   if (config.jwtAuth.enabled) {
     envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_ENABLED, config.jwtAuth.enabled));
-    envVars.push(
-      envVar(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL, config.jwtAuth.wellKnownUrl),
-    );
+    if (config.jwtAuth.wellKnownUrl) {
+      envVars.push(
+        envVar(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_WELL_KNOWN_URL, config.jwtAuth.wellKnownUrl),
+      );
+    }
     if (config.jwtAuth.issuer) {
       envVars.push(envVar(ENV_VAR_NAMES.DISMISSIBLE_JWT_AUTH_ISSUER, config.jwtAuth.issuer));
     }

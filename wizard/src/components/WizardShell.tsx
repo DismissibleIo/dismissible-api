@@ -56,11 +56,11 @@ export function WizardShell({
   const isLastStep = state.currentStep === STEP_NAMES.length - 1;
 
   return (
-    <div className="min-h-screen bg-dark-800 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#05070f] py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white">Dismissible API Configuration Wizard</h1>
-          <p className="mt-3 text-lg text-gray-400">Configure your Dismissible API with ease</p>
+          <p className="mt-3 text-lg text-white/70">Configure your Dismissible API with ease</p>
         </div>
 
         <div className="card p-6 md:p-8">
@@ -73,7 +73,7 @@ export function WizardShell({
           <div className="mt-8 mb-8">{children}</div>
 
           <div
-            className="flex justify-between border-t border-dark-500 pt-6"
+            className="flex justify-between border-t border-white/10 pt-6"
             role="navigation"
             aria-label="Wizard navigation"
           >

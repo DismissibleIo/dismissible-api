@@ -1,44 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
   body {
-    @apply bg-dark-800 text-gray-100;
+    @apply bg-[#05070f] text-white;
   }
 
   * {
-    @apply border-dark-500;
+    @apply border-white/5;
   }
 }
 
 @layer components {
   /* Input field styles */
   .input-field {
-    @apply block w-full rounded-lg border border-dark-500 bg-dark-600 px-4 py-2.5 text-gray-100 placeholder-gray-500 shadow-sm transition-all duration-200;
+    @apply block w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-white/40 shadow-sm transition-all duration-200;
     @apply focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none;
-    @apply hover:border-dark-400;
+    @apply hover:border-white/20;
   }
 
-  /* Button styles */
+  /* Button styles matching website */
   .btn-primary {
-    @apply inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 shadow-lg shadow-primary-600/30;
-    @apply hover:bg-primary-500 hover:shadow-primary-500/40;
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-700 focus:ring-primary-500;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600;
-    @apply transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 px-6 py-2.5 text-sm font-semibold text-white shadow-[0_0_30px_rgba(34,211,238,0.25)] transition-all duration-200 hover:scale-105 hover:shadow-[0_0_45px_rgba(34,211,238,0.35)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center px-6 py-2.5 border border-dark-400 text-sm font-medium rounded-lg text-gray-300 bg-dark-600;
-    @apply hover:bg-dark-500 hover:border-dark-300 hover:text-gray-100;
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-700 focus:ring-primary-500;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-2.5 text-sm font-semibold text-white/80 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   /* Card styles */
   .card {
-    @apply bg-dark-700 rounded-xl shadow-2xl border border-dark-500;
+    @apply bg-white/5 rounded-xl shadow-2xl border border-white/10;
   }
 }
