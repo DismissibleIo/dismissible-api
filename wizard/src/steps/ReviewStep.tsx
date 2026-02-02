@@ -1,8 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useWizard } from '../hooks/useWizardState';
-import { PencilIcon, LinkIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { PencilIcon } from '@heroicons/react/24/outline';
 import { OutputDisplay } from '../components/OutputDisplay';
-import { buildShareUrl } from '../utils/shareUrl';
 
 /** Step indices for navigation */
 const STEP_INDICES = {
@@ -20,18 +19,6 @@ const STEP_INDICES = {
 export function ReviewStep() {
   const { state, dispatch } = useWizard();
   const { config } = state;
-  const [copied, setCopied] = useState(false);
-
-  const copyShareUrl = useCallback(async () => {
-    const url = buildShareUrl(config);
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  }, [config]);
 
   const editStep = useCallback(
     (step: number) => {
@@ -47,27 +34,6 @@ export function ReviewStep() {
         Review your configuration before generating output files.
       </p>
 
-      <div className="mb-6 p-6 rounded-2xl border border-white/10 bg-white/5 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-white/70">Share this configuration:</span>
-        <button
-          type="button"
-          onClick={copyShareUrl}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10 hover:text-white transition-all duration-200"
-        >
-          {copied ? (
-            <>
-              <CheckIcon className="w-4 h-4" />
-              Copied!
-            </>
-          ) : (
-            <>
-              <LinkIcon className="w-4 h-4" />
-              Copy share URL
-            </>
-          )}
-        </button>
-      </div>
-
       <div className="space-y-6">
         {/* Core Settings */}
         <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(8,15,40,0.45)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(8,15,40,0.55)]">
@@ -78,14 +44,6 @@ export function ReviewStep() {
                 <div className="flex">
                   <dt className="w-32 text-gray-400">Port:</dt>
                   <dd className="text-gray-200">{config.core.port}</dd>
-                </div>
-                <div className="flex">
-                  <dt className="w-32 text-gray-400">Storage Type:</dt>
-                  <dd className="text-gray-200">{config.core.storageType}</dd>
-                </div>
-                <div className="flex">
-                  <dt className="w-32 text-gray-400">Run Setup:</dt>
-                  <dd className="text-gray-200">{config.core.storageRunSetup ? 'Yes' : 'No'}</dd>
                 </div>
               </dl>
             </div>
@@ -108,6 +66,10 @@ export function ReviewStep() {
                 <div className="flex">
                   <dt className="w-32 text-gray-400">Type:</dt>
                   <dd className="text-gray-200">{config.storage.type}</dd>
+                </div>
+                <div className="flex">
+                  <dt className="w-32 text-gray-400">Run Setup:</dt>
+                  <dd className="text-gray-200">{config.core.storageRunSetup ? 'Yes' : 'No'}</dd>
                 </div>
                 {config.storage.type === 'postgres' && (
                   <div className="flex">

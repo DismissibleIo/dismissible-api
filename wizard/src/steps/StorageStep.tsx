@@ -1,5 +1,5 @@
 import { useWizard, useConfigSection } from '../hooks/useWizardState';
-import { TextInput, NumberInput, PasswordInput, SelectInput } from '../components/forms';
+import { TextInput, NumberInput, PasswordInput, SelectInput, ToggleInput } from '../components/forms';
 import { HELP_TEXT } from '../config/constants';
 import { StorageConfig } from '../config/schema';
 
@@ -20,7 +20,7 @@ const STORAGE_TYPE_DEFAULTS: Record<string, StorageConfig> = {
 
 export function StorageStep() {
   const { dispatch } = useWizard();
-  const { section: core } = useConfigSection('core');
+  const { section: core, update: updateCore } = useConfigSection('core');
   const { section: storage, update: updateStorage, getError } = useConfigSection('storage');
 
   const handleStorageTypeChange = (value: string) => {
@@ -155,6 +155,15 @@ export function StorageStep() {
           </div>
         </>
       )}
+
+      <div className="mt-6 pt-6 border-t border-white/10">
+        <ToggleInput
+          label="Run Migration on Startup"
+          value={core.storageRunSetup}
+          onChange={(value) => updateCore({ storageRunSetup: value })}
+          helpText={HELP_TEXT.storageRunSetup}
+        />
+      </div>
     </div>
   );
 }

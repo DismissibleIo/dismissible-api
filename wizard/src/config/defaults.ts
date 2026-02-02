@@ -4,7 +4,7 @@ export const defaultConfig: WizardConfig = {
   core: {
     port: 3001,
     storageType: 'memory',
-    storageRunSetup: false,
+    storageRunSetup: true,
   },
   storage: {
     type: 'memory',

@@ -1,5 +1,5 @@
 import { useConfigSection } from '../hooks/useWizardState';
-import { NumberInput, ToggleInput } from '../components/forms';
+import { NumberInput } from '../components/forms';
 import { HELP_TEXT } from '../config/constants';
 
 export function CoreStep() {
@@ -19,13 +19,6 @@ export function CoreStep() {
         max={65535}
         required
         error={getError('port')}
-      />
-
-      <ToggleInput
-        label="Run Migration on Startup"
-        value={core.storageRunSetup}
-        onChange={(value) => updateCore({ storageRunSetup: value })}
-        helpText={HELP_TEXT.storageRunSetup}
       />
     </div>
   );
