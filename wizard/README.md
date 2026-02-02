@@ -1,6 +1,27 @@
-# Dismissible API Configuration Wizard
+# @dismissible/wizard
 
-An interactive web-based wizard for configuring the Dismissible API. This tool helps developers easily generate `.env` files and `docker run` commands with all necessary configuration options.
+Interactive configuration wizard for the Dismissible API. Generates `.env` files and `docker run` commands.
+
+## Online Version
+
+Visit [wizard.dismissible.io](https://wizard.dismissible.io) for the hosted version.
+
+## Run Locally via npx
+
+For users who prefer running locally (e.g., when working with sensitive credentials):
+
+```bash
+npx @dismissible/wizard
+```
+
+This will:
+
+1. Start a local web server
+2. Open the wizard in your default browser
+3. Guide you through configuration options
+4. Generate ready-to-use `.env` and `docker run` commands
+
+All data stays on your machine - no network requests are made.
 
 ## Features
 
@@ -14,31 +35,28 @@ An interactive web-based wizard for configuring the Dismissible API. This tool h
 ## Development
 
 ```bash
-# Install dependencies
+# Install dependencies (from repo root)
 npm install
 
 # Start dev server (http://localhost:3002)
-npm run wizard
+NX_DAEMON=false npx nx serve wizard
 
 # Build for production
-npm run wizard:build
+NX_DAEMON=false npx nx build wizard
 
 # Preview production build
-npm run wizard:preview
+NX_DAEMON=false npx nx preview wizard
 ```
 
-## Deployment
+## Building the CLI Package
 
-The wizard is a static site that can be deployed to any static hosting service:
+```bash
+# Build everything (wizard UI + CLI)
+NX_DAEMON=false npx nx build-package wizard
 
-1. Build the wizard: `npm run wizard:build`
-2. Deploy the `dist/wizard/` directory to your hosting service
-
-Deployment options:
-
-- **GitHub Pages**: Deploy `dist/wizard/` to gh-pages branch
-- **Cloudflare Pages**: Connect repo, build command `npm run wizard:build`, output dir `dist/wizard`
-- **Vercel/Netlify**: Similar setup
+# Test CLI locally
+node wizard/bin/cli.mjs
+```
 
 ## Tech Stack
 

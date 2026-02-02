@@ -1,0 +1,30 @@
+name: PR Checks - Wizard
+
+on:
+  pull_request:
+    paths:
+      - 'wizard/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build wizard
+        run: npm run build:wizard
+
+      - name: Verify build output
+        run: |
+          test -f dist/wizard/index.html || (echo "Missing index.html" && exit 1)
+          echo "Build output verified successfully"

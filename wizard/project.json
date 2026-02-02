@@ -13,6 +13,32 @@
         "configFile": "wizard/vite.config.ts"
       }
     },
+    "build-cli": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p tsconfig.cli.json",
+        "cwd": "wizard"
+      }
+    },
+    "build-package": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "NX_DAEMON=false npx nx build wizard",
+          "NX_DAEMON=false npx nx build-cli wizard",
+          "rm -rf wizard/dist && cp -r dist/wizard wizard/dist"
+        ],
+        "parallel": false
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "wizard"
+      },
+      "dependsOn": ["build-package"]
+    },
     "serve": {
       "executor": "@nx/vite:dev-server",
       "options": {

@@ -1,6 +1,6 @@
 # Implementation Plan: Wizard Distribution
 
-**Status**: 📋 Planning
+**Status**: ✅ Implemented
 **Last Updated**: 2026-02-02
 
 ## Overview
@@ -29,6 +29,7 @@ The wizard is a static React app deployed via Render (consistent with the main d
 **Hosting: Render Static Site**
 
 Rationale:
+
 - Already used for dismissible.io website and API
 - Consistent infrastructure and deployment patterns
 - Domain already configured
@@ -37,6 +38,7 @@ Rationale:
 ### Option 2: npx @dismissible/wizard (CLI Package)
 
 Add CLI functionality to the existing wizard package that:
+
 1. Contains the pre-built wizard static assets
 2. Starts a local HTTP server
 3. Opens the wizard in the user's default browser
@@ -46,6 +48,7 @@ This allows users concerned about security to run everything locally - no secret
 **Why not a separate CLI package?**
 
 The CLI is incorporated directly into the existing `wizard/` project because:
+
 - Keeps all wizard code in one place
 - Shares the same version number
 - Build output is already in the right location
@@ -104,7 +107,7 @@ services:
         value: nosniff
       - path: /*
         name: X-XSS-Protection
-        value: "1; mode=block"
+        value: '1; mode=block'
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
@@ -135,17 +138,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - run: npm ci
-      
+
       - name: Build wizard
         run: NX_DAEMON=false npx nx build wizard
-      
+
       - name: Verify build output
         run: |
           test -f dist/wizard/index.html || (echo "Missing index.html" && exit 1)
@@ -181,6 +184,7 @@ wizard/
 #### 3.2 Implement CLI Server
 
 **wizard/bin/cli.mjs** (entry point):
+
 ```javascript
 #!/usr/bin/env node
 import { startWizard } from '../cli/server.js';
@@ -188,6 +192,7 @@ startWizard();
 ```
 
 **wizard/cli/server.ts** (server logic):
+
 ```typescript
 import { createServer } from 'http';
 import { readFileSync, existsSync } from 'fs';
@@ -224,7 +229,7 @@ export async function startWizard(options: { port?: number } = {}) {
   const server = createServer((req, res) => {
     const urlPath = req.url?.split('?')[0] ?? '/';
     let filePath = join(distPath, urlPath === '/' ? 'index.html' : urlPath);
-    
+
     // Handle SPA routing - serve index.html for non-file requests
     if (!existsSync(filePath) || !extname(filePath)) {
       filePath = join(distPath, 'index.html');
@@ -233,9 +238,9 @@ export async function startWizard(options: { port?: number } = {}) {
     try {
       const content = readFileSync(filePath);
       const ext = extname(filePath);
-      res.writeHead(200, { 
+      res.writeHead(200, {
         'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache',
       });
       res.end(content);
     } catch {
@@ -272,6 +277,7 @@ export async function startWizard(options: { port?: number } = {}) {
 #### 3.3 Update Package Configuration
 
 Update **wizard/package.json**:
+
 ```json
 {
   "name": "@dismissible/wizard",
@@ -290,11 +296,7 @@ Update **wizard/package.json**:
   "bin": {
     "dismissible-wizard": "./bin/cli.mjs"
   },
-  "files": [
-    "bin",
-    "cli",
-    "dist"
-  ],
+  "files": ["bin", "cli", "dist"],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -333,6 +335,7 @@ Update **wizard/package.json**:
 #### 3.4 Add CLI TypeScript Configuration
 
 Create **wizard/tsconfig.cli.json**:
+
 ```json
 {
   "compilerOptions": {
@@ -354,6 +357,7 @@ Create **wizard/tsconfig.cli.json**:
 #### 3.5 Update Nx Project Configuration
 
 Update **wizard/project.json** to add CLI-related targets:
+
 ```json
 {
   "name": "wizard",
@@ -438,8 +442,8 @@ The project already uses `nx release publish` for `api` and `libs/*`. Simply add
 {
   "release": {
     "releaseTagPattern": "v{version}",
-    "projects": ["api", "libs/*", "wizard"],  // Add wizard here
-    "projectsRelationship": "fixed",
+    "projects": ["api", "libs/*", "wizard"], // Add wizard here
+    "projectsRelationship": "fixed"
     // ... rest of existing config
   }
 }
@@ -452,11 +456,12 @@ This allows the wizard to be published alongside other packages using the existi
 The existing release config has `preVersionCommand: "npx nx run-many -t build"`. Verify the wizard's `build-package` target is invoked, or add it to the build chain:
 
 Option A: Add `build-package` as a dependency of `build` in project.json:
+
 ```json
 {
   "targets": {
     "build": {
-      "dependsOn": ["build-cli"],
+      "dependsOn": ["build-cli"]
       // ... existing config
     }
   }
@@ -464,6 +469,7 @@ Option A: Add `build-package` as a dependency of `build` in project.json:
 ```
 
 Option B: Update the `preVersionCommand` in nx.json to include the wizard package build:
+
 ```json
 "preVersionCommand": "npx nx run-many -t build && npx nx build-package wizard"
 ```
@@ -480,23 +486,27 @@ Option B: Update the `preVersionCommand` in nx.json to include the wizard packag
 
 Add section to project README about accessing the wizard:
 
-```markdown
+````markdown
 ## Configuration Wizard
 
 Generate `.env` files and `docker run` commands using our interactive wizard:
 
 ### Online (Recommended)
+
 Visit [wizard.dismissible.io](https://wizard.dismissible.io)
 
 ### Run Locally
+
 For users who prefer to run the wizard locally (e.g., when working with sensitive credentials):
 
 ```bash
 npx @dismissible/wizard
 ```
+````
 
 This starts a local server and opens the wizard in your browser. No data is sent to any server.
-```
+
+````
 
 #### 5.2 Update wizard/README.md
 
@@ -517,9 +527,10 @@ For users who prefer running locally (e.g., when working with sensitive credenti
 
 ```bash
 npx @dismissible/wizard
-```
+````
 
 This will:
+
 1. Start a local web server
 2. Open the wizard in your default browser
 3. Guide you through configuration options
@@ -540,7 +551,8 @@ npm run build
 ## License
 
 MIT
-```
+
+````
 
 #### 5.3 Update Main Project README
 
@@ -595,16 +607,18 @@ dismissible-api/
     └── workflows/
         ├── wizard-build.yml      # NEW - Build verification
         └── publish-npm.yml       # EXISTING - publishes wizard
-```
+````
 
 ## Security Considerations
 
 ### Hosted Version
+
 - No server-side processing - everything runs in the browser
 - Share URLs encode config in the URL fragment (never sent to server)
 - HTTPS enforced via Render
 
 ### CLI Version
+
 - Runs entirely locally
 - No network requests after initial npm download
 - User's configuration never leaves their machine

@@ -1,0 +1,31 @@
+# Render Blueprint for Dismissible Configuration Wizard
+# https://render.com/docs/infrastructure-as-code
+#
+# To deploy:
+# 1. Connect this repo to Render via Dashboard > New > Blueprint
+# 2. Set the root directory to "wizard"
+# 3. Render will automatically deploy on pushes to your linked branch
+
+services:
+  - type: web
+    name: dismissible-wizard
+    runtime: static
+    buildCommand: cd .. && npm ci && NX_DAEMON=false npx nx build wizard
+    staticPublishPath: ../dist/wizard
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-XSS-Protection
+        value: '1; mode=block'
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin

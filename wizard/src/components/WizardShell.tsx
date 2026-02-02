@@ -84,11 +84,7 @@ export function WizardShell({
             title="Copy share URL to save progress"
             className="absolute top-6 right-6 p-2 rounded-lg border border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:bg-white/10 hover:text-white transition-all duration-200 z-10"
           >
-            {copied ? (
-              <CheckIcon className="w-5 h-5" />
-            ) : (
-              <BookmarkIcon className="w-5 h-5" />
-            )}
+            {copied ? <CheckIcon className="w-5 h-5" /> : <BookmarkIcon className="w-5 h-5" />}
           </button>
 
           <StepIndicator

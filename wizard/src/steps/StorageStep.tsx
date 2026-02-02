@@ -1,5 +1,11 @@
 import { useWizard, useConfigSection } from '../hooks/useWizardState';
-import { TextInput, NumberInput, PasswordInput, SelectInput, ToggleInput } from '../components/forms';
+import {
+  TextInput,
+  NumberInput,
+  PasswordInput,
+  SelectInput,
+  ToggleInput,
+} from '../components/forms';
 import { HELP_TEXT } from '../config/constants';
 import { StorageConfig } from '../config/schema';
 

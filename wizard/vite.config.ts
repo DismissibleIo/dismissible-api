@@ -7,6 +7,8 @@ import autoprefixer from 'autoprefixer';
 export default defineConfig({
   plugins: [react()],
   root: __dirname,
+  // Use relative paths so assets work in both hosted and local CLI contexts
+  base: './',
   build: {
     outDir: '../dist/wizard',
     emptyOutDir: true,

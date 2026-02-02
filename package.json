@@ -9,8 +9,9 @@
     "wizard"
   ],
   "scripts": {
-    "build": "nx run-many --target=build --projects=libs/*,api",
+    "build": "nx run-many --target=build --projects=libs/*,api,wizard",
     "build:libs": "nx run-many --target=build --projects=libs/*",
+    "build:wizard": "nx run-many --target=build --projects=wizard",
     "serve:postgres": "DISMISSIBLE_STORAGE_TYPE=postgres nx serve api",
     "serve:dynamodb": "DISMISSIBLE_STORAGE_TYPE=dynamodb nx serve api",
     "serve:memory": "DISMISSIBLE_STORAGE_TYPE=memory nx serve api",
