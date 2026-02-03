@@ -18,11 +18,12 @@
   ],
   "dependencies": {
     "@nestjs/event-emitter": "^3.0.1",
+    "@dismissible/nestjs-cache": "^3.0.0",
     "@dismissible/nestjs-hooks": "^3.0.0",
     "@dismissible/nestjs-item": "^3.0.0",
+    "@dismissible/nestjs-logger": "^3.0.0",
     "@dismissible/nestjs-request": "^3.0.0",
     "@dismissible/nestjs-storage": "^3.0.0",
-    "@dismissible/nestjs-logger": "^3.0.0",
     "@dismissible/nestjs-validation": "^3.0.0"
   },
   "peerDependencies": {

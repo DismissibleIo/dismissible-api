@@ -1,0 +1,50 @@
+{
+  "name": "@dismissible/nestjs-redis-cache",
+  "version": "3.0.0",
+  "description": "Redis cache adapter for Dismissible",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "dependencies": {
+    "@dismissible/nestjs-cache": "^3.0.0",
+    "@dismissible/nestjs-item": "^3.0.0",
+    "@dismissible/nestjs-logger": "^3.0.0",
+    "@dismissible/nestjs-validation": "^3.0.0",
+    "ioredis": "^5.3.2"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": false
+    }
+  },
+  "keywords": [
+    "nestjs",
+    "dismissible",
+    "cache",
+    "redis",
+    "adapter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DismissibleIo/dismissible-api"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

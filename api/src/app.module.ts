@@ -13,6 +13,8 @@ import {
   JwtAuthHookConfig,
 } from '@dismissible/nestjs-jwt-auth-hook';
 import { StorageType } from './storage/storage.config';
+import { DynamicCacheModule } from './cache/dynamic-cache.module';
+import { CacheType } from './cache/cache.config';
 import {
   RateLimiterHook,
   RateLimiterHookConfig,
@@ -27,6 +29,7 @@ export type AppModuleOptions = {
   imports?: DynamicModule[];
   hooks?: Type<IDismissibleLifecycleHook>[];
   storage?: StorageType;
+  cache?: CacheType;
 };
 
 @Module({})
@@ -66,6 +69,9 @@ export class AppModule {
             //   This isn't ideal, but there's not a great option. I will look to see
             //   if we can raise an issue similar to this: https://github.com/nestjs/nest/issues/9868
             storage: options?.storage ?? (process.env.DISMISSIBLE_STORAGE_TYPE as StorageType),
+          }),
+          cache: DynamicCacheModule.forRootAsync({
+            cache: options?.cache ?? (process.env.DISMISSIBLE_CACHE_TYPE as CacheType),
           }),
         }),
       ],

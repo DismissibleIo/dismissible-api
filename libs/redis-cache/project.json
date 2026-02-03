@@ -1,0 +1,50 @@
+{
+  "name": "redis-cache",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/redis-cache/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/redis-cache",
+        "main": "libs/redis-cache/src/index.ts",
+        "tsConfig": "libs/redis-cache/tsconfig.lib.json",
+        "assets": ["libs/redis-cache/package.json", "libs/redis-cache/README.md"],
+        "generatePackageJson": true,
+        "includeNodeModules": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/redis-cache/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/redis-cache"],
+      "options": {
+        "jestConfig": "libs/redis-cache/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/redis-cache"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm publish --access public",
+        "cwd": "dist/libs/redis-cache"
+      }
+    }
+  }
+}

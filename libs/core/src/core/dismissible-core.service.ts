@@ -1,11 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DISMISSIBLE_STORAGE_ADAPTER, IDismissibleStorage } from '@dismissible/nestjs-storage';
-import {
-  IGetOrCreateServiceResponse,
-  IBatchGetOrCreateServiceResponse,
-  IDismissServiceResponse,
-  IRestoreServiceResponse,
-} from './service-responses.interface';
+import { DISMISSIBLE_CACHE_ADAPTER, IDismissibleCache } from '@dismissible/nestjs-cache';
+import { IDismissServiceResponse, IRestoreServiceResponse } from './service-responses.interface';
 import { IDismissibleCoreService } from './dismissible-core.service.interface';
 import { IDismissibleHelper, DISMISSIBLE_HELPER } from '../utils/dismissible.helper.interface';
 import { IDateService, DISMISSIBLE_DATE_SERVICE } from '../utils/date/date.service.interface';
@@ -30,6 +26,7 @@ import {
 export class DismissibleCoreService implements IDismissibleCoreService {
   constructor(
     @Inject(DISMISSIBLE_STORAGE_ADAPTER) private readonly storage: IDismissibleStorage,
+    @Inject(DISMISSIBLE_CACHE_ADAPTER) private readonly cache: IDismissibleCache,
     @Inject(DISMISSIBLE_DATE_SERVICE) private readonly dateService: IDateService,
     @Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger,
     @Inject(DISMISSIBLE_ITEM_FACTORY) private readonly itemFactory: IDismissibleItemFactory,
@@ -45,10 +42,17 @@ export class DismissibleCoreService implements IDismissibleCoreService {
    * @returns The item or null if not found
    */
   async get(itemId: string, userId: string): Promise<DismissibleItemDto | null> {
+    const cachedItem = await this.cache.get(userId, itemId);
+    if (cachedItem) {
+      this.logger.debug(`Found item in cache`, { itemId, userId });
+      return cachedItem;
+    }
+
     this.logger.debug(`Looking up item in storage`, { itemId, userId });
     const item = await this.storage.get(userId, itemId);
     if (item) {
       this.logger.debug(`Found existing item`, { itemId, userId });
+      await this.cache.set(item);
     }
     return item;
   }
@@ -60,10 +64,38 @@ export class DismissibleCoreService implements IDismissibleCoreService {
    * @returns Map of itemId to item for items that exist
    */
   async getMany(itemIds: string[], userId: string): Promise<Map<string, DismissibleItemDto>> {
-    this.logger.debug(`Looking up items in storage`, { itemCount: itemIds.length, userId });
-    const items = await this.storage.getMany(userId, itemIds);
-    this.logger.debug(`Found items`, { requested: itemIds.length, found: items.size, userId });
-    return items;
+    const cachedItems = await this.cache.getMany(userId, itemIds);
+    const result = new Map<string, DismissibleItemDto>(cachedItems);
+
+    // Determine which items are missing from cache
+    const missingItemIds = itemIds.filter((itemId) => !result.has(itemId));
+
+    if (missingItemIds.length > 0) {
+      this.logger.debug(`Looking up items in storage`, {
+        itemCount: missingItemIds.length,
+        userId,
+      });
+      const storageItems = await this.storage.getMany(userId, missingItemIds);
+
+      if (storageItems.size > 0) {
+        const itemsToCache = Array.from(storageItems.values());
+        await this.cache.setMany(itemsToCache);
+      }
+
+      for (const [itemId, item] of storageItems) {
+        result.set(itemId, item);
+      }
+    }
+
+    this.logger.debug(`Found items`, {
+      requested: itemIds.length,
+      found: result.size,
+      cached: cachedItems.size,
+      fromStorage: result.size - cachedItems.size,
+      userId,
+    });
+
+    return result;
   }
 
   /**
@@ -88,6 +120,9 @@ export class DismissibleCoreService implements IDismissibleCoreService {
     await this.validationService.validateInstance(newItem);
 
     const createdItem = await this.storage.create(newItem);
+
+    // Update cache with created item
+    await this.cache.set(createdItem);
 
     this.logger.log(`Created new dismissible item`, { itemId, userId });
 
@@ -126,110 +161,14 @@ export class DismissibleCoreService implements IDismissibleCoreService {
 
     const createdItems = await this.storage.createMany(itemsToCreate);
 
+    // Update cache with created items
+    if (createdItems.length > 0) {
+      await this.cache.setMany(createdItems);
+    }
+
     this.logger.log(`Created new dismissible items`, { itemCount: createdItems.length, userId });
 
     return createdItems;
-  }
-
-  /**
-   * Get an existing item or create a new one.
-   * @param itemId The item identifier
-   * @param userId The user identifier (required)
-   */
-  async getOrCreate(itemId: string, userId: string): Promise<IGetOrCreateServiceResponse> {
-    const existingItem = await this.get(itemId, userId);
-
-    if (existingItem) {
-      return {
-        item: existingItem,
-        created: false,
-      };
-    }
-
-    const createdItem = await this.create(itemId, userId);
-
-    return {
-      item: createdItem,
-      created: true,
-    };
-  }
-
-  /**
-   * Get existing items or create new ones for multiple item IDs.
-   * @param itemIds Array of item identifiers
-   * @param userId The user identifier (required)
-   */
-  async batchGetOrCreate(
-    itemIds: string[],
-    userId: string,
-  ): Promise<IBatchGetOrCreateServiceResponse> {
-    this.logger.debug(`Batch looking up items in storage`, { itemCount: itemIds.length, userId });
-
-    // Get all existing items in one batch query
-    const existingItemsMap = await this.storage.getMany(userId, itemIds);
-
-    // Separate existing items from items to create
-    const retrievedItems: DismissibleItemDto[] = [];
-    const itemIdsToCreate: string[] = [];
-
-    for (const itemId of itemIds) {
-      const existingItem = existingItemsMap.get(itemId);
-      if (existingItem) {
-        retrievedItems.push(existingItem);
-      } else {
-        itemIdsToCreate.push(itemId);
-      }
-    }
-
-    this.logger.debug(`Batch lookup complete`, {
-      userId,
-      requested: itemIds.length,
-      existing: retrievedItems.length,
-      toCreate: itemIdsToCreate.length,
-    });
-
-    // Create missing items
-    let createdItems: DismissibleItemDto[] = [];
-    if (itemIdsToCreate.length > 0) {
-      const now = this.dateService.getNow();
-
-      const itemsToCreate = itemIdsToCreate.map((itemId) =>
-        this.itemFactory.create({
-          id: itemId,
-          createdAt: now,
-          userId,
-        }),
-      );
-
-      // Validate all items before creating
-      for (const item of itemsToCreate) {
-        await this.validationService.validateInstance(item);
-      }
-
-      createdItems = await this.storage.createMany(itemsToCreate);
-
-      this.logger.log(`Batch created new dismissible items`, {
-        userId,
-        created: createdItems.length,
-      });
-    }
-
-    // Combine all items in the original order
-    const allItemsMap = new Map<string, DismissibleItemDto>();
-    for (const item of retrievedItems) {
-      allItemsMap.set(item.id, item);
-    }
-    for (const item of createdItems) {
-      allItemsMap.set(item.id, item);
-    }
-
-    const items = itemIds.map((id) => allItemsMap.get(id)!);
-
-    return {
-      items,
-      retrievedItems,
-      createdItems,
-    };
   }
 
   /**
@@ -260,6 +199,9 @@ export class DismissibleCoreService implements IDismissibleCoreService {
     await this.validationService.validateInstance(dismissedItem);
 
     const updatedItem = await this.storage.update(dismissedItem);
+
+    // Update cache with updated item
+    await this.cache.set(updatedItem);
 
     this.logger.log(`Item dismissed`, { itemId, userId });
 
@@ -297,6 +239,9 @@ export class DismissibleCoreService implements IDismissibleCoreService {
     await this.validationService.validateInstance(restoredItem);
 
     const updatedItem = await this.storage.update(restoredItem);
+
+    // Update cache with updated item
+    await this.cache.set(updatedItem);
 
     this.logger.log(`Item restored`, { itemId, userId });
 

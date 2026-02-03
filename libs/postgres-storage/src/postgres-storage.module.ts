@@ -1,4 +1,4 @@
-import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
+import { DynamicModule, InjectionToken, Module, ModuleMetadata } from '@nestjs/common';
 import { DISMISSIBLE_STORAGE_ADAPTER } from '@dismissible/nestjs-storage';
 import { PostgresStorageAdapter } from './postgres-storage.adapter';
 import { PrismaService } from './prisma.service';
@@ -14,7 +14,7 @@ export interface PostgresStorageModuleOptions {
 }
 
 export interface PostgresStorageModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
-  inject?: any[];
+  inject?: InjectionToken[];
   useFactory: (
     ...args: any[]
   ) => PostgresStorageModuleOptions | Promise<PostgresStorageModuleOptions>;

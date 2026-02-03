@@ -54,6 +54,30 @@ services:
       - key: DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN
         value: ''
 
+      # Cache Configuration
+      - key: DISMISSIBLE_CACHE_TYPE
+        value: ''
+
+      # Memory Cache
+      - key: DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS
+        value: ''
+      - key: DISMISSIBLE_CACHE_MEMORY_TTL_MS
+        value: ''
+
+      # Redis Cache
+      - key: DISMISSIBLE_CACHE_REDIS_URL
+        value: ''
+      - key: DISMISSIBLE_CACHE_REDIS_KEY_PREFIX
+        value: ''
+      - key: DISMISSIBLE_CACHE_REDIS_TTL_MS
+        value: ''
+      - key: DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK
+        value: ''
+      - key: DISMISSIBLE_CACHE_REDIS_MAX_RETRIES
+        value: ''
+      - key: DISMISSIBLE_CACHE_REDIS_CONNECTION_TIMEOUT_MS
+        value: ''
+
       # Security (Helmet)
       - key: DISMISSIBLE_HELMET_ENABLED
         value: 'true'

@@ -1,4 +1,4 @@
-import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
+import { DynamicModule, InjectionToken, Module, ModuleMetadata } from '@nestjs/common';
 import { DISMISSIBLE_STORAGE_ADAPTER } from './storage.interface';
 import { MemoryStorageAdapter } from './memory-storage.adapter';
 import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
@@ -10,7 +10,7 @@ export interface MemoryStorageModuleOptions {
 }
 
 export interface MemoryStorageModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
-  inject?: any[];
+  inject?: InjectionToken[];
   useFactory: (...args: any[]) => MemoryStorageModuleOptions | Promise<MemoryStorageModuleOptions>;
 }
 

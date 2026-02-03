@@ -1,0 +1,45 @@
+{
+  "name": "@dismissible/nestjs-cache",
+  "version": "3.0.0",
+  "description": "Cache adapter interface for Dismissible",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "dependencies": {
+    "@dismissible/nestjs-item": "^3.0.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": false
+    }
+  },
+  "keywords": [
+    "nestjs",
+    "dismissible",
+    "cache",
+    "adapter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DismissibleIo/dismissible-api"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

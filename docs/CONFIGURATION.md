@@ -54,6 +54,39 @@ In-memory storage uses an LRU (Least Recently Used) cache. This storage backend 
 > [!WARNING]
 > Data stored in memory will be lost when the application restarts. Do not use in production or for multi-instance deployments.
 
+### Cache Settings
+
+Caching improves performance by storing frequently accessed data. The cache is optional and can be configured to use different backends.
+
+| Variable                 | Description                                                    | Default |
+| ------------------------ | -------------------------------------------------------------- | ------- |
+| `DISMISSIBLE_CACHE_TYPE` | Cache backend type: `redis`, `memory`, or empty for no caching | -       |
+
+#### Redis Cache
+
+Redis provides distributed caching suitable for multi-instance deployments.
+
+| Variable                                        | Description                        | Default                |
+| ----------------------------------------------- | ---------------------------------- | ---------------------- |
+| `DISMISSIBLE_CACHE_REDIS_URL`                   | Redis connection URL               | _required_ if enabled  |
+| `DISMISSIBLE_CACHE_REDIS_KEY_PREFIX`            | Key prefix for cache keys          | `"dismissible:cache:"` |
+| `DISMISSIBLE_CACHE_REDIS_TTL_MS`                | Time-to-live in milliseconds       | `21600` / 6hrs         |
+| `DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK`    | Enable ready check                 | `true`                 |
+| `DISMISSIBLE_CACHE_REDIS_MAX_RETRIES`           | Maximum retries per request        | `3`                    |
+| `DISMISSIBLE_CACHE_REDIS_CONNECTION_TIMEOUT_MS` | Connection timeout in milliseconds | `5000`                 |
+
+#### Memory Cache
+
+In-memory cache uses an LRU (Least Recently Used) cache. This is suitable for single-instance deployments only.
+
+| Variable                             | Description                      | Default        |
+| ------------------------------------ | -------------------------------- | -------------- |
+| `DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS` | Maximum number of items to cache | `5000`         |
+| `DISMISSIBLE_CACHE_MEMORY_TTL_MS`    | Time-to-live in milliseconds     | `21600` / 6hrs |
+
+> [!WARNING]
+> Memory cache will be lost when the application restarts and is not shared across multiple instances. For production multi-instance deployments, use Redis cache.
+
 ### Swagger
 
 When enabled, Swagger documentation is published to the path specified by `DISMISSIBLE_SWAGGER_PATH` (defaults to `/docs`). The OpenAPI schema is available at `${PATH}-json` (JSON format) and `${PATH}-yaml` (YAML format). For example:
@@ -169,6 +202,29 @@ The `DISMISSIBLE_RATE_LIMITER_IGNORED_KEYS` variable accepts a comma-separated l
 
 The [Dismissible NestJS Module API library](https://www.npmjs.com/package/@dismissible/nestjs-api) has an alternative way to set configuration by using a `.env.yaml` file eg. [`api/config/.env.yaml`](api/config/.env.yaml)
 
+### Programmatic Configuration Override
+
+You can override storage and cache types programmatically when using `DismissibleNestFactory.create()`:
+
+```typescript
+import { DismissibleNestFactory, StorageType, CacheType } from '@dismissible/nestjs-api';
+
+async function bootstrap() {
+  const app = await DismissibleNestFactory.create({
+    configPath: './config',
+    storage: StorageType.POSTGRES, // Bypasses DISMISSIBLE_STORAGE_TYPE env var
+    cache: CacheType.REDIS, // Bypasses DISMISSIBLE_CACHE_TYPE env var
+  });
+  await app.start();
+}
+
+bootstrap();
+```
+
+This is useful for testing different backends or when you need dynamic configuration based on runtime conditions. Programmatic overrides take precedence over environment variables.
+
+For more details and examples with `DismissibleModule.forRoot()`, see the [Module Configuration section](./NESTJS_API_MODULE.md#programmatic-configuration-override) in the NestJS API Module documentation.
+
 ### Example YAML file
 
 Below is the default config file which contains both default values and a way to interpolate the [environment variables](#all-configuration-options) defined above.
@@ -212,6 +268,20 @@ storage:
   memory:
     maxItems: ${DISMISSIBLE_STORAGE_MEMORY_MAX_ITEMS:-5000}
     ttlMs: ${DISMISSIBLE_STORAGE_MEMORY_TTL_MS:-21600000}
+
+cache:
+  # redis | memory | null (or omit for null)
+  type: ${DISMISSIBLE_CACHE_TYPE:-}
+  redis:
+    url: ${DISMISSIBLE_CACHE_REDIS_URL:-}
+    keyPrefix: ${DISMISSIBLE_CACHE_REDIS_KEY_PREFIX:-"dismissible:cache:"}
+    ttlMs: ${DISMISSIBLE_CACHE_REDIS_TTL_MS:-}
+    enableReadyCheck: ${DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK:-}
+    maxRetriesPerRequest: ${DISMISSIBLE_CACHE_REDIS_MAX_RETRIES:-}
+    connectionTimeoutMs: ${DISMISSIBLE_CACHE_REDIS_CONNECTION_TIMEOUT_MS:-}
+  memory:
+    maxItems: ${DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS:-5000}
+    ttlMs: ${DISMISSIBLE_CACHE_MEMORY_TTL_MS:-21600000}
 
 jwtAuth:
   enabled: ${DISMISSIBLE_JWT_AUTH_ENABLED:-false}

@@ -6,6 +6,7 @@ import { HelmetConfig } from '../helmet';
 import { ValidationConfig } from '../validation';
 import { RateLimiterHookConfig } from '@dismissible/nestjs-rate-limiter-hook';
 import { StorageConfig } from '../storage/storage.config';
+import { CacheConfig } from '../cache/cache.config';
 
 export class DefaultAppConfig {
   @ValidateNested()
@@ -37,4 +38,9 @@ export class DefaultAppConfig {
   @IsDefined()
   @Type(() => ValidationConfig)
   public readonly validation!: ValidationConfig;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CacheConfig)
+  public readonly cache?: CacheConfig;
 }
