@@ -23,3 +23,6 @@ cli
 *.njsproj
 *.sln
 *.sw?
+
+# wizard
+wizard/e2e/test-results

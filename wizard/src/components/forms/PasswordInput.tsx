@@ -12,10 +12,14 @@ interface PasswordInputProps {
   required?: boolean;
   error?: string;
   name?: string;
+  testId?: string;
 }
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ label, value, onChange, helpText, placeholder, required, error, name }, ref) => {
+  (
+    { label, value, onChange, helpText, placeholder, required, error, name, testId },
+    ref,
+  ) => {
     const [showPassword, setShowPassword] = useState(false);
     const inputId = generateInputId(name, label);
 
@@ -36,7 +40,8 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
-            className="input-field pr-12"
+          data-testid={testId}
+          className="input-field pr-12"
           />
           <button
             type="button"

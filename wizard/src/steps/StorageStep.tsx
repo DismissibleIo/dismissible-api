@@ -62,6 +62,7 @@ export function StorageStep() {
         helpText={HELP_TEXT.storageType}
         required
         error={getError('storageType')}
+        testId="storage-type-select"
       />
 
       {storage.type === 'postgres' && (
@@ -73,6 +74,7 @@ export function StorageStep() {
           placeholder="postgresql://user:password@host:5432/database"
           required
           error={getError('connectionString')}
+          testId="postgres-connection-input"
         />
       )}
 
@@ -85,6 +87,7 @@ export function StorageStep() {
             helpText={HELP_TEXT.dynamodbTableName}
             required
             error={getError('tableName')}
+            testId="dynamodb-table-input"
           />
 
           <TextInput
@@ -95,6 +98,7 @@ export function StorageStep() {
             placeholder="us-east-1"
             required
             error={getError('awsRegion')}
+            testId="dynamodb-region-input"
           />
 
           <TextInput
@@ -103,6 +107,7 @@ export function StorageStep() {
             onChange={(value) => updateStorage({ awsAccessKeyId: value })}
             helpText={HELP_TEXT.dynamodbAwsAccessKeyId}
             placeholder="Optional if using IAM roles"
+            testId="dynamodb-access-key-input"
           />
 
           <PasswordInput
@@ -111,6 +116,7 @@ export function StorageStep() {
             onChange={(value) => updateStorage({ awsSecretAccessKey: value })}
             helpText={HELP_TEXT.dynamodbAwsSecretAccessKey}
             placeholder="Optional if using IAM roles"
+            testId="dynamodb-secret-key-input"
           />
 
           <TextInput
@@ -119,6 +125,7 @@ export function StorageStep() {
             onChange={(value) => updateStorage({ awsSessionToken: value })}
             helpText={HELP_TEXT.dynamodbAwsSessionToken}
             placeholder="Optional for temporary credentials"
+            testId="dynamodb-session-token-input"
           />
 
           <TextInput
@@ -127,6 +134,7 @@ export function StorageStep() {
             onChange={(value) => updateStorage({ endpoint: value })}
             helpText={HELP_TEXT.dynamodbEndpoint}
             placeholder="For LocalStack or DynamoDB Local"
+            testId="dynamodb-endpoint-input"
           />
         </>
       )}
@@ -141,6 +149,7 @@ export function StorageStep() {
             min={1}
             required
             error={getError('maxItems')}
+            testId="memory-max-items-input"
           />
 
           <NumberInput
@@ -151,6 +160,7 @@ export function StorageStep() {
             min={1}
             required
             error={getError('ttlMs')}
+            testId="memory-ttl-input"
           />
 
           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
@@ -168,6 +178,7 @@ export function StorageStep() {
           value={core.storageRunSetup}
           onChange={(value) => updateCore({ storageRunSetup: value })}
           helpText={HELP_TEXT.storageRunSetup}
+        testId="storage-run-setup-toggle"
         />
       </div>
     </div>

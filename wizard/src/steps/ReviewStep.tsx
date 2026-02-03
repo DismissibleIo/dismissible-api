@@ -29,7 +29,9 @@ export function ReviewStep() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">Review Configuration</h2>
+      <h2 data-testid="review-heading" className="text-2xl font-bold text-white mb-2">
+        Review Configuration
+      </h2>
       <p className="text-gray-400 mb-8">
         Review your configuration before generating output files.
       </p>
@@ -51,6 +53,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.CORE)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit Core Settings"
+              data-testid="review-edit-core"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -109,6 +112,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.STORAGE)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit Storage Settings"
+              data-testid="review-edit-storage"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -133,6 +137,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.CACHE)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit Cache Settings"
+              data-testid="review-edit-cache"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -161,6 +166,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.SWAGGER)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit Swagger Settings"
+              data-testid="review-edit-swagger"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -183,6 +189,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.JWT_AUTH)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit JWT Auth Settings"
+              data-testid="review-edit-jwt"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -205,6 +212,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.CORS)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit CORS Settings"
+              data-testid="review-edit-cors"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -227,6 +235,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.HELMET)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit Security Headers Settings"
+              data-testid="review-edit-helmet"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -251,6 +260,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.VALIDATION)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit Validation Settings"
+              data-testid="review-edit-validation"
             >
               <PencilIcon className="w-5 h-5" />
             </button>
@@ -273,6 +283,7 @@ export function ReviewStep() {
               onClick={() => editStep(STEP_INDICES.RATE_LIMITER)}
               className="ml-4 text-primary-500 hover:text-primary-400 transition-colors"
               aria-label="Edit Rate Limiter Settings"
+              data-testid="review-edit-rate-limiter"
             >
               <PencilIcon className="w-5 h-5" />
             </button>

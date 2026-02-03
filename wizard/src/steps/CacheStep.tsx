@@ -51,6 +51,7 @@ export function CacheStep() {
         helpText={HELP_TEXT.cacheType}
         required
         error={getError('type')}
+        testId="cache-type-select"
       />
 
       {cache.type === 'redis' && (
@@ -63,6 +64,7 @@ export function CacheStep() {
             placeholder="redis://localhost:6379"
             required
             error={getError('url')}
+            testId="redis-url-input"
           />
 
           <TextInput
@@ -72,6 +74,7 @@ export function CacheStep() {
             helpText={HELP_TEXT.redisCacheKeyPrefix}
             required
             error={getError('keyPrefix')}
+            testId="redis-prefix-input"
           />
 
           <NumberInput
@@ -82,6 +85,7 @@ export function CacheStep() {
             min={1}
             required
             error={getError('ttlMs')}
+            testId="redis-ttl-input"
           />
 
           <ToggleInput
@@ -89,6 +93,7 @@ export function CacheStep() {
             value={cache.enableReadyCheck}
             onChange={(value) => updateCache({ enableReadyCheck: value })}
             helpText={HELP_TEXT.redisCacheEnableReadyCheck}
+            testId="redis-enable-ready-toggle"
           />
 
           <NumberInput
@@ -99,6 +104,7 @@ export function CacheStep() {
             min={0}
             required
             error={getError('maxRetries')}
+            testId="redis-max-retries-input"
           />
 
           <NumberInput
@@ -109,6 +115,7 @@ export function CacheStep() {
             min={1}
             required
             error={getError('connectionTimeoutMs')}
+            testId="redis-connection-timeout-input"
           />
         </>
       )}
@@ -123,6 +130,7 @@ export function CacheStep() {
             min={1}
             required
             error={getError('maxItems')}
+            testId="memory-cache-max-items-input"
           />
 
           <NumberInput
@@ -133,6 +141,7 @@ export function CacheStep() {
             min={1}
             required
             error={getError('ttlMs')}
+            testId="memory-cache-ttl-input"
           />
 
           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">

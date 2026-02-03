@@ -12,11 +12,23 @@ interface TextInputProps {
   error?: string;
   name?: string;
   type?: 'text' | 'url' | 'email';
+  testId?: string;
 }
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   (
-    { label, value, onChange, helpText, placeholder, required, error, name, type = 'text' },
+    {
+      label,
+      value,
+      onChange,
+      helpText,
+      placeholder,
+      required,
+      error,
+      name,
+      type = 'text',
+      testId,
+    },
     ref,
   ) => {
     const inputId = generateInputId(name, label);
@@ -37,6 +49,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          data-testid={testId}
           className="input-field"
         />
       </FormField>

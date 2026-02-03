@@ -18,10 +18,11 @@ interface SelectInputProps {
   required?: boolean;
   error?: string;
   name?: string;
+  testId?: string;
 }
 
 export const SelectInput = forwardRef<HTMLButtonElement, SelectInputProps>(
-  ({ label, value, onChange, options, helpText, required, error, name }, ref) => {
+  ({ label, value, onChange, options, helpText, required, error, name, testId }, ref) => {
     const inputId = generateInputId(name, label);
 
     const normalizedOptions: SelectOption[] = options.map((opt) =>
@@ -43,6 +44,7 @@ export const SelectInput = forwardRef<HTMLButtonElement, SelectInputProps>(
             <Listbox.Button
               ref={ref}
               id={inputId}
+              data-testid={testId}
               className="input-field relative w-full cursor-default text-left"
             >
               <span className="block truncate">{selectedOption?.label || 'Select an option'}</span>

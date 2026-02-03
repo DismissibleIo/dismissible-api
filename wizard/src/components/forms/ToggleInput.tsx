@@ -10,10 +10,11 @@ interface ToggleInputProps {
   helpText?: string;
   error?: string;
   name?: string;
+  testId?: string;
 }
 
 export const ToggleInput = forwardRef<HTMLButtonElement, ToggleInputProps>(
-  ({ label, value, onChange, helpText, error, name }, ref) => {
+  ({ label, value, onChange, helpText, error, name, testId }, ref) => {
     const inputId = generateInputId(name, label);
 
     return (
@@ -22,6 +23,7 @@ export const ToggleInput = forwardRef<HTMLButtonElement, ToggleInputProps>(
           ref={ref}
           checked={value}
           onChange={onChange}
+          data-testid={testId}
           className={`${
             value ? 'bg-primary-600' : 'bg-white/20'
           } relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-[#05070f] shadow-inner`}

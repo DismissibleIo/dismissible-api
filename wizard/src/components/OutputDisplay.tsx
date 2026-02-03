@@ -115,6 +115,7 @@ export function OutputDisplay() {
               className="bg-[#05070f] border border-white/10 rounded-lg p-4 overflow-x-auto text-xs font-mono text-white/90"
               aria-label="Generated .env file content"
               tabIndex={0}
+            data-testid="review-env-output"
             >
               {envFile}
             </pre>
@@ -133,6 +134,7 @@ export function OutputDisplay() {
               className="bg-[#05070f] border border-white/10 rounded-lg p-4 overflow-x-auto text-xs font-mono text-white/90"
               aria-label="Generated Docker command"
               tabIndex={0}
+            data-testid="review-docker-output"
             >
               {dockerCmd}
             </pre>

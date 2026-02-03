@@ -14,11 +14,25 @@ interface NumberInputProps {
   min?: number;
   max?: number;
   step?: number;
+  testId?: string;
 }
 
 export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
   (
-    { label, value, onChange, helpText, placeholder, required, error, name, min, max, step },
+    {
+      label,
+      value,
+      onChange,
+      helpText,
+      placeholder,
+      required,
+      error,
+      name,
+      min,
+      max,
+      step,
+      testId,
+    },
     ref,
   ) => {
     const inputId = generateInputId(name, label);
@@ -46,6 +60,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           min={min}
           max={max}
           step={step}
+          data-testid={testId}
           className="input-field"
         />
       </FormField>

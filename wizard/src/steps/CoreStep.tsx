@@ -19,6 +19,7 @@ export function CoreStep() {
         max={65535}
         required
         error={getError('port')}
+        testId="core-port-input"
       />
     </div>
   );

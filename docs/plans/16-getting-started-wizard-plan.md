@@ -480,7 +480,7 @@ File: `wizard/src/utils/escaping.ts`
 #### 7.3 Local Distribution
 
 - [ ] Document how to run locally:
-  - Clone repo and run `npm run wizard` in `wizard/`
+  - Clone repo and run `npm run serve:wizard` in `wizard/`
   - Or: Serve `dist/` folder with any static server after build
 - [ ] Consider creating an npx command (optional):
   - Package as npm module

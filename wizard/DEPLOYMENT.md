@@ -7,12 +7,12 @@ This guide covers deploying the Dismissible Configuration Wizard to various stat
 1. **Build the wizard**:
 
    ```bash
-   npm run wizard:build
+   npm run build:wizard
    ```
 
-2. **Verify the build**:
+2. **Run the build**:
    ```bash
-   npm run wizard:preview
+   npm run serve:wizard
    ```
    Visit http://localhost:3002 to test the production build locally.
 
@@ -50,7 +50,7 @@ This guide covers deploying the Dismissible Configuration Wizard to various stat
    - Connect your GitHub repository
 
 2. **Configure build settings**:
-   - Build command: `npm run wizard:build`
+   - Build command: `npm run build:wizard`
    - Build output directory: `dist/wizard`
    - Root directory: `/` (leave default)
 
@@ -79,7 +79,7 @@ This guide covers deploying the Dismissible Configuration Wizard to various stat
 3. **Or deploy via web**:
    - Go to vercel.com
    - Import your repository
-   - Build command: `npm run wizard:build`
+   - Build command: `npm run build:wizard`
    - Output directory: `dist/wizard`
 
 4. **Custom domain**: Add in project settings
@@ -97,7 +97,7 @@ This guide covers deploying the Dismissible Configuration Wizard to various stat
    - Go to netlify.com
    - Drag and drop `dist/wizard` folder
    - Or connect repository with:
-     - Build command: `npm run wizard:build`
+     - Build command: `npm run build:wizard`
      - Publish directory: `dist/wizard`
 
 3. **Custom domain**: Add in site settings
@@ -166,7 +166,7 @@ jobs:
         run: npm ci
 
       - name: Build wizard
-        run: npm run wizard:build
+        run: npm run build:wizard
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -203,7 +203,7 @@ jobs:
 ```bash
 # Clean and rebuild
 npm run nx:reset
-npm run wizard:build
+npm run build:wizard
 ```
 
 ### CSS not loading
@@ -251,5 +251,5 @@ For issues:
 
 - Check the wizard README
 - Review build logs
-- Test locally with `npm run wizard:preview`
+- Test locally with `npm run serve:wizard`
 - Open an issue on GitHub

@@ -53,6 +53,14 @@
         "buildTarget": "wizard:build",
         "port": 3002
       }
+    },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "NX_DAEMON=false npx playwright test --config=wizard/e2e/playwright.config.ts",
+        "cwd": "."
+      }
     }
   }
 }

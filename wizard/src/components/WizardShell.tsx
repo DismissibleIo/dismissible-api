@@ -101,37 +101,40 @@ export function WizardShell({
             aria-label="Wizard navigation"
           >
             {!isLastStep && (
-              <button
-                type="button"
-                onClick={handlePrev}
-                disabled={!canGoPrev || isFirstStep}
-                aria-label={`Go to previous step: ${STEP_NAMES[state.currentStep - 1] || 'None'}`}
-                className="btn-secondary"
-              >
+          <button
+            type="button"
+            onClick={handlePrev}
+            disabled={!canGoPrev || isFirstStep}
+            aria-label={`Go to previous step: ${STEP_NAMES[state.currentStep - 1] || 'None'}`}
+            data-testid="wizard-back-button"
+            className="btn-secondary"
+          >
                 <ChevronLeftIcon className="w-5 h-5 mr-2" aria-hidden="true" />
                 {prevLabel}
               </button>
             )}
 
             {isLastStep && (
-              <button
-                type="button"
-                onClick={() => dispatch({ type: 'RESET' })}
-                aria-label="Reset wizard and start over"
-                className="btn-secondary"
-              >
+            <button
+              type="button"
+              onClick={() => dispatch({ type: 'RESET' })}
+              aria-label="Reset wizard and start over"
+              data-testid="wizard-reset-button"
+              className="btn-secondary"
+            >
                 Start Over
               </button>
             )}
 
             {!isLastStep && (
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={!canGoNext}
-                aria-label={`Go to next step: ${STEP_NAMES[state.currentStep + 1] || 'Review'}`}
-                className="btn-primary"
-              >
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={!canGoNext}
+              aria-label={`Go to next step: ${STEP_NAMES[state.currentStep + 1] || 'Review'}`}
+              data-testid="wizard-next-button"
+              className="btn-primary"
+            >
                 {nextLabel}
                 <ChevronRightIcon className="w-5 h-5 ml-2" aria-hidden="true" />
               </button>
