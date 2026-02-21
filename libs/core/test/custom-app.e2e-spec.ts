@@ -105,12 +105,19 @@ class MetricsController {
   async getWithMetrics(@Param('userId') userId: string, @Param('itemId') itemId: string) {
     this.metricsService.track(`get:${userId}:${itemId}`);
 
-    const result = await this.coreService.getOrCreate(itemId, userId);
-    const responseDto = this.mapper.toResponseDto(result.item);
+    let item = await this.coreService.get(itemId, userId);
+    let created = false;
+
+    if (!item) {
+      item = await this.coreService.create(itemId, userId);
+      created = true;
+    }
+
+    const responseDto = this.mapper.toResponseDto(item);
 
     return {
       data: responseDto,
-      created: result.created,
+      created,
       trackedEvents: this.metricsService.getEvents(),
     };
   }

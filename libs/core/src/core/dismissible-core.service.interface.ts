@@ -1,10 +1,5 @@
 import { DismissibleItemDto } from '@dismissible/nestjs-item';
-import {
-  IGetOrCreateServiceResponse,
-  IBatchGetOrCreateServiceResponse,
-  IDismissServiceResponse,
-  IRestoreServiceResponse,
-} from './service-responses.interface';
+import { IDismissServiceResponse, IRestoreServiceResponse } from './service-responses.interface';
 
 /**
  * Injection token for the dismissible core service provider.
@@ -47,20 +42,6 @@ export interface IDismissibleCoreService {
    * @returns Array of created items
    */
   createMany(itemIds: string[], userId: string): Promise<DismissibleItemDto[]>;
-
-  /**
-   * Get an existing item or create a new one.
-   * @param itemId The item identifier
-   * @param userId The user identifier (required)
-   */
-  getOrCreate(itemId: string, userId: string): Promise<IGetOrCreateServiceResponse>;
-
-  /**
-   * Get existing items or create new ones for multiple item IDs.
-   * @param itemIds Array of item identifiers
-   * @param userId The user identifier (required)
-   */
-  batchGetOrCreate(itemIds: string[], userId: string): Promise<IBatchGetOrCreateServiceResponse>;
 
   /**
    * Dismiss an item.

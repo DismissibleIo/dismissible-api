@@ -178,6 +178,67 @@ docker run -p 3001:3001 \
 
 ---
 
+## Cache Backends
+
+The Dismissible API supports optional caching to improve performance. The cache type is determined by the following config:
+
+| Variable                 | Description                                                    | Default |
+| ------------------------ | -------------------------------------------------------------- | ------- |
+| `DISMISSIBLE_CACHE_TYPE` | Cache backend type: `redis`, `memory`, or empty for no caching | -       |
+
+### Redis Cache
+
+Redis provides distributed caching suitable for multi-instance deployments.
+
+**Environment Variables:**
+
+| Variable                                        | Description                        | Default                |
+| ----------------------------------------------- | ---------------------------------- | ---------------------- |
+| `DISMISSIBLE_CACHE_REDIS_URL`                   | Redis connection URL               | _required_ if enabled  |
+| `DISMISSIBLE_CACHE_REDIS_KEY_PREFIX`            | Key prefix for cache keys          | `"dismissible:cache:"` |
+| `DISMISSIBLE_CACHE_REDIS_TTL_MS`                | Time-to-live in milliseconds       | -                      |
+| `DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK`    | Enable ready check                 | -                      |
+| `DISMISSIBLE_CACHE_REDIS_MAX_RETRIES`           | Maximum retries per request        | -                      |
+| `DISMISSIBLE_CACHE_REDIS_CONNECTION_TIMEOUT_MS` | Connection timeout in milliseconds | -                      |
+
+**Example:**
+
+```bash
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_STORAGE_TYPE=postgres \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://user:password@host:5432/dismissible" \
+  -e DISMISSIBLE_CACHE_TYPE=redis \
+  -e DISMISSIBLE_CACHE_REDIS_URL="redis://localhost:6379" \
+  dismissibleio/dismissible-api:latest
+```
+
+### Memory Cache
+
+In-memory cache uses an LRU (Least Recently Used) cache. This is suitable for single-instance deployments only.
+
+**Environment Variables:**
+
+| Variable                             | Description                      | Default |
+| ------------------------------------ | -------------------------------- | ------- |
+| `DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS` | Maximum number of items to cache | -       |
+| `DISMISSIBLE_CACHE_MEMORY_TTL_MS`    | Time-to-live in milliseconds     | -       |
+
+**Example:**
+
+```bash
+docker run -p 3001:3001 \
+  -e DISMISSIBLE_STORAGE_TYPE=postgres \
+  -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://user:password@host:5432/dismissible" \
+  -e DISMISSIBLE_CACHE_TYPE=memory \
+  -e DISMISSIBLE_CACHE_MEMORY_MAX_ITEMS=5000 \
+  -e DISMISSIBLE_CACHE_MEMORY_TTL_MS=21600000 \
+  dismissibleio/dismissible-api:latest
+```
+
+**Warning**: Memory cache will be lost when the container restarts and is not shared across multiple instances. For production multi-instance deployments, use Redis cache.
+
+---
+
 ## Configuration
 
 The dismissible docker image is highly configurable. The following environment variables can be set to control certain aspects of the app.
@@ -301,6 +362,52 @@ services:
 
 volumes:
   postgres_data:
+```
+
+### With Redis Cache
+
+Add Redis cache for improved performance in multi-instance deployments:
+
+```yaml
+services:
+  api:
+    image: dismissibleio/dismissible-api:latest
+    ports:
+      - '3001:3001'
+    environment:
+      DISMISSIBLE_STORAGE_TYPE: postgres
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
+      # Redis cache configuration
+      DISMISSIBLE_CACHE_TYPE: redis
+      DISMISSIBLE_CACHE_REDIS_URL: redis://dismissible-redis:6379
+      DISMISSIBLE_CACHE_REDIS_KEY_PREFIX: 'dismissible:cache:'
+      DISMISSIBLE_CACHE_REDIS_TTL_MS: '21600000'
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dismissible
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: dismissible-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
 ```
 
 Start the services:

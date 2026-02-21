@@ -25,6 +25,9 @@
       "@dismissible/nestjs-postgres-storage": ["libs/postgres-storage/src/index.ts"],
       "@dismissible/nestjs-dynamodb-storage": ["libs/dynamodb-storage/src/index.ts"],
       "@dismissible/nestjs-storage": ["libs/storage/src/index.ts"],
+      "@dismissible/nestjs-cache": ["libs/cache/src/index.ts"],
+      "@dismissible/nestjs-memory-cache": ["libs/memory-cache/src/index.ts"],
+      "@dismissible/nestjs-redis-cache": ["libs/redis-cache/src/index.ts"],
       "@dismissible/nestjs-validation": ["libs/validation/src/index.ts"]
     }
   },

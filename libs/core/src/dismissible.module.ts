@@ -20,6 +20,7 @@ import { ResponseService, ResponseModule } from './response';
 import { DISMISSIBLE_RESPONSE_SERVICE } from './response/response.service.interface';
 import { ValidationModule } from '@dismissible/nestjs-validation';
 import { IDismissibleStorageModuleOptions, StorageModule } from '@dismissible/nestjs-storage';
+import { IDismissibleCacheModuleOptions, CacheModule } from '@dismissible/nestjs-cache';
 import { DismissibleHelper } from './utils/dismissible.helper';
 import { DISMISSIBLE_HELPER } from './utils/dismissible.helper.interface';
 import { DismissibleItemModule } from '@dismissible/nestjs-item';
@@ -28,7 +29,8 @@ import { DismissibleItemModule } from '@dismissible/nestjs-item';
  * Module configuration options.
  */
 export type IDismissibleModuleOptions = IDismissibleLoggerModuleOptions &
-  IDismissibleStorageModuleOptions & {
+  IDismissibleStorageModuleOptions &
+  IDismissibleCacheModuleOptions & {
     hooks?: Type<IDismissibleLifecycleHook>[];
     imports?: Array<Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference>;
     providers?: Provider[];
@@ -100,6 +102,7 @@ export class DismissibleModule {
         ValidationModule,
         ResponseModule,
         options.storage ?? StorageModule,
+        options.cache ?? CacheModule,
         DismissibleItemModule,
         ...(options.imports ?? []),
       ],
