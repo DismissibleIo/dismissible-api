@@ -1,0 +1,62 @@
+{
+  "name": "@dismissible/wizard",
+  "version": "1.0.0",
+  "description": "Configuration wizard for Dismissible API - generates .env files and docker commands",
+  "keywords": [
+    "dismissible",
+    "api",
+    "configuration",
+    "wizard",
+    "docker",
+    "env"
+  ],
+  "license": "MIT",
+  "author": "Dismissible",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dismissibleio/dismissible-api.git",
+    "directory": "wizard"
+  },
+  "homepage": "https://wizard.dismissible.io",
+  "type": "module",
+  "bin": {
+    "dismissible-wizard": "./bin/cli.mjs"
+  },
+  "files": [
+    "bin",
+    "cli",
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:cli": "tsc -p tsconfig.cli.json",
+    "build:all": "npm run build && npm run build:cli",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build:all"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.54.2",
+    "zod": "^3.24.1",
+    "@hookform/resolvers": "^3.9.1",
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.7",
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.4.49",
+    "autoprefixer": "^10.4.20"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

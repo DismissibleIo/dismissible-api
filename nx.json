@@ -35,10 +35,10 @@
   },
   "release": {
     "releaseTagPattern": "v{version}",
-    "projects": ["api", "libs/*"],
+    "projects": ["api", "libs/*", "wizard"],
     "projectsRelationship": "fixed",
     "version": {
-      "preVersionCommand": "npx nx run-many -t build",
+      "preVersionCommand": "npx nx run-many -t build && npx nx build-package wizard",
       "conventionalCommits": true,
       "manifestRootsToUpdate": [
         "{projectRoot}",
