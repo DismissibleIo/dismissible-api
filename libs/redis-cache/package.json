@@ -1,6 +1,6 @@
 {
   "name": "@dismissible/nestjs-redis-cache",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Redis cache adapter for Dismissible",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -17,10 +17,10 @@
     "LICENSE.md"
   ],
   "dependencies": {
-    "@dismissible/nestjs-cache": "^3.1.0",
-    "@dismissible/nestjs-item": "^3.1.0",
-    "@dismissible/nestjs-logger": "^3.1.0",
-    "@dismissible/nestjs-validation": "^3.1.0",
+    "@dismissible/nestjs-cache": "^3.1.1",
+    "@dismissible/nestjs-item": "^3.1.1",
+    "@dismissible/nestjs-logger": "^3.1.1",
+    "@dismissible/nestjs-validation": "^3.1.1",
     "ioredis": "^5.3.2"
   },
   "peerDependencies": {
