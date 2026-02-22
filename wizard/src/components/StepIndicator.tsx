@@ -2,17 +2,21 @@ import { CheckIcon } from '@heroicons/react/24/solid';
 
 interface StepIndicatorProps {
   currentStep: number;
+  furthestStep: number;
   totalSteps: number;
   steps: string[];
+  onStepClick?: (stepIndex: number) => void;
 }
 
-function getStepStatus(index: number, currentStep: number): string {
-  if (index < currentStep) return 'completed';
+type StepStatus = 'completed' | 'current' | 'visited' | 'upcoming';
+
+function getStepStatus(index: number, currentStep: number, furthestStep: number): StepStatus {
   if (index === currentStep) return 'current';
+  if (index <= furthestStep) return index < currentStep ? 'completed' : 'visited';
   return 'upcoming';
 }
 
-export function StepIndicator({ currentStep, totalSteps, steps }: StepIndicatorProps) {
+export function StepIndicator({ currentStep, furthestStep, totalSteps, steps, onStepClick }: StepIndicatorProps) {
   return (
     <nav className="mb-8" aria-label="Progress">
       {/* Mobile: Simple text indicator */}
@@ -36,38 +40,55 @@ export function StepIndicator({ currentStep, totalSteps, steps }: StepIndicatorP
         </div>
         <ol className="flex items-center" role="list">
           {steps.map((step, index) => {
-            const status = getStepStatus(index, currentStep);
+            const status = getStepStatus(index, currentStep, furthestStep);
+            const isClickable = (status === 'completed' || status === 'visited') && onStepClick;
             return (
               <li key={step} className="flex items-center" style={{ flex: '1 1 0%' }}>
                 <div className="flex flex-col items-center w-full">
-                  <div
-                    className={`w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${
-                      status === 'completed'
-                        ? 'bg-primary-600 border-primary-600 shadow-lg shadow-primary-600/30'
-                        : status === 'current'
+                  {isClickable ? (
+                    <button
+                      type="button"
+                      onClick={() => onStepClick(index)}
+                      className={`w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-200 hover:scale-110 cursor-pointer ${
+                        status === 'completed'
+                          ? 'bg-primary-600 border-primary-600 shadow-lg shadow-primary-600/30 hover:bg-primary-500 hover:border-primary-500'
+                          : 'border-primary-500/50 text-primary-400 bg-white/5 hover:border-primary-500 hover:text-primary-300'
+                      }`}
+                      aria-label={`Go to step ${index + 1}: ${step}`}
+                    >
+                      {status === 'completed' ? (
+                        <CheckIcon className="w-6 h-6 text-white" aria-hidden="true" />
+                      ) : (
+                        <span className="text-sm font-bold" aria-hidden="true">
+                          {index + 1}
+                        </span>
+                      )}
+                    </button>
+                  ) : (
+                    <div
+                      className={`w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${
+                        status === 'current'
                           ? 'border-primary-500 text-primary-500 bg-white/5 shadow-lg shadow-primary-500/20'
                           : 'border-white/10 text-white/50 bg-white/5'
-                    }`}
-                    aria-current={status === 'current' ? 'step' : undefined}
-                    aria-label={`Step ${index + 1}: ${step}, ${status}`}
-                  >
-                    {status === 'completed' ? (
-                      <CheckIcon className="w-6 h-6 text-white" aria-hidden="true" />
-                    ) : (
+                      }`}
+                      aria-current={status === 'current' ? 'step' : undefined}
+                      aria-label={`Step ${index + 1}: ${step}, ${status}`}
+                    >
                       <span className="text-sm font-bold" aria-hidden="true">
                         {index + 1}
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <div
                     className={`mt-2 text-xs text-center transition-colors ${
                       status === 'current'
                         ? 'text-primary-400 font-semibold'
-                        : status === 'completed'
-                          ? 'text-white/90'
+                        : status === 'completed' || status === 'visited'
+                          ? 'text-white/90 cursor-pointer'
                           : 'text-white/50'
                     }`}
                     aria-hidden="true"
+                    onClick={isClickable ? () => onStepClick(index) : undefined}
                   >
                     {step}
                   </div>
@@ -75,7 +96,7 @@ export function StepIndicator({ currentStep, totalSteps, steps }: StepIndicatorP
                 {index < totalSteps - 1 && (
                   <div
                     className={`h-0.5 transition-colors duration-200 flex-1 ${
-                      index < currentStep ? 'bg-primary-600' : 'bg-white/10'
+                      index < furthestStep ? 'bg-primary-600' : 'bg-white/10'
                     }`}
                     aria-hidden="true"
                     style={{ marginTop: '-2rem' }}

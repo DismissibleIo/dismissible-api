@@ -89,8 +89,10 @@ export function WizardShell({
 
           <StepIndicator
             currentStep={state.currentStep}
+            furthestStep={state.furthestStep}
             totalSteps={STEP_NAMES.length}
             steps={STEP_NAMES}
+            onStepClick={(stepIndex) => dispatch({ type: 'GO_TO_STEP', payload: stepIndex })}
           />
 
           <div className="mt-8 mb-8">{children}</div>

@@ -5,6 +5,7 @@ import { getValidationErrors } from '../utils/validateWizard';
 
 export interface WizardState {
   currentStep: number;
+  furthestStep: number;
   config: WizardConfig;
   validation: Record<string, string[]>;
   isDirty: boolean;
@@ -27,6 +28,7 @@ export const REVIEW_STEP_INDEX = TOTAL_STEPS - 1;
 function buildInitialState(config: WizardConfig, initialStep = 0): WizardState {
   return {
     currentStep: initialStep,
+    furthestStep: initialStep,
     config,
     validation: getValidationErrors(config),
     isDirty: false,
@@ -53,16 +55,22 @@ const defaultInitialState: WizardState = buildInitialState(defaultConfig);
 function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   switch (action.type) {
     case 'SET_STEP':
-    case 'GO_TO_STEP':
+    case 'GO_TO_STEP': {
+      const nextStep = Math.max(0, Math.min(REVIEW_STEP_INDEX, action.payload));
       return {
         ...state,
-        currentStep: Math.max(0, Math.min(REVIEW_STEP_INDEX, action.payload)),
+        currentStep: nextStep,
+        furthestStep: Math.max(state.furthestStep, nextStep),
       };
-    case 'NEXT_STEP':
+    }
+    case 'NEXT_STEP': {
+      const nextStep = Math.min(REVIEW_STEP_INDEX, state.currentStep + 1);
       return {
         ...state,
-        currentStep: Math.min(REVIEW_STEP_INDEX, state.currentStep + 1),
+        currentStep: nextStep,
+        furthestStep: Math.max(state.furthestStep, nextStep),
       };
+    }
     case 'PREV_STEP':
       return {
         ...state,
