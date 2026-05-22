@@ -49,7 +49,7 @@
       ],
       "git": {
         "commit": true,
-        "commitMessage": "chore(release): publish v{version} [skip ci]"
+        "commitMessage": "chore(release): publish v{version}"
       },
       "fallbackCurrentVersionResolver": "disk",
       "preserveMatchingDependencyRanges": false
