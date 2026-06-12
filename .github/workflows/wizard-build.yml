@@ -1,0 +1,34 @@
+name: Wizard Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'wizard/**'
+      - '.github/workflows/wizard-build.yml'
+  pull_request:
+    paths:
+      - 'wizard/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: npm ci
+
+      - name: Build wizard
+        run: NX_DAEMON=false npx nx build wizard
+
+      - name: Verify build
+        run: |
+          test -f dist/wizard/index.html || (echo "Missing index.html" && exit 1)
+          echo "Build output verified successfully"

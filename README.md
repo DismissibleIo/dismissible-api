@@ -64,6 +64,24 @@ The following technologies are used in the Dismissible API project
 - [Postgres](https://www.postgresql.org/)
 - [DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)
 
+## Configuration Wizard
+
+Generate `.env` files and `docker run` commands using our interactive wizard:
+
+### Online (Recommended)
+
+Visit [wizard.dismissible.io](https://wizard.dismissible.io)
+
+### Run Locally
+
+For users who prefer to run the wizard locally (e.g., when working with sensitive credentials):
+
+```bash
+npx @dismissible/wizard
+```
+
+This starts a local server and opens the wizard in your browser. No data is sent to any server.
+
 ## Quick Start
 
 The fastest way to get started is by using the public [Docker image](https://hub.docker.com/r/dismissibleio/dismissible-api) which contains the Dismissible API and storage adapters.
