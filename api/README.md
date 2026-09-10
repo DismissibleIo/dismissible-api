@@ -17,6 +17,12 @@ Dismissible manages the state of your UI elements across sessions, so your users
 
 ## Overview
 
+Requires Node.js 24 and NestJS 11. NestJS 10 and 12 are not supported. Published library NestJS peers require v11; independently versioned integrations are selected for NestJS 11 compatibility.
+
+The dependency baseline is NestJS 11.2.3, Swagger 11.4.7, Fastify 5.12.3, Helmet 13.1.1, static assets 10.1.3, class-validator 0.15.1, JWKS RSA 4.1.0, and UUID 14.0.2. Event emitter and Axios integrations use version 12.0.0 because their published peers explicitly support NestJS 11; Swagger 12 requires NestJS 12 and is excluded. The integrations use ESM, which Node.js 24 can load from the built CommonJS application.
+
+The workspace overrides the Nest Fastify adapter's older exact Fastify pin so the adapter and plugins share Fastify 5.12.3. Root development requirements keep the adapter, static plugin, and Axios available to shared build and test tooling; the API and JWT package also declare their production dependencies.
+
 The NestJS Dismissible API module:
 
 - Maintains all the dismissal state for dismissible items

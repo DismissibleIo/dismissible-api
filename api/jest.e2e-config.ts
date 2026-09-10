@@ -3,13 +3,13 @@ export default {
   preset: '../jest.preset.js',
   testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.e2e.json' }],
+    '^.+\\.(?:[tj]s|mjs)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.e2e.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../coverage/api-e2e',
   testMatch: ['**/*.e2e-spec.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(nest-typed-config|uuid|mock-jwks|msw|@mswjs|until-async|@bundled-es-modules)/)',
+    'node_modules/(?!(nest-typed-config|uuid|mock-jwks|msw|@mswjs|@open-draft|until-async|rettime|@bundled-es-modules|@nestjs/axios|@nestjs/event-emitter|jose)/)',
   ],
   maxWorkers: 1,
 };

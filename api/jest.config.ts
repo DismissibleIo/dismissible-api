@@ -9,7 +9,9 @@ export default {
   coverageDirectory: '../coverage/api',
   testMatch: ['**/*.spec.ts'],
   testPathIgnorePatterns: ['\\.e2e-spec\\.ts$'],
-  transformIgnorePatterns: ['node_modules/(?!(nest-typed-config|uuid)/)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(nest-typed-config|uuid|@nestjs/axios|@nestjs/event-emitter|jose)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.spec.ts',
