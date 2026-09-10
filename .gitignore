@@ -31,3 +31,5 @@ libs/postgres-storage/prisma/generated
 # Performance test reports
 perf/
 .scratch
+.claude/worktrees
+.claude/settings.local.json

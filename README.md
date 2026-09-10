@@ -57,7 +57,7 @@ This project is **100% open source** and **free to use**. Self-host the API with
 
 The following technologies are used in the Dismissible API project
 
-- [NodeJS v24](https://nodejs.org/en/blog/release/v24.12.0)
+- [NodeJS v24.21.0](https://nodejs.org/en/blog/release/v24.21.0)
 - [NestJS](https://nestjs.com/)
 - [Fastify](https://fastify.dev/)
 - [Docker](https://hub.docker.com/r/dismissibleio/dismissible-api)

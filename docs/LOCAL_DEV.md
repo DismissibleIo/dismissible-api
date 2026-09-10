@@ -16,7 +16,7 @@ TBA
 
 | Tool                                               | Version | Description             |
 | -------------------------------------------------- | ------- | ----------------------- |
-| [Node.js](https://nodejs.org/)                     | 24+     | JavaScript runtime      |
+| [Node.js](https://nodejs.org/)                     | 24.21.0 | JavaScript runtime      |
 | [npm](https://www.npmjs.com/)                      | 10+     | Package manager         |
 | [Docker](https://www.docker.com/)                  | Latest  | Container runtime       |
 | [Docker Compose](https://docs.docker.com/compose/) | Latest  | Container orchestration |

@@ -243,7 +243,7 @@ DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION=us-west-2 DISMISSIBLE_STORAGE_DYNAMODB_A
 
 ## Environment Variables
 
-When using this package as part of the [`@dismissible/nestjs-api`](), the following environment variables will be available:
+When using this package as part of the [`@dismissible/nestjs-api`](<>), the following environment variables will be available:
 
 | Variable                                             | Description                        | Default           |
 | ---------------------------------------------------- | ---------------------------------- | ----------------- |
