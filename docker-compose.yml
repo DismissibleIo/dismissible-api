@@ -1,12 +1,14 @@
 services:
   dismissible-api:
     build: .
-    container_name: dismissible-api
     restart: unless-stopped
     depends_on:
-      - dismissible-postgres
-      - dismissible-dynamodb
-      - dismissible-redis
+      dismissible-postgres:
+        condition: service_started
+      dismissible-dynamodb:
+        condition: service_healthy
+      dismissible-redis:
+        condition: service_started
     environment:
       # Server
       DISMISSIBLE_PORT: 3001
@@ -18,7 +20,7 @@ services:
       # Postgres Storage
       DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
 
-      # DynamoDB Storage (LocalStack)
+      # DynamoDB Storage (DynamoDB Local)
       DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME: dismissible-items
       DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION: us-east-1
       DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
@@ -70,7 +72,6 @@ services:
 
   dismissible-postgres:
     image: postgres:latest
-    container_name: dismissible-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -82,29 +83,22 @@ services:
       - postgres_data:/var/lib/postgresql
 
   dismissible-dynamodb:
-    image: localstack/localstack:latest
-    container_name: dismissible-dynamodb
+    image: amazon/dynamodb-local:3.3.1
     restart: unless-stopped
-    environment:
-      # Enable specific LocalStack services
-      SERVICES: dynamodb
-      # AWS region configuration
-      AWS_DEFAULT_REGION: us-east-1
-      # LocalStack configuration
-      DEBUG: 1
-      # Persistence mode (optional - data persists across restarts)
-      # PERSISTENCE: 1
+    command: -jar DynamoDBLocal.jar -inMemory -sharedDb -port 4566
     ports:
       - '4566:4566'
-    volumes:
-      - dismissible_dynamodb_data:/var/lib/localstack
-      # Share a Docker network for inter-container communication
+    healthcheck:
+      test: ['CMD-SHELL', 'curl --silent --output /dev/null http://localhost:4566/']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 2s
     networks:
       - default
 
   dismissible-redis:
     image: redis:latest
-    container_name: dismissible-redis
     restart: unless-stopped
     ports:
       - '6379:6379'
@@ -114,9 +108,7 @@ services:
 
 networks:
   default:
-    name: dismissible-network
 
 volumes:
   postgres_data:
-  dismissible_dynamodb_data:
   redis_data:

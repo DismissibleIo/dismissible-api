@@ -31,14 +31,14 @@ PostgreSQL is a fantastic open-source relational database. It's highly performan
 
 DynamoDB is an infintely scalable document store as a service provided by AWS. It's perfect if you do not want to manage infrastructure or need to run at scale. To enable DynamoDB, set `DISMISSIBLE_STORAGE_TYPE=dynamodb` and pass in the following:
 
-| Variable                                             | Description                            | Default             |
-| ---------------------------------------------------- | -------------------------------------- | ------------------- |
-| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                    | `dismissible-items` |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                             | `us-east-1`         |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key                  | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack/DynamoDB Local endpoint URL | -                   |
+| Variable                                             | Description                        | Default             |
+| ---------------------------------------------------- | ---------------------------------- | ------------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                | `dismissible-items` |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                         | `us-east-1`         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key              | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | DynamoDB Local/custom endpoint URL | -                   |
 
 Depending how your IAMs is configured will depend what config you need to pass. Review the official [AWS documentation](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-your-credentials.html) to determine the config you need to pass.
 

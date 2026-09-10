@@ -37,13 +37,18 @@ jobs:
           - 5432:5432
 
       dismissible-dynamodb:
-        image: localstack/localstack:latest
+        image: amazon/dynamodb-local:3.3.1
         env:
-          SERVICES: dynamodb
           AWS_DEFAULT_REGION: us-east-1
-          DEBUG: 0
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+        options: >-
+          --health-cmd "curl --silent --output /dev/null http://localhost:8000/"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
         ports:
-          - 4566:4566
+          - 4566:8000
 
       redis:
         image: redis:latest

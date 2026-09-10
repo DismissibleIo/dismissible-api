@@ -106,14 +106,14 @@ AWS DynamoDB storage backend for serverless or AWS-native deployments.
 
 **Environment Variables:**
 
-| Variable                                             | Description                            | Default             |
-| ---------------------------------------------------- | -------------------------------------- | ------------------- |
-| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                    | `dismissible-items` |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                             | `us-east-1`         |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key                  | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack/DynamoDB Local endpoint URL | -                   |
+| Variable                                             | Description                        | Default             |
+| ---------------------------------------------------- | ---------------------------------- | ------------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                | `dismissible-items` |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                         | `us-east-1`         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key              | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | DynamoDB Local/custom endpoint URL | -                   |
 
 **Example:**
 
@@ -123,7 +123,7 @@ This example would be similar to a production deployment
 docker run -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_TYPE=dynamodb \
   -e DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME="items" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_REGION="us-east-1" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION="us-east-1" \
   -e AWS_ACCESS_KEY_ID="your-access-key" \
   -e AWS_SECRET_ACCESS_KEY="your-secret-key" \
   dismissibleio/dismissible-api:latest
@@ -137,10 +137,10 @@ To use a local DynamoDB instance (e.g., Dockerized DynamoDB):
 docker run -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_TYPE=dynamodb \
   -e DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME="items" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_REGION="localhost" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT="http://localhost:8000" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_ACCESS_KEY="local" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_SECRET_KEY="local" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION="us-east-1" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT="http://host.docker.internal:4566" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID="test" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY="test" \
   dismissibleio/dismissible-api:latest
 ```
 
@@ -290,25 +290,25 @@ services:
     environment:
       DISMISSIBLE_STORAGE_TYPE: dynamodb
       DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME: dismissible-items
-      DISMISSIBLE_STORAGE_DYNAMODB_REGION: us-east-1
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION: us-east-1
       DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
-      DISMISSIBLE_STORAGE_DYNAMODB_ACCESS_KEY: test
-      DISMISSIBLE_STORAGE_DYNAMODB_SECRET_KEY: test
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID: test
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
     depends_on:
-      - dismissible-dynamodb
+      dismissible-dynamodb:
+        condition: service_healthy
 
   dismissible-dynamodb:
-    image: localstack/localstack:latest
-    container_name: dismissible-dynamodb
+    image: amazon/dynamodb-local:3.3.1
     restart: unless-stopped
-    environment:
-      SERVICES: dynamodb
-      AWS_DEFAULT_REGION: us-east-1
-      DEBUG: 0
-      # Persistence mode (optional - data persists across restarts)
-      # PERSISTENCE: 1
+    command: -jar DynamoDBLocal.jar -inMemory -sharedDb -port 4566
     ports:
       - '4566:4566'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl --silent --output /dev/null http://localhost:4566/']
+      interval: 2s
+      timeout: 2s
+      retries: 30
 ```
 
 ### In-Memory Setup

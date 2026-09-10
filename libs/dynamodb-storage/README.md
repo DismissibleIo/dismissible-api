@@ -24,7 +24,7 @@ DynamoDB storage adapter for the Dismissible system using AWS SDK v3.
 This library provides a production-ready DynamoDB storage adapter for the Dismissible system. It uses AWS SDK v3 for DynamoDB access and includes:
 
 - Persistent storage of dismissible items using DynamoDB
-- Support for LocalStack/DynamoDB Local for local development
+- Support for DynamoDB Local and custom endpoints for local development
 - Automatic document serialization/deserialization
 - Full TypeScript support
 
@@ -36,7 +36,7 @@ npm install @dismissible/nestjs-dynamodb-storage
 
 ## Prerequisites
 
-- AWS account with DynamoDB access (or LocalStack for local development)
+- AWS account with DynamoDB access (or DynamoDB Local for local development)
 - Node.js 24 or higher
 - AWS SDK for JavaScript v3 compatible environment
 
@@ -51,7 +51,7 @@ Before using the storage module, you must create the DynamoDB table.
 The package includes a CLI helper for table creation:
 
 ```bash
-# For local development with LocalStack
+# For local development with DynamoDB Local
 DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT=http://localhost:4566 npx dismissible-dynamodb-setup
 
 # For production (uses default AWS credentials)
@@ -123,7 +123,7 @@ import { LoggerModule } from '@dismissible/nestjs-logger';
     DynamoDBStorageModule.forRoot({
       tableName: 'items',
       region: 'us-east-1',
-      // Optional: endpoint for LocalStack
+      // Optional: endpoint for DynamoDB Local or another compatible service
       endpoint: process.env.DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT,
     }),
     DismissibleModule.forRoot({
@@ -188,7 +188,7 @@ Configures the DynamoDB storage module synchronously.
 
 - `tableName: string` - DynamoDB table name (required)
 - `region?: string` - AWS region (default: us-east-1)
-- `endpoint?: string` - DynamoDB endpoint URL (for LocalStack/DynamoDB Local)
+- `endpoint?: string` - DynamoDB endpoint URL (for DynamoDB Local or another compatible service)
 - `accessKeyId?: string` - AWS access key ID
 - `secretAccessKey?: string` - AWS secret access key
 - `sessionToken?: string` - AWS session token (optional)
@@ -234,7 +234,7 @@ npx dismissible-dynamodb-setup
 # With custom table name
 DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME=my-table npx dismissible-dynamodb-setup
 
-# For LocalStack
+# For DynamoDB Local
 DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT=http://localhost:4566 DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION=us-east-1 npx dismissible-dynamodb-setup
 
 # For AWS
@@ -245,25 +245,25 @@ DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION=us-west-2 DISMISSIBLE_STORAGE_DYNAMODB_A
 
 When using this package as part of the [`@dismissible/nestjs-api`](), the following environment variables will be available:
 
-| Variable                                             | Description             | Default           |
-| ---------------------------------------------------- | ----------------------- | ----------------- |
-| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name     | dismissible-items |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region              | us-east-1         |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID       | -                 |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key   | -                 |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token       | -                 |
-| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack endpoint URL | -                 |
+| Variable                                             | Description                        | Default           |
+| ---------------------------------------------------- | ---------------------------------- | ----------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                | dismissible-items |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                         | us-east-1         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                  | -                 |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key              | -                 |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                  | -                 |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | DynamoDB Local/custom endpoint URL | -                 |
 
 For more information, [see all configuration](/docs/CONFIGURATION.md).
 
-## Local Development with LocalStack
+## Local Development with DynamoDB Local
 
-LocalStack provides a local AWS cloud stack for development. To use it with this library:
+DynamoDB Local provides a disposable DynamoDB-compatible service for development. To use it with this library:
 
-1. Start LocalStack:
+1. Start DynamoDB Local with fresh in-memory state:
 
 ```bash
-docker run -d --name localstack -p 4566:4566 localstack/localstack
+docker run --rm -d --name dismissible-dynamodb -p 4566:8000 amazon/dynamodb-local:3.3.1 -jar DynamoDBLocal.jar -inMemory -sharedDb
 ```
 
 2. Create the table:
