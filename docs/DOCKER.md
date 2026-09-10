@@ -251,6 +251,12 @@ For a full list of all configuration, see the [documentation here](./CONFIGURATI
 
 A simple setup with PostgreSQL:
 
+Compose and CI use `postgres:18.6`. PostgreSQL 18 stores data below
+`/var/lib/postgresql/18/docker`, so mount the parent `/var/lib/postgresql`.
+The new `postgres_18_data` volume starts empty and leaves any previous
+`postgres_data` volume untouched. These examples do not migrate existing database
+files; use a fresh Compose project for verification.
+
 ```yaml
 services:
   api:
@@ -259,22 +265,28 @@ services:
       - '3001:3001'
     environment:
       DISMISSIBLE_STORAGE_TYPE: postgres
-      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@postgres:5432/dismissible
       DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   postgres:
-    image: postgres:15
+    image: postgres:18.6
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: dismissible
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_18_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d dismissible']
+      interval: 2s
+      timeout: 2s
+      retries: 30
 
 volumes:
-  postgres_data:
+  postgres_18_data:
 ```
 
 ### DynamoDB Setup
@@ -339,7 +351,7 @@ services:
       - '3001:3001'
     environment:
       DISMISSIBLE_STORAGE_TYPE: postgres
-      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@postgres:5432/dismissible
       DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
       # Rate limiting: 1000 requests per second
       DISMISSIBLE_RATE_LIMITER_ENABLED: 'true'
@@ -349,19 +361,25 @@ services:
       DISMISSIBLE_RATE_LIMITER_KEY_TYPE: 'ip,origin,referrer'
       DISMISSIBLE_RATE_LIMITER_KEY_MODE: 'any'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   postgres:
-    image: postgres:15
+    image: postgres:18.6
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: dismissible
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_18_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d dismissible']
+      interval: 2s
+      timeout: 2s
+      retries: 30
 
 volumes:
-  postgres_data:
+  postgres_18_data:
 ```
 
 ### With Redis Cache
@@ -376,7 +394,7 @@ services:
       - '3001:3001'
     environment:
       DISMISSIBLE_STORAGE_TYPE: postgres
-      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@postgres:5432/dismissible
       DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
       # Redis cache configuration
       DISMISSIBLE_CACHE_TYPE: redis
@@ -384,17 +402,24 @@ services:
       DISMISSIBLE_CACHE_REDIS_KEY_PREFIX: 'dismissible:cache:'
       DISMISSIBLE_CACHE_REDIS_TTL_MS: '21600000'
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   postgres:
-    image: postgres:15
+    image: postgres:18.6
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: dismissible
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_18_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d dismissible']
+      interval: 2s
+      timeout: 2s
+      retries: 30
 
   redis:
     image: redis:7-alpine
@@ -406,7 +431,7 @@ services:
       - redis_data:/data
 
 volumes:
-  postgres_data:
+  postgres_18_data:
   redis_data:
 ```
 

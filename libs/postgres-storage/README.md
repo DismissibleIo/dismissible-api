@@ -77,17 +77,17 @@ npx dismissible-prisma migrate deploy
 
 #### Option B: Using Prisma Directly
 
-If you prefer using Prisma directly, specify the schema path:
+If you prefer using Prisma directly, specify the bundled config path so Prisma 7 loads both the schema and datasource URL:
 
 ```bash
 # Generate Prisma client
-npx prisma generate --schema=node_modules/@dismissible/nestjs-postgres-storage/prisma/schema.prisma
+npx prisma generate --config=node_modules/@dismissible/nestjs-postgres-storage/prisma.config.mjs
 
 # For development: Create and apply migrations
-npx prisma migrate dev --schema=node_modules/@dismissible/nestjs-postgres-storage/prisma/schema.prisma --name init
+npx prisma migrate dev --config=node_modules/@dismissible/nestjs-postgres-storage/prisma.config.mjs --name init
 
 # For production: Apply existing migrations
-npx prisma migrate deploy --schema=node_modules/@dismissible/nestjs-postgres-storage/prisma/schema.prisma
+npx prisma migrate deploy --config=node_modules/@dismissible/nestjs-postgres-storage/prisma.config.mjs
 ```
 
 #### Quick Development Setup (Not for Production)
@@ -303,7 +303,7 @@ const config = createPrismaConfig();
    npx dismissible-prisma migrate deploy
 
    # Or using Prisma directly
-   npx prisma migrate deploy --schema=node_modules/@dismissible/nestjs-postgres-storage/prisma/schema.prisma
+   npx prisma migrate deploy --config=node_modules/@dismissible/nestjs-postgres-storage/prisma.config.mjs
    ```
 
    > **Critical**: The database schema must be initialized before your application starts. The storage adapter will fail if tables don't exist.

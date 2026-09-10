@@ -393,6 +393,35 @@ docker run --rm -p 3001:3001 \
 
 ### PostgreSQL
 
+The dependency refresh verified Prisma CLI/client/pg adapter `7.10.0`, `pg`
+`8.23.0`, and `@types/pg` `8.23.1` on Node 24 / NestJS 11. Prisma's npm `latest`
+tag currently points to the `8.0.0-rc.13` prerelease; `7.10.0` is the matching
+stable release selected here. Compose and CI use `postgres:18.6`, verified against
+the [PostgreSQL release notes](https://www.postgresql.org/docs/release/18.6/) and
+the [official image](https://hub.docker.com/_/postgres).
+
+PostgreSQL 18 mounts `/var/lib/postgresql`, with its versioned data directory
+underneath. Compose uses a new `postgres_18_data` volume and waits for
+`pg_isready`; previous `postgres_data` volumes are not reused or migrated.
+
+Verification on 2026-09-11 used a fresh container with tmpfs storage and a separate
+database for the production image. Clean `npm ci`, Prisma generation, empty-state
+migrations, repeated setup retaining a sentinel row, all 15 project unit-test,
+lint and build targets, formatting, and all five Postgres API E2E suites (16 tests)
+passed. The pruned production image initialized the empty database, loaded the
+compiled Prisma client and bundled setup CLI, passed its health endpoint and
+create/dismiss/restore requests, and retained the record after repeated setup.
+
+For isolated E2E runs, set `DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING` to
+your disposable database before `NX_DAEMON=false npm run test:e2e:api:postgres`.
+The default test fixture honors this value and otherwise uses localhost:5432.
+
+The Prisma CLI remains a production dependency because startup migrations need
+it. Its current stable dependency tree still reports upstream npm audit findings
+for `deepmerge-ts` and `mysql2`; no prerelease upgrade or forced major override
+was used to suppress those findings. Existing audit findings outside this storage
+refresh remain separate from the compatibility checks above.
+
 ```bash
 docker run --rm -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://postgres:postgres@host.docker.internal:5432/dismissible" \

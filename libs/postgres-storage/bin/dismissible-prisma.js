@@ -12,7 +12,7 @@
  *   npx dismissible-prisma studio
  */
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const path = require('path');
 
 const configPath = path.join(__dirname, '..', 'prisma.config.mjs');
@@ -46,12 +46,14 @@ Schema location: ${schemaPath}
   process.exit(0);
 }
 
-const command = `npx prisma ${args.join(' ')} --config="${configPath}"`;
-
-console.log(`Running: ${command}\n`);
+// Resolve the bundled CLI without invoking npx or downloading tooling at runtime.
+// Pass arguments separately so paths and custom schema/config options stay intact.
+const prismaCli = require.resolve('prisma/build/index.js');
+const hasConfig = args.some((arg) => arg === '--config' || arg.startsWith('--config='));
+const prismaArgs = hasConfig ? args : [...args, '--config', configPath];
 
 try {
-  execSync(command, { stdio: 'inherit' });
+  execFileSync(process.execPath, [prismaCli, ...prismaArgs], { stdio: 'inherit' });
 } catch (error) {
   process.exit(error.status || 1);
 }
