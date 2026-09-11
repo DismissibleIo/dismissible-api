@@ -123,6 +123,7 @@ The Dismissible project is jam packed with features!
 We have just scratched the surface of what Dismissible is capable of! To learn more about how to configure, customize and deploy Dismissible, review the documentation below:
 
 - **[Configuration](./docs/CONFIGURATION.md)** - An overview of all the configuration options that the Dismissible API provides.
+- **[Migration guide](./docs/MIGRATION.md)** - Upgrade published npm packages and the Docker image from v3 to v4.
 - **[Storage](./docs/STORAGE.md)** - More details on how the storage adapters work and how to use the different ones.
 - **[Docker](./docs/DOCKER.md)** - Complete Docker deployment guide.
 - **[NestJS API Module](./docs/NESTJS_API_MODULE.md)** - A fully customizable NestJS module with hooks, events, and custom storage options. These docs will help you completely customize your dismissible application.
