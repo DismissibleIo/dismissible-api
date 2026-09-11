@@ -14,6 +14,41 @@ describe('MemoryStorageAdapter', () => {
     adapter = new MemoryStorageAdapter({}, mockLogger);
   });
 
+  describe('capacity and expiration', () => {
+    it('evicts the least recently used item at the configured capacity', async () => {
+      adapter = new MemoryStorageAdapter({ maxItems: 2 }, mockLogger);
+      const items = ['first', 'second', 'third'].map((id) =>
+        itemFactory.create({ id, userId: 'capacity-user', createdAt: new Date() }),
+      );
+
+      await adapter.create(items[0]);
+      await adapter.create(items[1]);
+      await adapter.get('capacity-user', 'first');
+      await adapter.create(items[2]);
+
+      expect(adapter.size).toBe(2);
+      expect(await adapter.get('capacity-user', 'second')).toBeNull();
+      expect(await adapter.get('capacity-user', 'first')).toEqual(items[0]);
+      expect(await adapter.get('capacity-user', 'third')).toEqual(items[2]);
+    });
+
+    it('expires entries using the configured TTL in milliseconds', async () => {
+      adapter = new MemoryStorageAdapter({ ttlMs: 30 }, mockLogger);
+      const item = itemFactory.create({
+        id: 'expiring-item',
+        userId: 'ttl-user',
+        createdAt: new Date(),
+      });
+
+      await adapter.create(item);
+      expect(await adapter.get('ttl-user', 'expiring-item')).toEqual(item);
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      expect(await adapter.get('ttl-user', 'expiring-item')).toBeNull();
+      expect(await adapter.getMany('ttl-user', ['expiring-item'])).toEqual(new Map());
+    });
+  });
+
   describe('get', () => {
     it('should return null when item does not exist', async () => {
       const result = await adapter.get('user-1', 'item-1');

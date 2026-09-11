@@ -46,14 +46,7 @@
     "commit": "cz"
   },
   "overrides": {
-    "fastify": "^5.12.3",
-    "lru-cache": "^10.4.3",
-    "@babel/helper-compilation-targets": {
-      "lru-cache": "5.1.1"
-    },
-    "lru-memoizer": {
-      "lru-cache": "6.0.0"
-    }
+    "fastify": "^5.12.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",
@@ -101,6 +94,6 @@
     }
   },
   "dependencies": {
-    "rate-limiter-flexible": "^9.0.1"
+    "rate-limiter-flexible": "^11.2.0"
   }
 }

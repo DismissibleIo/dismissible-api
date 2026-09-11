@@ -405,7 +405,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
 
   postgres:
     image: postgres:18.6
@@ -422,13 +422,19 @@ services:
       retries: 30
 
   redis:
-    image: redis:7-alpine
+    image: redis:8.10.1
     container_name: dismissible-redis
     restart: unless-stopped
     ports:
       - '6379:6379'
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 2s
 
 volumes:
   postgres_18_data:

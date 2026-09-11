@@ -265,6 +265,25 @@ describe('Cache E2E', () => {
       expect(cachedItem?.userId).toBe(userId);
     });
 
+    it('preserves the configured Redis key prefix and TTL', async () => {
+      const userId = 'redis-ttl-user';
+      const itemId = 'redis-ttl-item';
+      const client = app.get(RedisClientService).getClient();
+      const cache = app.get<IDismissibleCache>(DISMISSIBLE_CACHE_ADAPTER);
+
+      await request(app.getHttpServer()).get(`/v1/users/${userId}/items/${itemId}`).expect(200);
+
+      const key = `test:${userId}:${itemId}`;
+      expect(JSON.parse((await client.get(key))!)).toMatchObject({ id: itemId, userId });
+      const ttl = await client.pttl(key);
+      expect(ttl).toBeGreaterThan(0);
+      expect(ttl).toBeLessThanOrEqual(60000);
+
+      await client.pexpire(key, 1);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(await cache.get(userId, itemId)).toBeNull();
+    });
+
     it('should handle full CRUD cycle with redis cache enabled', async () => {
       const userId = 'cache-redis-crud-user';
       const itemId = 'cache-redis-crud-item';

@@ -430,6 +430,45 @@ docker run --rm -p 3001:3001 \
 
 ---
 
+## Cache and rate-limiter refresh
+
+The 2026-09-11 refresh uses `lru-cache` `11.5.2` for memory cache/storage,
+`ioredis` `6.0.0`, and `rate-limiter-flexible` `11.2.0`. These packages include
+their TypeScript declarations. Versions were checked against the npm registry;
+Compose, CI, and the Docker examples use the explicit `redis:8.10.1` release from
+the [official Redis image catalog](https://github.com/docker-library/official-images/blob/master/library/redis).
+Compose waits for `redis-cli ping` before starting the API.
+
+The global `lru-cache` override and its nested exceptions were removed. Each
+consumer now resolves its supported major: application memory adapters,
+`jwks-rsa`, `lru-memoizer`, and the current `path-scurry` use 11; Jest's older
+`path-scurry` keeps 10, and Babel keeps 5. No incompatible major is forced onto
+those tooling dependencies. The production image also copies the memory
+adapters' nested production dependencies, which are needed after pruning.
+
+The memory adapters retain their 5000-item capacity and six-hour default TTL.
+Redis retains its key prefix, serialization, TTL conversion, and readiness/
+retry configuration. ioredis 6 negotiates RESP3 with legacy-compatible replies
+(and falls back to RESP2), as described in its
+[upgrade guide](https://github.com/redis/ioredis/wiki/Upgrading-from-v5-to-v6).
+Disabled rate-limit configurations still omit points/duration: the service now
+creates its limiter only when enabled because version 11 requires both options.
+
+Verification used clean `npm ci`, all 15 project unit-test, lint and build
+targets, formatting, and the cache/rate-limiter API E2E suites (27 tests), with
+fresh Redis tmpfs data on a random loopback port. The E2E fixtures honor
+`DISMISSIBLE_CACHE_REDIS_URL`; use a disposable instance because cache tests flush
+its selected database. Memory eviction/TTL, Redis prefix/TTL, disabled caching,
+and allowed/blocked rate-limit requests are covered. Existing Redis data was not
+used or modified.
+
+```bash
+# Set this to your disposable Redis instance before running the cache tests.
+export DISMISSIBLE_CACHE_REDIS_URL=redis://127.0.0.1:16379
+NX_DAEMON=false npm exec nx run api:test-e2e:other -- \
+  --testPathPatterns='cache.e2e-spec|rate-limiter.e2e-spec' --skip-nx-cache
+```
+
 ## Next Steps
 
 - [Docker Deployment Guide](DOCKER.md) - Complete Docker deployment with production best practices

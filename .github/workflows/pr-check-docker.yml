@@ -39,7 +39,7 @@ jobs:
           - 4566:8000
 
       redis:
-        image: redis:latest
+        image: redis:8.10.1
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s

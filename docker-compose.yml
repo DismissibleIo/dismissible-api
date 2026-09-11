@@ -8,7 +8,7 @@ services:
       dismissible-dynamodb:
         condition: service_healthy
       dismissible-redis:
-        condition: service_started
+        condition: service_healthy
     environment:
       # Server
       DISMISSIBLE_PORT: 3001
@@ -104,13 +104,19 @@ services:
       - default
 
   dismissible-redis:
-    image: redis:latest
+    image: redis:8.10.1
     restart: unless-stopped
     ports:
       - '6379:6379'
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 2s
 
 networks:
   default:

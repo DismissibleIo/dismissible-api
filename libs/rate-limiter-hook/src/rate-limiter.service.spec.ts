@@ -50,6 +50,15 @@ describe('RateLimiterService', () => {
     service = new RateLimiterService(mockConfig, mockLogger);
   });
 
+  it('allows requests when disabled without requiring limiter options', async () => {
+    const disabledConfig = Object.assign(new RateLimiterHookConfig(), { enabled: false });
+    const disabledService = new RateLimiterService(disabledConfig, mockLogger);
+
+    for (let i = 0; i < 20; i++) {
+      expect(await disabledService.consume('disabled-key')).toEqual({ allowed: true });
+    }
+  });
+
   describe('generateKey', () => {
     describe('IP key type', () => {
       it('should extract IP from x-forwarded-for header', () => {

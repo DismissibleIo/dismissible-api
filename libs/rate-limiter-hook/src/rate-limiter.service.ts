@@ -28,7 +28,7 @@ export interface IRateLimitResult {
  */
 @Injectable()
 export class RateLimiterService {
-  private readonly rateLimiter: RateLimiterMemory;
+  private readonly rateLimiter?: RateLimiterMemory;
   private readonly ignoredKeysSet: ReadonlySet<string>;
 
   constructor(
@@ -37,11 +37,15 @@ export class RateLimiterService {
     @Inject(DISMISSIBLE_LOGGER)
     private readonly logger: IDismissibleLogger,
   ) {
-    this.rateLimiter = new RateLimiterMemory({
-      points: config.points,
-      duration: config.duration,
-      blockDuration: config.blockDuration,
-    });
+    // Disabled configurations omit points/duration. Newer rate-limiter-flexible
+    // releases require both, so only create a limiter when it is enabled.
+    if (config.enabled) {
+      this.rateLimiter = new RateLimiterMemory({
+        points: config.points,
+        duration: config.duration,
+        blockDuration: config.blockDuration,
+      });
+    }
 
     this.logger.debug('Rate limiter: Initialized', {
       points: config.points,
@@ -273,6 +277,10 @@ export class RateLimiterService {
    * Check if a request should be rate limited.
    */
   async consume(key: string): Promise<IRateLimitResult> {
+    if (!this.rateLimiter) {
+      return { allowed: true };
+    }
+
     try {
       const result = await this.rateLimiter.consume(key);
 

@@ -21,7 +21,7 @@
     "@dismissible/nestjs-request": "^3.1.1",
     "@dismissible/nestjs-logger": "^3.1.1",
     "@dismissible/nestjs-validation": "^3.1.1",
-    "rate-limiter-flexible": "^5.0.4"
+    "rate-limiter-flexible": "^11.2.0"
   },
   "peerDependencies": {
     "@nestjs/common": "^11.0.0",
