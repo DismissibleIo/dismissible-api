@@ -15,7 +15,10 @@ COPY tsconfig.base.json nx.json ./
 COPY api/ ./api/
 COPY libs/ ./libs/
 
-RUN npm install
+# Keep the production image reproducible with the repository lockfile. The
+# workspace package manifests and their local links are all covered by the
+# root lockfile; the old nested DynamoDB lockfile was removed in ticket 01.
+RUN npm ci
 
 # Init storage eg. prisma client generation etc
 RUN npm run storage:init

@@ -72,6 +72,38 @@ docker run -p 3001:3001 \
 
 This will launch the API using the memory storage, and will now be available at `http://localhost:3001`.
 
+### Build and verify the production image
+
+The Dockerfile uses Node.js `24.21.0` in both stages and installs the workspace
+from the root `package-lock.json`. Build both supported image architectures
+without publishing them:
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --tag dismissible-api:local \
+  .
+```
+
+For a locally runnable image, load the image for the current host architecture
+and run the health-check seam. Set the storage type to `memory` for a dependency-
+free startup check, or use a disposable PostgreSQL instance with
+`DISMISSIBLE_STORAGE_RUN_SETUP=true` to exercise startup setup and migrations.
+The setup flag is
+`DISMISSIBLE_STORAGE_RUN_SETUP`; `DISMISSIBLE_RUN_MIGRATION` is not supported.
+
+```bash
+docker buildx build --load --tag dismissible-api:local .
+DISMISSIBLE_TEST_STORAGE_TYPE=memory \
+  DISMISSIBLE_STORAGE_RUN_SETUP=false \
+  ./scripts/test-docker-image.sh --no-build dismissible-api:local
+```
+
+The smoke check waits for the image healthcheck, verifies `GET /health`, and
+prints container state, health-check output, and logs when startup or readiness
+fails. It uses a random host port by default and removes only the container it
+created.
+
 ## Storage Backends
 
 The Dismissible API supports multiple storage backends and is determined by the following config:

@@ -55,7 +55,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build Docker images for supported architectures
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Docker image for smoke checks
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -64,7 +74,11 @@ jobs:
           load: true
           tags: dismissible-api
           cache-from: type=gha
-          cache-to: type=gha,mode=max
 
-      - name: Test Docker image
+      - name: Test Docker image without storage setup
+        run: ./scripts/test-docker-image.sh --no-build dismissible-api
+
+      - name: Test Docker image with storage setup
+        env:
+          DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
         run: ./scripts/test-docker-image.sh --no-build dismissible-api

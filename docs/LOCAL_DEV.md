@@ -17,7 +17,7 @@ TBA
 | Tool                                               | Version | Description             |
 | -------------------------------------------------- | ------- | ----------------------- |
 | [Node.js](https://nodejs.org/)                     | 24.21.0 | JavaScript runtime      |
-| [npm](https://www.npmjs.com/)                      | 10+     | Package manager         |
+| [npm](https://www.npmjs.com/)                      | 11+     | Package manager         |
 | [Docker](https://www.docker.com/)                  | Latest  | Container runtime       |
 | [Docker Compose](https://docs.docker.com/compose/) | Latest  | Container orchestration |
 
@@ -30,8 +30,8 @@ TBA
 ### Verify Your Setup
 
 ```bash
-node --version    # Should be v24 or higher
-npm --version     # Should be v10 or higher
+node --version    # Should be v24.21.0
+npm --version     # Should be v11 or higher
 docker --version  # Should be latest stable
 docker-compose --version  # Should be latest
 ```
@@ -43,15 +43,15 @@ docker-compose --version  # Should be latest
 The following only needs to be run once during setup.
 
 ```shell
-# Install dependencies
-npm install
-npm run db:init
+# Install dependencies from the root lockfile
+npm ci
 
-# Start DBs: starts postgres and dynamodb in docker containers
-npm run db:start
+# Generate the Prisma client and start fresh local services
+NX_DAEMON=false npm run storage:init
+NX_DAEMON=false npm run storage:start
 
-# Setup DBs: creates tables in postgres and dynamodb
-npm run db:setup
+# Setup the PostgreSQL and DynamoDB schemas/tables
+NX_DAEMON=false npm run storage:setup
 ```
 
 ## Running the API
@@ -96,6 +96,27 @@ Force a clean rebuild (useful after dependency changes):
 ```bash
 docker build --no-cache -t dismissible-api .
 ```
+
+### Verify the Production Image
+
+Build both supported CPU architectures without pushing an image, then load the
+current host architecture for a local smoke check:
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t dismissible-api:multiarch .
+docker buildx build --load -t dismissible-api:local .
+
+# Uses isolated in-memory storage and verifies startup plus GET /health.
+DISMISSIBLE_TEST_STORAGE_TYPE=memory \
+  DISMISSIBLE_STORAGE_RUN_SETUP=false \
+  ./scripts/test-docker-image.sh --no-build dismissible-api:local
+```
+
+To verify startup setup, point the smoke check at a disposable PostgreSQL
+instance and set `DISMISSIBLE_STORAGE_RUN_SETUP=true`. The supported flag is
+`DISMISSIBLE_STORAGE_RUN_SETUP`; `DISMISSIBLE_RUN_MIGRATION` is not read by the
+image. Startup failures include container state and logs, and the smoke check
+cleans up only its own container.
 
 ### Build and Run Immediately
 
