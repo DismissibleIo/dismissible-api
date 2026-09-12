@@ -5,7 +5,9 @@ export default {
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
   },
-  transformIgnorePatterns: ['node_modules/(?!(nest-typed-config|uuid)/)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(nest-typed-config|uuid|@nestjs/axios|@nestjs/event-emitter|jose)/)',
+  ],
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/libs/core',
   collectCoverageFrom: [

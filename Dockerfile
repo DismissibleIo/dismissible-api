@@ -1,7 +1,7 @@
 # =============================================================================
 # Stage 1: Build
 # =============================================================================
-FROM node:24-alpine AS builder
+FROM node:24.21.0-alpine3.24 AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,10 @@ COPY tsconfig.base.json nx.json ./
 COPY api/ ./api/
 COPY libs/ ./libs/
 
-RUN npm install
+# Keep the production image reproducible with the repository lockfile. The
+# workspace package manifests and their local links are all covered by the
+# root lockfile; the old nested DynamoDB lockfile was removed in ticket 01.
+RUN npm ci
 
 # Init storage eg. prisma client generation etc
 RUN npm run storage:init
@@ -29,7 +32,7 @@ RUN npm prune --omit=dev
 # =============================================================================
 # Stage 2: Production
 # =============================================================================
-FROM node:24-alpine AS production
+FROM node:24.21.0-alpine3.24 AS production
 
 WORKDIR /app
 
@@ -48,6 +51,8 @@ COPY --from=builder /app/dist/libs ./libs
 
 # Copy built libs node_modules due to conflicting versions
 COPY --from=builder /app/libs/request/node_modules ./libs/request/node_modules
+COPY --from=builder /app/libs/memory-cache/node_modules ./libs/memory-cache/node_modules
+COPY --from=builder /app/libs/storage/node_modules ./libs/storage/node_modules
 
 # Copy Prisma schema and migrations (needed for migrations)
 COPY --from=builder /app/libs/postgres-storage/prisma ./libs/postgres-storage/prisma

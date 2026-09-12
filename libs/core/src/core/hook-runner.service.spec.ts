@@ -763,12 +763,10 @@ describe('HookRunner', () => {
 
       it('should block operation when hook returns proceed: false', async () => {
         const blockingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchRequest: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: false,
-              reason: 'Batch rate limit exceeded',
-            }),
-          ),
+          onBeforeBatchRequest: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: false,
+            reason: 'Batch rate limit exceeded',
+          })),
         };
 
         hookRunner = new HookRunner([blockingHook], mockLogger);
@@ -784,14 +782,12 @@ describe('HookRunner', () => {
 
       it('should apply itemIds mutations from hook', async () => {
         const mutatingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchRequest: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: {
-                itemIds: ['mutated-1', 'mutated-2'],
-              },
-            }),
-          ),
+          onBeforeBatchRequest: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: {
+              itemIds: ['mutated-1', 'mutated-2'],
+            },
+          })),
         };
 
         hookRunner = new HookRunner([mutatingHook], mockLogger);
@@ -806,14 +802,12 @@ describe('HookRunner', () => {
 
       it('should apply userId mutations from hook', async () => {
         const mutatingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchRequest: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: {
-                userId: 'mutated-user',
-              },
-            }),
-          ),
+          onBeforeBatchRequest: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: {
+              userId: 'mutated-user',
+            },
+          })),
         };
 
         hookRunner = new HookRunner([mutatingHook], mockLogger);
@@ -829,14 +823,12 @@ describe('HookRunner', () => {
       it('should apply context mutations from hook', async () => {
         const context = createTestContext();
         const mutatingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchRequest: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: {
-                context: { headers: { 'x-batch': 'true' } },
-              },
-            }),
-          ),
+          onBeforeBatchRequest: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: {
+              context: { headers: { 'x-batch': 'true' } },
+            },
+          })),
         };
 
         hookRunner = new HookRunner([mutatingHook], mockLogger);
@@ -850,14 +842,12 @@ describe('HookRunner', () => {
 
       it('should ignore context mutation when no context provided', async () => {
         const mutatingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchRequest: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: {
-                context: { headers: { 'x-batch': 'true' } },
-              },
-            }),
-          ),
+          onBeforeBatchRequest: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: {
+              context: { headers: { 'x-batch': 'true' } },
+            },
+          })),
         };
 
         hookRunner = new HookRunner([mutatingHook], mockLogger);
@@ -901,22 +891,18 @@ describe('HookRunner', () => {
       it('should pass mutations through multiple hooks', async () => {
         const hook1: IDismissibleLifecycleHook = {
           priority: 1,
-          onBeforeBatchRequest: jest.fn(
-            async (itemIds): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: { itemIds: [...itemIds, 'added-by-hook1'] },
-            }),
-          ),
+          onBeforeBatchRequest: jest.fn(async (itemIds): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: { itemIds: [...itemIds, 'added-by-hook1'] },
+          })),
         };
 
         const hook2: IDismissibleLifecycleHook = {
           priority: 2,
-          onBeforeBatchRequest: jest.fn(
-            async (itemIds): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: { itemIds: [...itemIds, 'added-by-hook2'] },
-            }),
-          ),
+          onBeforeBatchRequest: jest.fn(async (itemIds): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: { itemIds: [...itemIds, 'added-by-hook2'] },
+          })),
         };
 
         hookRunner = new HookRunner([hook1, hook2], mockLogger);
@@ -1031,12 +1017,10 @@ describe('HookRunner', () => {
       it('should block operation when hook returns proceed: false', async () => {
         const items = [createTestItem()];
         const blockingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchGet: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: false,
-              reason: 'Access denied to batch',
-            }),
-          ),
+          onBeforeBatchGet: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: false,
+            reason: 'Access denied to batch',
+          })),
         };
 
         hookRunner = new HookRunner([blockingHook], mockLogger);
@@ -1055,16 +1039,14 @@ describe('HookRunner', () => {
         const items = [createTestItem()];
         const context = createTestContext();
         const mutatingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchGet: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: {
-                itemIds: ['mutated-item'],
-                userId: 'mutated-user',
-                context: { headers: { 'x-custom': 'value' } },
-              },
-            }),
-          ),
+          onBeforeBatchGet: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: {
+              itemIds: ['mutated-item'],
+              userId: 'mutated-user',
+              context: { headers: { 'x-custom': 'value' } },
+            },
+          })),
         };
 
         hookRunner = new HookRunner([mutatingHook], mockLogger);
@@ -1115,14 +1097,12 @@ describe('HookRunner', () => {
       it('should ignore context mutation when no context provided', async () => {
         const items = [createTestItem()];
         const mutatingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchGet: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: {
-                context: { headers: { 'x-custom': 'value' } },
-              },
-            }),
-          ),
+          onBeforeBatchGet: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: {
+              context: { headers: { 'x-custom': 'value' } },
+            },
+          })),
         };
 
         hookRunner = new HookRunner([mutatingHook], mockLogger);
@@ -1180,12 +1160,10 @@ describe('HookRunner', () => {
 
       it('should block operation when hook returns proceed: false', async () => {
         const blockingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchCreate: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: false,
-              reason: 'Quota exceeded',
-            }),
-          ),
+          onBeforeBatchCreate: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: false,
+            reason: 'Quota exceeded',
+          })),
         };
 
         hookRunner = new HookRunner([blockingHook], mockLogger);
@@ -1201,14 +1179,12 @@ describe('HookRunner', () => {
 
       it('should apply mutations from hook', async () => {
         const mutatingHook: IDismissibleLifecycleHook = {
-          onBeforeBatchCreate: jest.fn(
-            async (): Promise<IBatchHookResult> => ({
-              proceed: true,
-              mutations: {
-                itemIds: ['filtered-item'],
-              },
-            }),
-          ),
+          onBeforeBatchCreate: jest.fn(async (): Promise<IBatchHookResult> => ({
+            proceed: true,
+            mutations: {
+              itemIds: ['filtered-item'],
+            },
+          })),
         };
 
         hookRunner = new HookRunner([mutatingHook], mockLogger);

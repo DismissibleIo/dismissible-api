@@ -35,6 +35,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       throw new Error(
         `Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
           'Ensure PostgreSQL is running and DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING is configured correctly.',
+        { cause: error },
       );
     }
   }

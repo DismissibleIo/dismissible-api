@@ -48,19 +48,19 @@
     "prisma:generate": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx prisma generate --schema=libs/postgres-storage/prisma/schema.prisma"
+        "command": "node libs/postgres-storage/bin/dismissible-prisma.js generate"
       }
     },
     "prisma:migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx prisma migrate dev --schema=libs/postgres-storage/prisma/schema.prisma"
+        "command": "node libs/postgres-storage/bin/dismissible-prisma.js migrate dev"
       }
     },
     "prisma:push": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx prisma db push --schema=libs/postgres-storage/prisma/schema.prisma"
+        "command": "node libs/postgres-storage/bin/dismissible-prisma.js db push"
       }
     },
     "publish": {

@@ -11,7 +11,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:18.6
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -25,16 +25,21 @@ jobs:
           - 5432:5432
 
       dismissible-dynamodb:
-        image: localstack/localstack:latest
+        image: amazon/dynamodb-local:3.3.1
         env:
-          SERVICES: dynamodb
           AWS_DEFAULT_REGION: us-east-1
-          DEBUG: 0
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+        options: >-
+          --health-cmd "curl --silent --output /dev/null http://localhost:8000/"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
         ports:
-          - 4566:4566
+          - 4566:8000
 
       redis:
-        image: redis:latest
+        image: redis:8.10.1
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -50,7 +55,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build Docker images for supported architectures
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Docker image for smoke checks
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -59,7 +74,11 @@ jobs:
           load: true
           tags: dismissible-api
           cache-from: type=gha
-          cache-to: type=gha,mode=max
 
-      - name: Test Docker image
+      - name: Test Docker image without storage setup
+        run: ./scripts/test-docker-image.sh --no-build dismissible-api
+
+      - name: Test Docker image with storage setup
+        env:
+          DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
         run: ./scripts/test-docker-image.sh --no-build dismissible-api

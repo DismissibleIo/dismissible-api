@@ -1,15 +1,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "allowJs": true,
     "outDir": "../../dist/out-tsc",
-    "declaration": true,
     "module": "commonjs",
-    "types": ["node"],
+    "types": ["node", "jest"],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "ES2021",
-    "rootDir": "src"
+    "rootDir": ".."
   },
-  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts"],
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.spec.ts", "src/**/*.test.ts", "bin/**/*.js"]
 }

@@ -17,6 +17,12 @@ Dismissible manages the state of your UI elements across sessions, so your users
 
 ## Overview
 
+Requires Node.js 24 and NestJS 11. NestJS 10 and 12 are not supported. Published library NestJS peers require v11; independently versioned integrations are selected for NestJS 11 compatibility.
+
+The dependency baseline is NestJS 11.2.3, Swagger 11.4.7, Fastify 5.12.3, Helmet 13.1.1, static assets 10.1.3, class-validator 0.15.1, JWKS RSA 4.1.0, and UUID 14.0.2. Event emitter and Axios integrations use version 12.0.0 because their published peers explicitly support NestJS 11; Swagger 12 requires NestJS 12 and is excluded. The integrations use ESM, which Node.js 24 can load from the built CommonJS application.
+
+The workspace overrides the Nest Fastify adapter's older exact Fastify pin so the adapter and plugins share Fastify 5.12.3. Root development requirements keep the adapter, static plugin, and Axios available to shared build and test tooling; the API and JWT package also declare their production dependencies.
+
 The NestJS Dismissible API module:
 
 - Maintains all the dismissal state for dismissible items
@@ -146,14 +152,14 @@ PostgreSQL is a fantastic open-source relational database. It's highly performan
 
 DynamoDB is an infintely scalable document store as a service provided by AWS. It's perfect if you do not want to manage infrastructure or need to run at scale. To enable DynamoDB, set `DISMISSIBLE_STORAGE_TYPE=dynamodb` and pass in the following:
 
-| Variable                                             | Description                            | Default             |
-| ---------------------------------------------------- | -------------------------------------- | ------------------- |
-| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                    | `dismissible-items` |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                             | `us-east-1`         |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key                  | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack/DynamoDB Local endpoint URL | -                   |
+| Variable                                             | Description                        | Default             |
+| ---------------------------------------------------- | ---------------------------------- | ------------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                | `dismissible-items` |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                         | `us-east-1`         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key              | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | DynamoDB Local/custom endpoint URL | -                   |
 
 Depending how your IAMs is configured will depend what config you need to pass. Review the official [AWS documentation](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-your-credentials.html) to determine the config you need to pass.
 
@@ -480,7 +486,7 @@ docker run -p 3001:3001 \
 docker run -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_TYPE=dynamodb \
   -e DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME="items" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_REGION="us-east-1" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION="us-east-1" \
   dismissibleio/dismissible-api:latest
 
 # In-Memory (development/testing)

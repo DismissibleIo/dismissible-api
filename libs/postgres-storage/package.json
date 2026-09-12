@@ -28,7 +28,7 @@
     "LICENSE.md"
   ],
   "peerDependencies": {
-    "@nestjs/common": "^10.0.0 || ^11.0.0"
+    "@nestjs/common": "^11.0.0"
   },
   "peerDependenciesMeta": {
     "@nestjs/common": {
@@ -36,16 +36,16 @@
     }
   },
   "dependencies": {
-    "@dismissible/nestjs-storage": "^3.1.1",
     "@dismissible/nestjs-item": "^3.1.1",
     "@dismissible/nestjs-logger": "^3.1.1",
-    "prisma": "^7.2.0",
-    "@prisma/client": "^7.2.0",
-    "@prisma/adapter-pg": "^7.2.0",
-    "pg": "^8.16.3"
+    "@dismissible/nestjs-storage": "^3.1.1",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "pg": "^8.23.0",
+    "prisma": "^7.10.0"
   },
   "devDependencies": {
-    "@types/pg": "^8.16.0"
+    "@types/pg": "^8.23.1"
   },
   "keywords": [
     "nestjs",

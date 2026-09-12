@@ -16,8 +16,8 @@ TBA
 
 | Tool                                               | Version | Description             |
 | -------------------------------------------------- | ------- | ----------------------- |
-| [Node.js](https://nodejs.org/)                     | 24+     | JavaScript runtime      |
-| [npm](https://www.npmjs.com/)                      | 10+     | Package manager         |
+| [Node.js](https://nodejs.org/)                     | 24.21.0 | JavaScript runtime      |
+| [npm](https://www.npmjs.com/)                      | 11+     | Package manager         |
 | [Docker](https://www.docker.com/)                  | Latest  | Container runtime       |
 | [Docker Compose](https://docs.docker.com/compose/) | Latest  | Container orchestration |
 
@@ -30,8 +30,8 @@ TBA
 ### Verify Your Setup
 
 ```bash
-node --version    # Should be v24 or higher
-npm --version     # Should be v10 or higher
+node --version    # Should be v24.21.0
+npm --version     # Should be v11 or higher
 docker --version  # Should be latest stable
 docker-compose --version  # Should be latest
 ```
@@ -43,15 +43,15 @@ docker-compose --version  # Should be latest
 The following only needs to be run once during setup.
 
 ```shell
-# Install dependencies
-npm install
-npm run db:init
+# Install dependencies from the root lockfile
+npm ci
 
-# Start DBs: starts postgres and dynamodb in docker containers
-npm run db:start
+# Generate the Prisma client and start fresh local services
+NX_DAEMON=false npm run storage:init
+NX_DAEMON=false npm run storage:start
 
-# Setup DBs: creates tables in postgres and dynamodb
-npm run db:setup
+# Setup the PostgreSQL and DynamoDB schemas/tables
+NX_DAEMON=false npm run storage:setup
 ```
 
 ## Running the API
@@ -96,6 +96,27 @@ Force a clean rebuild (useful after dependency changes):
 ```bash
 docker build --no-cache -t dismissible-api .
 ```
+
+### Verify the Production Image
+
+Build both supported CPU architectures without pushing an image, then load the
+current host architecture for a local smoke check:
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t dismissible-api:multiarch .
+docker buildx build --load -t dismissible-api:local .
+
+# Uses isolated in-memory storage and verifies startup plus GET /health.
+DISMISSIBLE_TEST_STORAGE_TYPE=memory \
+  DISMISSIBLE_STORAGE_RUN_SETUP=false \
+  ./scripts/test-docker-image.sh --no-build dismissible-api:local
+```
+
+To verify startup setup, point the smoke check at a disposable PostgreSQL
+instance and set `DISMISSIBLE_STORAGE_RUN_SETUP=true`. The supported flag is
+`DISMISSIBLE_STORAGE_RUN_SETUP`; `DISMISSIBLE_RUN_MIGRATION` is not read by the
+image. Startup failures include container state and logs, and the smoke check
+cleans up only its own container.
 
 ### Build and Run Immediately
 
@@ -264,13 +285,13 @@ See configuration.
 
 ### DynamoDB Storage
 
-| Variable                                             | Description             | Default             |
-| ---------------------------------------------------- | ----------------------- | ------------------- |
-| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name     | `dismissible-items` |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region              | `us-east-1`         |
-| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack endpoint URL | `""`                |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key          | `""`                |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret key          | `""`                |
+| Variable                                             | Description                        | Default             |
+| ---------------------------------------------------- | ---------------------------------- | ------------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                | `dismissible-items` |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                         | `us-east-1`         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | DynamoDB Local/custom endpoint URL | `""`                |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key                     | `""`                |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret key                     | `""`                |
 
 ### JWT Authentication
 
@@ -393,6 +414,35 @@ docker run --rm -p 3001:3001 \
 
 ### PostgreSQL
 
+The dependency refresh verified Prisma CLI/client/pg adapter `7.10.0`, `pg`
+`8.23.0`, and `@types/pg` `8.23.1` on Node 24 / NestJS 11. Prisma's npm `latest`
+tag currently points to the `8.0.0-rc.13` prerelease; `7.10.0` is the matching
+stable release selected here. Compose and CI use `postgres:18.6`, verified against
+the [PostgreSQL release notes](https://www.postgresql.org/docs/release/18.6/) and
+the [official image](https://hub.docker.com/_/postgres).
+
+PostgreSQL 18 mounts `/var/lib/postgresql`, with its versioned data directory
+underneath. Compose uses a new `postgres_18_data` volume and waits for
+`pg_isready`; previous `postgres_data` volumes are not reused or migrated.
+
+Verification on 2026-09-11 used a fresh container with tmpfs storage and a separate
+database for the production image. Clean `npm ci`, Prisma generation, empty-state
+migrations, repeated setup retaining a sentinel row, all 15 project unit-test,
+lint and build targets, formatting, and all five Postgres API E2E suites (16 tests)
+passed. The pruned production image initialized the empty database, loaded the
+compiled Prisma client and bundled setup CLI, passed its health endpoint and
+create/dismiss/restore requests, and retained the record after repeated setup.
+
+For isolated E2E runs, set `DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING` to
+your disposable database before `NX_DAEMON=false npm run test:e2e:api:postgres`.
+The default test fixture honors this value and otherwise uses localhost:5432.
+
+The Prisma CLI remains a production dependency because startup migrations need
+it. Its current stable dependency tree still reports upstream npm audit findings
+for `deepmerge-ts` and `mysql2`; no prerelease upgrade or forced major override
+was used to suppress those findings. Existing audit findings outside this storage
+refresh remain separate from the compatibility checks above.
+
 ```bash
 docker run --rm -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING="postgresql://postgres:postgres@host.docker.internal:5432/dismissible" \
@@ -400,6 +450,45 @@ docker run --rm -p 3001:3001 \
 ```
 
 ---
+
+## Cache and rate-limiter refresh
+
+The 2026-09-11 refresh uses `lru-cache` `11.5.2` for memory cache/storage,
+`ioredis` `6.0.0`, and `rate-limiter-flexible` `11.2.0`. These packages include
+their TypeScript declarations. Versions were checked against the npm registry;
+Compose, CI, and the Docker examples use the explicit `redis:8.10.1` release from
+the [official Redis image catalog](https://github.com/docker-library/official-images/blob/master/library/redis).
+Compose waits for `redis-cli ping` before starting the API.
+
+The global `lru-cache` override and its nested exceptions were removed. Each
+consumer now resolves its supported major: application memory adapters,
+`jwks-rsa`, `lru-memoizer`, and the current `path-scurry` use 11; Jest's older
+`path-scurry` keeps 10, and Babel keeps 5. No incompatible major is forced onto
+those tooling dependencies. The production image also copies the memory
+adapters' nested production dependencies, which are needed after pruning.
+
+The memory adapters retain their 5000-item capacity and six-hour default TTL.
+Redis retains its key prefix, serialization, TTL conversion, and readiness/
+retry configuration. ioredis 6 negotiates RESP3 with legacy-compatible replies
+(and falls back to RESP2), as described in its
+[upgrade guide](https://github.com/redis/ioredis/wiki/Upgrading-from-v5-to-v6).
+Disabled rate-limit configurations still omit points/duration: the service now
+creates its limiter only when enabled because version 11 requires both options.
+
+Verification used clean `npm ci`, all 15 project unit-test, lint and build
+targets, formatting, and the cache/rate-limiter API E2E suites (27 tests), with
+fresh Redis tmpfs data on a random loopback port. The E2E fixtures honor
+`DISMISSIBLE_CACHE_REDIS_URL`; use a disposable instance because cache tests flush
+its selected database. Memory eviction/TTL, Redis prefix/TTL, disabled caching,
+and allowed/blocked rate-limit requests are covered. Existing Redis data was not
+used or modified.
+
+```bash
+# Set this to your disposable Redis instance before running the cache tests.
+export DISMISSIBLE_CACHE_REDIS_URL=redis://127.0.0.1:16379
+NX_DAEMON=false npm exec nx run api:test-e2e:other -- \
+  --testPathPatterns='cache.e2e-spec|rate-limiter.e2e-spec' --skip-nx-cache
+```
 
 ## Next Steps
 

@@ -46,47 +46,50 @@
     "commit": "cz"
   },
   "overrides": {
-    "lru-cache": "^10.4.3",
-    "@babel/helper-compilation-targets": {
-      "lru-cache": "5.1.1"
-    },
-    "lru-memoizer": {
-      "lru-cache": "6.0.0"
+    "fastify": "^5.12.3",
+    "nx": {
+      "smol-toml": "^1.7.1"
     }
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.2.0",
-    "@commitlint/config-conventional": "^20.2.0",
-    "@nestjs/cli": "^11.0.14",
-    "@nestjs/schematics": "^11.0.9",
-    "@nestjs/testing": "^11.1.10",
-    "@nx/eslint-plugin": "^22.3.3",
-    "@nx/js": "^22.3.3",
-    "@nx/nest": "^22.3.3",
-    "@nx/node": "^22.3.3",
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "@eslint/eslintrc": "^3.3.7",
+    "@eslint/js": "^10.0.1",
+    "@fastify/static": "^10.1.3",
+    "@nestjs/cli": "^11.0.24",
+    "@nestjs/platform-fastify": "^11.2.3",
+    "@nestjs/schematics": "^11.1.0",
+    "@nestjs/testing": "^11.2.3",
+    "@nx/eslint-plugin": "23.2.1",
+    "@nx/js": "23.2.1",
+    "@nx/nest": "23.2.1",
+    "@nx/node": "23.2.1",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.10.4",
-    "@types/supertest": "^6.0.3",
-    "@typescript-eslint/eslint-plugin": "^8.50.1",
-    "@typescript-eslint/parser": "^8.50.1",
+    "@types/node": "^24.13.4",
+    "@types/supertest": "^7.2.1",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
     "autocannon": "^8.0.0",
-    "commitizen": "^4.3.1",
+    "axios": "^1.20.0",
+    "commitizen": "^4.3.2",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^9.39.2",
+    "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "jest": "^30.2.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "jest": "^30.5.1",
     "mock-jwks": "^3.3.5",
-    "msw": "^2.12.7",
-    "nock": "^14.0.10",
-    "nx": "^22.3.3",
-    "prettier": "^3.7.4",
-    "supertest": "^7.1.4",
-    "ts-jest": "^29.4.6",
+    "msw": "^2.15.0",
+    "nock": "^14.0.17",
+    "nx": "23.2.1",
+    "prettier": "^3.9.6",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
     "ts-jest-mocker": "^1.3.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.70.0"
   },
   "config": {
     "commitizen": {
@@ -94,6 +97,6 @@
     }
   },
   "dependencies": {
-    "rate-limiter-flexible": "^9.0.1"
+    "rate-limiter-flexible": "^11.2.0"
   }
 }

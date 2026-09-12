@@ -57,8 +57,8 @@ This project is **100% open source** and **free to use**. Self-host the API with
 
 The following technologies are used in the Dismissible API project
 
-- [NodeJS v24](https://nodejs.org/en/blog/release/v24.12.0)
-- [NestJS](https://nestjs.com/)
+- [NodeJS v24.21.0](https://nodejs.org/en/blog/release/v24.21.0)
+- [NestJS 11](https://nestjs.com/) (NestJS 10 and 12 are not supported)
 - [Fastify](https://fastify.dev/)
 - [Docker](https://hub.docker.com/r/dismissibleio/dismissible-api)
 - [Postgres](https://www.postgresql.org/)
@@ -123,6 +123,7 @@ The Dismissible project is jam packed with features!
 We have just scratched the surface of what Dismissible is capable of! To learn more about how to configure, customize and deploy Dismissible, review the documentation below:
 
 - **[Configuration](./docs/CONFIGURATION.md)** - An overview of all the configuration options that the Dismissible API provides.
+- **[Migration guide](./docs/MIGRATION.md)** - Upgrade published npm packages and the Docker image from v3 to v4.
 - **[Storage](./docs/STORAGE.md)** - More details on how the storage adapters work and how to use the different ones.
 - **[Docker](./docs/DOCKER.md)** - Complete Docker deployment guide.
 - **[NestJS API Module](./docs/NESTJS_API_MODULE.md)** - A fully customizable NestJS module with hooks, events, and custom storage options. These docs will help you completely customize your dismissible application.

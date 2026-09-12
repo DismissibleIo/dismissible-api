@@ -77,6 +77,7 @@ export class RedisClientService implements OnModuleInit, OnModuleDestroy {
       throw new Error(
         `Redis connection failed: ${errorMessage}. ` +
           'Ensure Redis is running and DISMISSIBLE_CACHE_REDIS_URL is configured correctly.',
+        { cause: error },
       );
     }
   }

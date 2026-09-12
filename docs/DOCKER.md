@@ -72,6 +72,38 @@ docker run -p 3001:3001 \
 
 This will launch the API using the memory storage, and will now be available at `http://localhost:3001`.
 
+### Build and verify the production image
+
+The Dockerfile uses Node.js `24.21.0` in both stages and installs the workspace
+from the root `package-lock.json`. Build both supported image architectures
+without publishing them:
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --tag dismissible-api:local \
+  .
+```
+
+For a locally runnable image, load the image for the current host architecture
+and run the health-check seam. Set the storage type to `memory` for a dependency-
+free startup check, or use a disposable PostgreSQL instance with
+`DISMISSIBLE_STORAGE_RUN_SETUP=true` to exercise startup setup and migrations.
+The setup flag is
+`DISMISSIBLE_STORAGE_RUN_SETUP`; `DISMISSIBLE_RUN_MIGRATION` is not supported.
+
+```bash
+docker buildx build --load --tag dismissible-api:local .
+DISMISSIBLE_TEST_STORAGE_TYPE=memory \
+  DISMISSIBLE_STORAGE_RUN_SETUP=false \
+  ./scripts/test-docker-image.sh --no-build dismissible-api:local
+```
+
+The smoke check waits for the image healthcheck, verifies `GET /health`, and
+prints container state, health-check output, and logs when startup or readiness
+fails. It uses a random host port by default and removes only the container it
+created.
+
 ## Storage Backends
 
 The Dismissible API supports multiple storage backends and is determined by the following config:
@@ -106,14 +138,14 @@ AWS DynamoDB storage backend for serverless or AWS-native deployments.
 
 **Environment Variables:**
 
-| Variable                                             | Description                            | Default             |
-| ---------------------------------------------------- | -------------------------------------- | ------------------- |
-| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                    | `dismissible-items` |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                             | `us-east-1`         |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key                  | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack/DynamoDB Local endpoint URL | -                   |
+| Variable                                             | Description                        | Default             |
+| ---------------------------------------------------- | ---------------------------------- | ------------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                | `dismissible-items` |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                         | `us-east-1`         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key              | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                  | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | DynamoDB Local/custom endpoint URL | -                   |
 
 **Example:**
 
@@ -123,7 +155,7 @@ This example would be similar to a production deployment
 docker run -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_TYPE=dynamodb \
   -e DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME="items" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_REGION="us-east-1" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION="us-east-1" \
   -e AWS_ACCESS_KEY_ID="your-access-key" \
   -e AWS_SECRET_ACCESS_KEY="your-secret-key" \
   dismissibleio/dismissible-api:latest
@@ -137,10 +169,10 @@ To use a local DynamoDB instance (e.g., Dockerized DynamoDB):
 docker run -p 3001:3001 \
   -e DISMISSIBLE_STORAGE_TYPE=dynamodb \
   -e DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME="items" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_REGION="localhost" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT="http://localhost:8000" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_ACCESS_KEY="local" \
-  -e DISMISSIBLE_STORAGE_DYNAMODB_SECRET_KEY="local" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION="us-east-1" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT="http://host.docker.internal:4566" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID="test" \
+  -e DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY="test" \
   dismissibleio/dismissible-api:latest
 ```
 
@@ -251,6 +283,12 @@ For a full list of all configuration, see the [documentation here](./CONFIGURATI
 
 A simple setup with PostgreSQL:
 
+Compose and CI use `postgres:18.6`. PostgreSQL 18 stores data below
+`/var/lib/postgresql/18/docker`, so mount the parent `/var/lib/postgresql`.
+The new `postgres_18_data` volume starts empty and leaves any previous
+`postgres_data` volume untouched. These examples do not migrate existing database
+files; use a fresh Compose project for verification.
+
 ```yaml
 services:
   api:
@@ -259,22 +297,28 @@ services:
       - '3001:3001'
     environment:
       DISMISSIBLE_STORAGE_TYPE: postgres
-      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@postgres:5432/dismissible
       DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   postgres:
-    image: postgres:15
+    image: postgres:18.6
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: dismissible
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_18_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d dismissible']
+      interval: 2s
+      timeout: 2s
+      retries: 30
 
 volumes:
-  postgres_data:
+  postgres_18_data:
 ```
 
 ### DynamoDB Setup
@@ -290,25 +334,25 @@ services:
     environment:
       DISMISSIBLE_STORAGE_TYPE: dynamodb
       DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME: dismissible-items
-      DISMISSIBLE_STORAGE_DYNAMODB_REGION: us-east-1
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION: us-east-1
       DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
-      DISMISSIBLE_STORAGE_DYNAMODB_ACCESS_KEY: test
-      DISMISSIBLE_STORAGE_DYNAMODB_SECRET_KEY: test
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID: test
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
     depends_on:
-      - dismissible-dynamodb
+      dismissible-dynamodb:
+        condition: service_healthy
 
   dismissible-dynamodb:
-    image: localstack/localstack:latest
-    container_name: dismissible-dynamodb
+    image: amazon/dynamodb-local:3.3.1
     restart: unless-stopped
-    environment:
-      SERVICES: dynamodb
-      AWS_DEFAULT_REGION: us-east-1
-      DEBUG: 0
-      # Persistence mode (optional - data persists across restarts)
-      # PERSISTENCE: 1
+    command: -jar DynamoDBLocal.jar -inMemory -sharedDb -port 4566
     ports:
       - '4566:4566'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl --silent --output /dev/null http://localhost:4566/']
+      interval: 2s
+      timeout: 2s
+      retries: 30
 ```
 
 ### In-Memory Setup
@@ -339,7 +383,7 @@ services:
       - '3001:3001'
     environment:
       DISMISSIBLE_STORAGE_TYPE: postgres
-      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@postgres:5432/dismissible
       DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
       # Rate limiting: 1000 requests per second
       DISMISSIBLE_RATE_LIMITER_ENABLED: 'true'
@@ -349,19 +393,25 @@ services:
       DISMISSIBLE_RATE_LIMITER_KEY_TYPE: 'ip,origin,referrer'
       DISMISSIBLE_RATE_LIMITER_KEY_MODE: 'any'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   postgres:
-    image: postgres:15
+    image: postgres:18.6
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: dismissible
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_18_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d dismissible']
+      interval: 2s
+      timeout: 2s
+      retries: 30
 
 volumes:
-  postgres_data:
+  postgres_18_data:
 ```
 
 ### With Redis Cache
@@ -376,7 +426,7 @@ services:
       - '3001:3001'
     environment:
       DISMISSIBLE_STORAGE_TYPE: postgres
-      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
+      DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@postgres:5432/dismissible
       DISMISSIBLE_STORAGE_RUN_SETUP: 'true'
       # Redis cache configuration
       DISMISSIBLE_CACHE_TYPE: redis
@@ -384,29 +434,42 @@ services:
       DISMISSIBLE_CACHE_REDIS_KEY_PREFIX: 'dismissible:cache:'
       DISMISSIBLE_CACHE_REDIS_TTL_MS: '21600000'
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   postgres:
-    image: postgres:15
+    image: postgres:18.6
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: dismissible
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_18_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d dismissible']
+      interval: 2s
+      timeout: 2s
+      retries: 30
 
   redis:
-    image: redis:7-alpine
+    image: redis:8.10.1
     container_name: dismissible-redis
     restart: unless-stopped
     ports:
       - '6379:6379'
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 2s
 
 volumes:
-  postgres_data:
+  postgres_18_data:
   redis_data:
 ```
 

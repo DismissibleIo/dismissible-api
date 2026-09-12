@@ -21,7 +21,7 @@
     "LICENSE.md"
   ],
   "peerDependencies": {
-    "@nestjs/common": "^10.0.0 || ^11.0.0"
+    "@nestjs/common": "^11.0.0"
   },
   "peerDependenciesMeta": {
     "@nestjs/common": {
@@ -29,9 +29,8 @@
     }
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.958.0",
-    "@aws-sdk/lib-dynamodb": "^3.958.0",
-    "@aws-sdk/util-waiter": "^3.370.0",
+    "@aws-sdk/client-dynamodb": "^3.1128.0",
+    "@aws-sdk/lib-dynamodb": "^3.1128.0",
     "@dismissible/nestjs-item": "^3.1.1",
     "@dismissible/nestjs-logger": "^3.1.1",
     "@dismissible/nestjs-storage": "^3.1.1"

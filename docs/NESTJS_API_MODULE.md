@@ -506,7 +506,7 @@ First, generate the Prisma Client based on the schema:
 npx dismissible-prisma generate
 
 # Or using Prisma directly
-npx prisma generate --schema=node_modules/@dismissible/nestjs-postgres-storage/prisma/schema.prisma
+npx prisma generate --config=node_modules/@dismissible/nestjs-postgres-storage/prisma.config.mjs
 ```
 
 #### Step 2: Initialize the Database Schema
@@ -520,7 +520,7 @@ Choose the appropriate method based on your environment:
 npx dismissible-prisma migrate dev --name init
 
 # Or using Prisma directly
-npx prisma migrate dev --schema=node_modules/@dismissible/nestjs-postgres-storage/prisma/schema.prisma --name init
+npx prisma migrate dev --config=node_modules/@dismissible/nestjs-postgres-storage/prisma.config.mjs --name init
 ```
 
 This creates migration files in `node_modules/@dismissible/nestjs-postgres-storage/prisma/migrations/` and applies them to your database.
@@ -532,7 +532,7 @@ This creates migration files in `node_modules/@dismissible/nestjs-postgres-stora
 npx dismissible-prisma migrate deploy
 
 # Or using Prisma directly
-npx prisma migrate deploy --schema=node_modules/@dismissible/nestjs-postgres-storage/prisma/schema.prisma
+npx prisma migrate deploy --config=node_modules/@dismissible/nestjs-postgres-storage/prisma.config.mjs
 ```
 
 **For Quick Development (Not for Production):**
