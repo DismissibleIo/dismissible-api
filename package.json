@@ -46,7 +46,10 @@
     "commit": "cz"
   },
   "overrides": {
-    "fastify": "^5.12.3"
+    "fastify": "^5.12.3",
+    "nx": {
+      "smol-toml": "^1.7.1"
+    }
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",
