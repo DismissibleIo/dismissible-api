@@ -408,6 +408,12 @@ The fomat needs to follow: `${ENV_VAR:-default-value}`.
 > [!TIP]
 > Use interpolation of environment variables for sensitive config like secrets and connection strings.
 
+To load environment variables from a plain `.env` file (`KEY=value`), use your runtime rather than the config file, eg. `node --env-file=.env`, Docker's `--env-file`, or `env_file` in Docker Compose.
+
+### Supported File Formats
+
+Config files can be `.yaml`, `.yml` or `.json`. They are searched in that order, and a `NODE_ENV` specific file (eg. `.env.production.json`) always takes priority over the default file (eg. `.env.yaml`).
+
 ### Extending the Configuration
 
 You can extend the default `AppConfig` with additional configuration options by creating your own config schema and passing it via the `schema` option. This is useful when you need custom settings beyond what's provided by default.
@@ -450,7 +456,7 @@ myCustomSetting: 'custom-value'
 # ... rest of default config
 ```
 
-The nest-typed-config library will automatically merge your custom config with the defaults, and your custom config class will be available for injection throughout your NestJS application.
+Your custom config class is validated against the YAML file and is available for injection throughout your NestJS application, along with every nested config class (eg. `ServerConfig`).
 
 ## Running the Application
 
