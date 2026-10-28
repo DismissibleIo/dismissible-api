@@ -54,6 +54,8 @@ npm run db:start
 npm run db:setup
 ```
 
+DynamoDB Local is available to host tools at `http://localhost:4566` (mapped to container port 8000). The Compose setup persists its data in a named volume and uses `-sharedDb` so local clients share tables. Clients still need fake AWS credentials such as `test`.
+
 ## Running the API
 
 ### Node
@@ -264,13 +266,13 @@ See configuration.
 
 ### DynamoDB Storage
 
-| Variable                                             | Description             | Default             |
-| ---------------------------------------------------- | ----------------------- | ------------------- |
-| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name     | `dismissible-items` |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region              | `us-east-1`         |
-| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack endpoint URL | `""`                |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key          | `""`                |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret key          | `""`                |
+| Variable                                             | Description                 | Default             |
+| ---------------------------------------------------- | --------------------------- | ------------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name         | `dismissible-items` |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                  | `us-east-1`         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | DynamoDB Local endpoint URL | `""`                |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key              | `""`                |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret key              | `""`                |
 
 ### JWT Authentication
 

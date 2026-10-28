@@ -106,14 +106,14 @@ AWS DynamoDB storage backend for serverless or AWS-native deployments.
 
 **Environment Variables:**
 
-| Variable                                             | Description                            | Default             |
-| ---------------------------------------------------- | -------------------------------------- | ------------------- |
-| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name                    | `dismissible-items` |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                             | `us-east-1`         |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key                  | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token                      | -                   |
-| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | LocalStack/DynamoDB Local endpoint URL | -                   |
+| Variable                                             | Description                 | Default             |
+| ---------------------------------------------------- | --------------------------- | ------------------- |
+| `DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME`            | DynamoDB table name         | `dismissible-items` |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION`            | AWS region                  | `us-east-1`         |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID`     | AWS access key ID           | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY` | AWS secret access key       | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_AWS_SESSION_TOKEN`     | AWS session token           | -                   |
+| `DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT`              | DynamoDB Local endpoint URL | -                   |
 
 **Example:**
 
@@ -279,7 +279,7 @@ volumes:
 
 ### DynamoDB Setup
 
-A setup with local DynamoDB:
+A setup with DynamoDB Local. Host tools use `http://localhost:4566`; containers on the Compose network use `http://dismissible-dynamodb:8000`. The named volume preserves data across restarts:
 
 ```yaml
 services:
@@ -290,25 +290,27 @@ services:
     environment:
       DISMISSIBLE_STORAGE_TYPE: dynamodb
       DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME: dismissible-items
-      DISMISSIBLE_STORAGE_DYNAMODB_REGION: us-east-1
-      DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
-      DISMISSIBLE_STORAGE_DYNAMODB_ACCESS_KEY: test
-      DISMISSIBLE_STORAGE_DYNAMODB_SECRET_KEY: test
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION: us-east-1
+      DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:8000
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID: test
+      DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
     depends_on:
       - dismissible-dynamodb
 
   dismissible-dynamodb:
-    image: localstack/localstack:latest
+    image: amazon/dynamodb-local:3.3.1
     container_name: dismissible-dynamodb
     restart: unless-stopped
-    environment:
-      SERVICES: dynamodb
-      AWS_DEFAULT_REGION: us-east-1
-      DEBUG: 0
-      # Persistence mode (optional - data persists across restarts)
-      # PERSISTENCE: 1
+    # The named volume is owned by root on first use.
+    user: root
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data
     ports:
-      - '4566:4566'
+      - '4566:8000'
+    volumes:
+      - dismissible_dynamodb_data:/home/dynamodblocal/data
+
+volumes:
+  dismissible_dynamodb_data:
 ```
 
 ### In-Memory Setup

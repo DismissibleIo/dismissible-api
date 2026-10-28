@@ -37,13 +37,10 @@ jobs:
           - 5432:5432
 
       dismissible-dynamodb:
-        image: localstack/localstack:latest
-        env:
-          SERVICES: dynamodb
-          AWS_DEFAULT_REGION: us-east-1
-          DEBUG: 0
+        # Setup and tests use access key 'test' and region 'us-east-1' (no -sharedDb).
+        image: amazon/dynamodb-local:3.3.1
         ports:
-          - 4566:4566
+          - 4566:8000
 
       redis:
         image: redis:latest
