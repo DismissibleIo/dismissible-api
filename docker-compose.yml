@@ -18,10 +18,10 @@ services:
       # Postgres Storage
       DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
 
-      # DynamoDB Storage (LocalStack)
+      # DynamoDB Storage (DynamoDB Local)
       DISMISSIBLE_STORAGE_DYNAMODB_TABLE_NAME: dismissible-items
       DISMISSIBLE_STORAGE_DYNAMODB_AWS_REGION: us-east-1
-      DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:4566
+      DISMISSIBLE_STORAGE_DYNAMODB_ENDPOINT: http://dismissible-dynamodb:8000
       DISMISSIBLE_STORAGE_DYNAMODB_AWS_ACCESS_KEY_ID: test
       DISMISSIBLE_STORAGE_DYNAMODB_AWS_SECRET_ACCESS_KEY: test
 
@@ -82,23 +82,16 @@ services:
       - postgres_data:/var/lib/postgresql
 
   dismissible-dynamodb:
-    image: localstack/localstack:latest
+    image: amazon/dynamodb-local:3.3.1
     container_name: dismissible-dynamodb
     restart: unless-stopped
-    environment:
-      # Enable specific LocalStack services
-      SERVICES: dynamodb
-      # AWS region configuration
-      AWS_DEFAULT_REGION: us-east-1
-      # LocalStack configuration
-      DEBUG: 1
-      # Persistence mode (optional - data persists across restarts)
-      # PERSISTENCE: 1
+    # The named volume is owned by root on first use.
+    user: root
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data
     ports:
-      - '4566:4566'
+      - '4566:8000'
     volumes:
-      - dismissible_dynamodb_data:/var/lib/localstack
-      # Share a Docker network for inter-container communication
+      - dismissible_dynamodb_data:/home/dynamodblocal/data
     networks:
       - default
 
