@@ -8,6 +8,6 @@ export default {
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/libs/core-e2e',
   testMatch: ['**/*.e2e-spec.ts'],
-  transformIgnorePatterns: ['node_modules/(?!(nest-typed-config|uuid)/)'],
+  transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
   maxWorkers: 1,
 };
