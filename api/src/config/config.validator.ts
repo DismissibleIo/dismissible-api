@@ -1,6 +1,12 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync, ValidationError } from 'class-validator';
 
+type ConfigValidationIssue = {
+  path: string;
+  value: unknown;
+  constraints: Record<string, string>;
+};
+
 /**
  * Transforms the raw config into an instance of the schema class and validates it.
  * Properties without validation decorators are stripped.
@@ -22,29 +28,32 @@ export function validateConfig<T extends object>(
 }
 
 function formatErrors(errors: ValidationError[]): string {
-  const messages = flattenErrors(errors).map(({ path, value, constraints }) =>
-    [
-      `  - config ${path} does not match the following rules:`,
-      ...Object.entries(constraints).map(
-        ([name, message]) =>
-          `    - ${name}: ${message}, current config is \`${JSON.stringify(value)}\``,
-      ),
-    ].join('\n'),
-  );
+  const messages = flattenErrors(errors).map(formatValidationIssue);
 
   return `Configuration is not valid:\n${messages.join('\n')}\n`;
 }
 
-function flattenErrors(
-  errors: ValidationError[],
-  parentPath = '',
-): { path: string; value: unknown; constraints: Record<string, string> }[] {
-  return errors.flatMap((error) => {
-    const path = parentPath ? `${parentPath}.${error.property}` : error.property;
-    const own = error.constraints
-      ? [{ path, value: error.value, constraints: error.constraints }]
-      : [];
+function formatValidationIssue(issue: ConfigValidationIssue): string {
+  const header = `  - config ${issue.path} does not match the following rules:`;
+  const currentValue = JSON.stringify(issue.value);
+  const rules = Object.entries(issue.constraints).map(
+    ([name, message]) => `    - ${name}: ${message}, current config is \`${currentValue}\``,
+  );
 
-    return [...own, ...flattenErrors(error.children ?? [], path)];
-  });
+  return [header, ...rules].join('\n');
+}
+
+function flattenErrors(errors: ValidationError[], parentPath = ''): ConfigValidationIssue[] {
+  const issues: ConfigValidationIssue[] = [];
+
+  for (const error of errors) {
+    const path = parentPath ? `${parentPath}.${error.property}` : error.property;
+    if (error.constraints) {
+      issues.push({ path, value: error.value, constraints: error.constraints });
+    }
+
+    issues.push(...flattenErrors(error.children ?? [], path));
+  }
+
+  return issues;
 }

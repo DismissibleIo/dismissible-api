@@ -52,6 +52,24 @@ describe('substituteVariables', () => {
     expect(result).toEqual({ url: 'redis://localhost:6379/0' });
   });
 
+  it('should replace every occurrence of a repeated placeholder', () => {
+    const result = substituteVariables({ value: '${A}-${A}' }, { A: 'x' });
+
+    expect(result.value).toBe('x-x');
+  });
+
+  it('should not substitute placeholder-like text inserted by an environment variable', () => {
+    const result = substituteVariables({ value: '${A}-${B}' }, { A: '${B}', B: 'x' });
+
+    expect(result.value).toBe('${B}-x');
+  });
+
+  it('should preserve placeholder-like environment values when a placeholder is repeated', () => {
+    const result = substituteVariables({ value: '${A}-${A}' }, { A: '${A}x' });
+
+    expect(result.value).toBe('${A}x-${A}x');
+  });
+
   it.each(['pass$&word', 'pass$$word', "pass$'word", 'pass$`word'])(
     'should preserve the literal environment value %s when embedded in a string',
     (password) => {
@@ -117,6 +135,18 @@ describe('substituteVariables', () => {
       );
 
       expect(result.url).toBe('http://localhost');
+    });
+
+    it('should resolve multiple embedded config references including nested placeholders', () => {
+      const result = substituteVariables(
+        {
+          server: { host: '${HOST:-localhost}', port: 3001 },
+          url: 'http://${server.host}:${server.port}',
+        },
+        {},
+      );
+
+      expect(result.url).toBe('http://localhost:3001');
     });
 
     it('should prefer environment variables over config references', () => {

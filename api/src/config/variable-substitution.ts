@@ -16,11 +16,30 @@ type Primitive = string | number | boolean;
  * When a string is exactly one placeholder that references a number or boolean in the config,
  * the original type is kept.
  */
-export function substituteVariables<T>(config: T, env: NodeJS.ProcessEnv = process.env): T {
-  return substitute(config, config, env, 0) as T;
+export function substituteVariables(
+  config: Record<string, unknown>,
+  env: NodeJS.ProcessEnv = process.env,
+): Record<string, unknown> {
+  return substituteObject(config, config, env, 0);
 }
 
-function substitute(value: unknown, root: unknown, env: NodeJS.ProcessEnv, depth: number): unknown {
+function substituteObject(
+  value: object,
+  root: Record<string, unknown>,
+  env: NodeJS.ProcessEnv,
+  depth: number,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [key, substitute(item, root, env, depth)]),
+  );
+}
+
+function substitute(
+  value: unknown,
+  root: Record<string, unknown>,
+  env: NodeJS.ProcessEnv,
+  depth: number,
+): unknown {
   if (typeof value === 'string') {
     return substituteString(value, root, env, depth);
   }
@@ -28,16 +47,14 @@ function substitute(value: unknown, root: unknown, env: NodeJS.ProcessEnv, depth
     return value.map((item) => substitute(item, root, env, depth));
   }
   if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, substitute(item, root, env, depth)]),
-    );
+    return substituteObject(value, root, env, depth);
   }
   return value;
 }
 
 function substituteString(
   value: string,
-  root: unknown,
+  root: Record<string, unknown>,
   env: NodeJS.ProcessEnv,
   depth: number,
 ): Primitive {
@@ -45,30 +62,20 @@ function substituteString(
     throw new Error(`Circular reference detected while resolving config value: '${value}'`);
   }
 
-  const placeholders = [...value.matchAll(PLACEHOLDER_PATTERN)];
-  if (placeholders.length === 0) {
-    return value;
+  const [placeholder] = value.matchAll(PLACEHOLDER_PATTERN);
+
+  if (placeholder && placeholder[0] === value) {
+    return resolvePlaceholder(placeholder[1], root, env, depth);
   }
 
-  const resolved = placeholders.map(([placeholder, expression]) => ({
-    placeholder,
-    value: resolvePlaceholder(expression, root, env, depth),
-  }));
-
-  if (resolved.length === 1 && resolved[0].placeholder === value) {
-    return resolved[0].value;
-  }
-
-  return resolved.reduce(
-    (result, { placeholder, value: replacement }) =>
-      result.replace(placeholder, () => String(replacement)),
-    value,
+  return value.replace(PLACEHOLDER_PATTERN, (_placeholder: string, expression: string) =>
+    String(resolvePlaceholder(expression, root, env, depth)),
   );
 }
 
 function resolvePlaceholder(
   expression: string,
-  root: unknown,
+  root: Record<string, unknown>,
   env: NodeJS.ProcessEnv,
   depth: number,
 ): Primitive {
@@ -94,7 +101,7 @@ function resolvePlaceholder(
   throw new Error(`Environment variable is not set for variable name: '${name}'`);
 }
 
-function resolveReference(path: string, root: unknown): unknown {
+function resolveReference(path: string, root: Record<string, unknown>): unknown {
   return path.split('.').reduce<unknown>((current, key) => {
     if (current === null || typeof current !== 'object') {
       return undefined;
