@@ -52,6 +52,18 @@ describe('substituteVariables', () => {
     expect(result).toEqual({ url: 'redis://localhost:6379/0' });
   });
 
+  it.each(['pass$&word', 'pass$$word', "pass$'word", 'pass$`word'])(
+    'should preserve the literal environment value %s when embedded in a string',
+    (password) => {
+      const result = substituteVariables(
+        { url: 'redis://user:${PASSWORD}@localhost:6379' },
+        { PASSWORD: password },
+      );
+
+      expect(result.url).toBe(`redis://user:${password}@localhost:6379`);
+    },
+  );
+
   it('should throw when the environment variable is not set and has no default', () => {
     expect(() => substituteVariables({ port: '${PORT}' }, {})).toThrow(
       "Environment variable is not set for variable name: 'PORT'",

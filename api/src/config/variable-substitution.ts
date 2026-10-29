@@ -61,7 +61,7 @@ function substituteString(
 
   return resolved.reduce(
     (result, { placeholder, value: replacement }) =>
-      result.replace(placeholder, String(replacement)),
+      result.replace(placeholder, () => String(replacement)),
     value,
   );
 }
