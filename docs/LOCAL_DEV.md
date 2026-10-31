@@ -223,7 +223,12 @@ npm run test:e2e:api:postgres
 # Run API E2E tests with DynamoDB storage
 npm run test:e2e:api:dynamodb
 
-# Run API E2E tests with all storage backends
+# Run API E2E tests of every storage and cache combination, using the shipped config.
+# Requires: docker compose up -d dismissible-postgres dismissible-dynamodb dismissible-redis
+#           npm run storage:setup
+npm run test:e2e:api:stack
+
+# Run all API E2E tests
 npm run test:e2e:api:all
 
 # Run library E2E tests
@@ -233,7 +238,16 @@ npm run test:e2e:lib:dismissible:all
 ### Performance Tests
 
 ```bash
+# Requires a running API (default: http://localhost:3001). Fails if any request fails.
 npm run test:perf
+```
+
+### Docker Compose Stack Tests
+
+```bash
+# Builds the image, then runs the API lifecycle and a short performance test
+# against every storage and cache combination in Docker Compose.
+npm run test:compose
 ```
 
 ### Validate Before Committing

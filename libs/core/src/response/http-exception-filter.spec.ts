@@ -1,5 +1,5 @@
 import { mock, Mock } from 'ts-jest-mocker';
-import { HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { HttpExceptionFilter } from './http-exception-filter';
 
@@ -35,6 +35,19 @@ describe('HttpExceptionFilter', () => {
   });
 
   describe('catch', () => {
+    it('should report the detailed validation messages', () => {
+      const exception = new BadRequestException(['first is invalid', 'second is invalid']);
+
+      filter.catch(exception, mockArgumentsHost);
+
+      expect(mockResponse.send).toHaveBeenCalledWith({
+        error: {
+          message: 'first is invalid, second is invalid',
+          code: 400,
+        },
+      });
+    });
+
     it('should handle HttpException with 404 status', () => {
       const exception = new HttpException('Not found', HttpStatus.NOT_FOUND);
 

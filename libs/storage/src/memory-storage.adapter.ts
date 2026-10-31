@@ -77,6 +77,12 @@ export class MemoryStorageAdapter implements IDismissibleStorage {
   async create(item: DismissibleItemDto): Promise<DismissibleItemDto> {
     const key = this.createKey(item.userId, item.id);
     this.logger.debug(`Storage create`, { userId: item.userId, itemId: item.id, key });
+
+    const existing = this.storage.get(key);
+    if (existing) {
+      return existing;
+    }
+
     this.storage.set(key, item);
     return item;
   }
@@ -84,14 +90,11 @@ export class MemoryStorageAdapter implements IDismissibleStorage {
   async createMany(items: DismissibleItemDto[]): Promise<DismissibleItemDto[]> {
     this.logger.debug(`Storage createMany`, { itemCount: items.length });
 
-    for (const item of items) {
-      const key = this.createKey(item.userId, item.id);
-      this.storage.set(key, item);
-    }
+    const createdItems = await Promise.all(items.map((item) => this.create(item)));
 
     this.logger.debug(`Storage createMany complete`, { created: items.length });
 
-    return items;
+    return createdItems;
   }
 
   async update(item: DismissibleItemDto): Promise<DismissibleItemDto> {

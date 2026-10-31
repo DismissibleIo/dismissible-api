@@ -29,14 +29,14 @@ export interface IDismissibleStorage {
   /**
    * Create a new item.
    * @param item The item to create (contains userId and id)
-   * @returns The created item
+   * @returns The created item, or the stored item if it already exists. Must not overwrite it.
    */
   create(item: DismissibleItemDto): Promise<DismissibleItemDto>;
 
   /**
    * Create multiple items.
    * @param items Array of items to create (each contains userId and id)
-   * @returns Array of created items
+   * @returns Array of created items, using the stored item for any that already exist
    */
   createMany(items: DismissibleItemDto[]): Promise<DismissibleItemDto[]>;
 

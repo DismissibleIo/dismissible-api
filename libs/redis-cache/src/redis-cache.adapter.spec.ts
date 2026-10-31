@@ -34,6 +34,21 @@ describe('RedisCacheAdapter', () => {
     jest.clearAllMocks();
   });
 
+  describe('key prefix', () => {
+    it('should use the default prefix when the configured prefix is empty', async () => {
+      const unprefixed = new RedisCacheAdapter(
+        mockRedisClient,
+        { ...config, keyPrefix: '' },
+        mockLogger,
+      );
+      mockRedis.get.mockResolvedValue(null);
+
+      await unprefixed.get('user-1', 'item-1');
+
+      expect(mockRedis.get).toHaveBeenCalledWith('dismissible:cache:user-1:item-1');
+    });
+  });
+
   describe('get', () => {
     it('should return null when item does not exist', async () => {
       mockRedis.get.mockResolvedValue(null);

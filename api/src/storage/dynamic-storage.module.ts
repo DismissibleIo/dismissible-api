@@ -5,7 +5,7 @@ import { DynamoDBStorageModule } from '@dismissible/nestjs-dynamodb-storage';
 import { MemoryStorageModule } from '@dismissible/nestjs-storage';
 
 export type DynamicStorageModuleOptions = {
-  storage?: StorageType;
+  storage: StorageType;
 };
 
 @Module({})
@@ -23,9 +23,8 @@ export class DynamicStorageModule {
           inject: [StorageConfig],
         });
       case StorageType.MEMORY:
-      default:
         return MemoryStorageModule.forRootAsync({
-          useFactory: (config: StorageConfig) => config?.memory || {},
+          useFactory: (config: StorageConfig) => config.memory || {},
           inject: [StorageConfig],
         });
     }

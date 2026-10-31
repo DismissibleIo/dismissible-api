@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
+import { IsDefined, IsEnum, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { RedisCacheConfig } from '@dismissible/nestjs-redis-cache';
 import { MemoryCacheConfig } from '@dismissible/nestjs-memory-cache';
@@ -15,7 +15,7 @@ export class CacheConfig {
   public readonly type?: CacheType;
 
   @ValidateIf((o) => o.type === CacheType.REDIS)
-  @IsOptional()
+  @IsDefined()
   @ValidateNested()
   @Type(() => RedisCacheConfig)
   public readonly redis!: RedisCacheConfig;
@@ -24,5 +24,5 @@ export class CacheConfig {
   @IsOptional()
   @ValidateNested()
   @Type(() => MemoryCacheConfig)
-  public readonly memory!: MemoryCacheConfig;
+  public readonly memory?: MemoryCacheConfig;
 }

@@ -18,6 +18,10 @@ export interface IConfigModuleOptions<T> {
    * Defaults to false (environment variables will be substituted)
    */
   ignoreEnvironmentVariableSubstitution?: boolean;
+  /**
+   * Adjusts the raw configuration before it is validated
+   */
+  transform?: (rawConfig: Record<string, unknown>) => Record<string, unknown>;
 }
 
 @Global()
@@ -33,12 +37,18 @@ export class ConfigModule {
    * @returns A global dynamic module providing the validated configuration
    */
   static forRoot<T extends object>(options: IConfigModuleOptions<T>): DynamicModule {
-    const rawConfig = loadConfigFile({
-      searchFrom: options.path ?? join(__dirname, '../../config'),
-      ignoreEnvironmentVariableSubstitution: options.ignoreEnvironmentVariableSubstitution ?? false,
-    });
-    const config = validateConfig(options.schema, rawConfig);
-    const providers = getConfigProviders(config, options.schema);
+    return ConfigModule.forConfig(loadConfig(options), options.schema);
+  }
+
+  /**
+   * Register the ConfigModule with a configuration that has already been loaded.
+   *
+   * @param config The validated configuration
+   * @param schema The configuration schema class the config is injectable by
+   * @returns A global dynamic module providing the configuration
+   */
+  static forConfig<T extends object>(config: T, schema: new () => T): DynamicModule {
+    const providers = getConfigProviders(config, schema);
 
     return {
       module: ConfigModule,
@@ -46,6 +56,18 @@ export class ConfigModule {
       exports: providers,
     };
   }
+}
+
+/**
+ * Loads the configuration file and validates it against the schema.
+ */
+export function loadConfig<T extends object>(options: IConfigModuleOptions<T>): T {
+  const rawConfig = loadConfigFile({
+    searchFrom: options.path ?? join(__dirname, '../../config'),
+    ignoreEnvironmentVariableSubstitution: options.ignoreEnvironmentVariableSubstitution ?? false,
+  });
+
+  return validateConfig(options.schema, options.transform?.(rawConfig) ?? rawConfig);
 }
 
 /**

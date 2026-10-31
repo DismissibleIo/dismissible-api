@@ -1,3 +1,4 @@
+import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
 import { mock, Mock } from 'ts-jest-mocker';
 import { DynamoDBClientService } from './dynamodb-client.service';
 import { DynamoDBStorageConfig } from './dynamodb-storage.config';
@@ -103,7 +104,32 @@ describe('DynamoDBClientService', () => {
       const sendMock = jest.fn().mockResolvedValue({});
       (service as any).documentClient = { send: sendMock };
 
-      await expect(service.create({ userId: 'user-123', id: 'item-456' })).resolves.not.toThrow();
+      await expect(service.create({ userId: 'user-123', id: 'item-456' })).resolves.toBe(true);
+      expect(sendMock.mock.calls[0][0].input.ConditionExpression).toBe('attribute_not_exists(id)');
+    });
+
+    it('should report when the item already exists', async () => {
+      const service = new DynamoDBClientService(mockConfig, mockLogger);
+
+      const sendMock = jest
+        .fn()
+        .mockRejectedValue(
+          new ConditionalCheckFailedException({ message: 'exists', $metadata: {} }),
+        );
+      (service as any).documentClient = { send: sendMock };
+
+      await expect(service.create({ userId: 'user-123', id: 'item-456' })).resolves.toBe(false);
+    });
+
+    it('should rethrow other errors', async () => {
+      const service = new DynamoDBClientService(mockConfig, mockLogger);
+
+      const sendMock = jest.fn().mockRejectedValue(new Error('unavailable'));
+      (service as any).documentClient = { send: sendMock };
+
+      await expect(service.create({ userId: 'user-123', id: 'item-456' })).rejects.toThrow(
+        'unavailable',
+      );
     });
   });
 

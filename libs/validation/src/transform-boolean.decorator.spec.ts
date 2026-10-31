@@ -42,6 +42,11 @@ describe('TransformBoolean', () => {
       expect(config.value).toBe(false);
     });
 
+    it('should treat an empty string as not set', () => {
+      const config = plainToInstance(TestConfig, { value: '' });
+      expect(config.value).toBeUndefined();
+    });
+
     it('should handle case-insensitive "true"', () => {
       const config = plainToInstance(TestConfig, { value: 'TRUE' });
       expect(config.value).toBe(true);
@@ -71,6 +76,11 @@ describe('TransformBoolean', () => {
   describe('with default value', () => {
     it('should use default value for undefined', () => {
       const config = plainToInstance(TestConfigWithDefault, { value: undefined });
+      expect(config.value).toBe(true);
+    });
+
+    it('should use default value for an empty string', () => {
+      const config = plainToInstance(TestConfigWithDefault, { value: '' });
       expect(config.value).toBe(true);
     });
 

@@ -164,6 +164,7 @@ describe('RedisClientService', () => {
         'Failed to connect to Redis server',
         expect.any(Error),
       );
+      expect(mockRedisInstance.disconnect).toHaveBeenCalled();
     });
 
     it('should throw error when Redis returns error during connection', async () => {

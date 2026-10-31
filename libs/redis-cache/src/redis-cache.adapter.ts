@@ -22,7 +22,7 @@ export class RedisCacheAdapter implements IDismissibleCache {
     @Inject(DISMISSIBLE_REDIS_CACHE_CONFIG) private readonly config: RedisCacheConfig,
     @Inject(DISMISSIBLE_LOGGER) private readonly logger: IDismissibleLogger,
   ) {
-    this.keyPrefix = config.keyPrefix ?? DEFAULT_KEY_PREFIX;
+    this.keyPrefix = config.keyPrefix || DEFAULT_KEY_PREFIX;
     this.ttlSeconds = config.ttlMs ? Math.floor(config.ttlMs / 1000) : DEFAULT_TTL_SECONDS;
   }
 

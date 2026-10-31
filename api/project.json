@@ -63,7 +63,9 @@
           "nx test-e2e:memory api",
           "nx test-e2e:postgres api",
           "nx test-e2e:dynamodb api",
-          "nx test-e2e:other api"
+          "nx test-e2e:other api",
+          "nx test-e2e:custom api",
+          "nx test-e2e:stack api"
         ],
         "parallel": false
       },
@@ -73,9 +75,25 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/api-e2e-other"],
       "options": {
-        "jestConfig": "api/jest.e2e-config.ts"
-      },
-      "testMatch": ["**/other/*.e2e-spec.ts"]
+        "jestConfig": "api/jest.e2e-config.ts",
+        "testMatch": ["**/other/*.e2e-spec.ts"]
+      }
+    },
+    "test-e2e:custom": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/api-e2e-custom"],
+      "options": {
+        "jestConfig": "api/jest.e2e-config.ts",
+        "testMatch": ["**/custom/*.e2e-spec.ts"]
+      }
+    },
+    "test-e2e:stack": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/api-e2e-stack"],
+      "options": {
+        "jestConfig": "api/jest.e2e-config.ts",
+        "testMatch": ["**/stack/*.e2e-spec.ts"]
+      }
     },
     "test-e2e:memory": {
       "executor": "nx:run-commands",

@@ -3,6 +3,7 @@ import { Transform } from 'class-transformer';
 /**
  * Transforms string values to boolean, preserving existing boolean values.
  * Useful for environment variable configuration where boolean values may be passed as strings.
+ * An empty string means the value was not set (eg. `${VAR:-}`), so it is treated like undefined.
  *
  * @param defaultValue - Optional default value to return if the value is not a boolean or string.
  *                       If not provided, the original value is returned unchanged.
@@ -21,9 +22,12 @@ export function TransformBoolean(defaultValue?: boolean): PropertyDecorator {
     if (typeof value === 'boolean') {
       return value;
     }
-    if (typeof value === 'string') {
+    if (typeof value === 'string' && value !== '') {
       return value.toLowerCase() === 'true';
     }
-    return defaultValue !== undefined ? defaultValue : value;
+    if (defaultValue !== undefined) {
+      return defaultValue;
+    }
+    return value === '' ? undefined : value;
   });
 }

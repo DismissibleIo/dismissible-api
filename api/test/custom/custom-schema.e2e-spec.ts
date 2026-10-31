@@ -3,9 +3,7 @@ import request from 'supertest';
 import { join } from 'path';
 import { createTestApp, cleanupTestData } from '../../src/app-test.factory';
 import { NullLogger } from '@dismissible/nestjs-logger';
-import { DefaultAppConfig } from '../../src/config/default-app.config';
-import { JwtAuthHookConfig } from '@dismissible/nestjs-jwt-auth-hook';
-import { SwaggerConfig } from '../../src/swagger';
+import { AppConfig } from '../../src/config/app.config';
 import { ValidateNested, IsBoolean, IsNumber, IsString, IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -27,20 +25,9 @@ class CustomFeatureConfig {
 }
 
 /**
- * Custom app config that extends DefaultAppConfig with additional properties.
- * Must include jwtAuth and swagger as the AppModule/configureApp depend on them.
+ * Custom app config that extends AppConfig with additional properties.
  */
-class CustomAppConfig extends DefaultAppConfig {
-  @ValidateNested()
-  @IsDefined()
-  @Type(() => SwaggerConfig)
-  public readonly swagger!: SwaggerConfig;
-
-  @ValidateNested()
-  @IsDefined()
-  @Type(() => JwtAuthHookConfig)
-  public readonly jwtAuth!: JwtAuthHookConfig;
-
+class CustomAppConfig extends AppConfig {
   @ValidateNested()
   @IsDefined()
   @Type(() => CustomFeatureConfig)
@@ -133,25 +120,14 @@ describe('AppModule with custom schema option', () => {
 });
 
 /**
- * Minimal schema with jwtAuth and swagger for testing schema validation.
- * This extends DefaultAppConfig and adds required configs for AppModule.
+ * Schema with no additions, for testing an explicitly provided schema.
  */
-class MinimalAppConfigWithJwtAuth extends DefaultAppConfig {
-  @ValidateNested()
-  @IsDefined()
-  @Type(() => SwaggerConfig)
-  public readonly swagger!: SwaggerConfig;
-
-  @ValidateNested()
-  @IsDefined()
-  @Type(() => JwtAuthHookConfig)
-  public readonly jwtAuth!: JwtAuthHookConfig;
-}
+class ExplicitAppConfig extends AppConfig {}
 
 describe('AppModule schema validation', () => {
   it('should fail to boot with invalid schema config', async () => {
     // Define a schema with required properties that won't be in the config
-    class StrictRequiredConfig extends MinimalAppConfigWithJwtAuth {
+    class StrictRequiredConfig extends ExplicitAppConfig {
       @IsDefined()
       @IsString()
       public readonly requiredMissingProperty!: string;
@@ -175,11 +151,10 @@ describe('AppModule with different config paths', () => {
   beforeAll(async () => {
     app = await createTestApp({
       moduleOptions: {
-        // Using default config path but with schema that includes jwtAuth
         configPath: join(__dirname, '../config/default'),
         logger: NullLogger,
-        // Explicitly using MinimalAppConfigWithJwtAuth schema
-        schema: MinimalAppConfigWithJwtAuth,
+        // Explicitly using ExplicitAppConfig schema
+        schema: ExplicitAppConfig,
       },
     });
     await cleanupTestData(app);
@@ -193,7 +168,7 @@ describe('AppModule with different config paths', () => {
   });
 
   it('should use explicitly provided schema', () => {
-    const config = app.get(MinimalAppConfigWithJwtAuth);
+    const config = app.get(ExplicitAppConfig);
 
     expect(config).toBeDefined();
     expect(config.server.port).toBe(3001);

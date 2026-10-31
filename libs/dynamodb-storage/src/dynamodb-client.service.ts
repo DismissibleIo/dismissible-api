@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Inject } from '@nestjs/common';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { ConditionalCheckFailedException, DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import {
   GetCommand,
@@ -96,36 +96,25 @@ export class DynamoDBClientService implements OnModuleInit, OnModuleDestroy {
     return results;
   }
 
-  async create(item: Record<string, any>): Promise<void> {
-    await this.documentClient.send(
-      new PutCommand({
-        TableName: this.config.tableName,
-        Item: item,
-      }),
-    );
-  }
-
-  async createMany(items: Record<string, any>[]): Promise<void> {
-    if (items.length === 0) {
-      return;
-    }
-
-    const batches = this.chunkArray(items, 25); // DynamoDB BatchWriteItem limit is 25
-
-    for (const batch of batches) {
-      const putRequests = batch.map((item) => ({
-        PutRequest: {
-          Item: item,
-        },
-      }));
-
+  /**
+   * Creates the item unless it already exists.
+   * @returns Whether the item was created
+   */
+  async create(item: Record<string, any>): Promise<boolean> {
+    try {
       await this.documentClient.send(
-        new BatchWriteCommand({
-          RequestItems: {
-            [this.config.tableName]: putRequests,
-          },
+        new PutCommand({
+          TableName: this.config.tableName,
+          Item: item,
+          ConditionExpression: 'attribute_not_exists(id)',
         }),
       );
+      return true;
+    } catch (error) {
+      if (error instanceof ConditionalCheckFailedException) {
+        return false;
+      }
+      throw error;
     }
   }
 

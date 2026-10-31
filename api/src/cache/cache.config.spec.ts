@@ -128,6 +128,23 @@ describe('CacheConfig', () => {
       expect(typeError).toBeDefined();
     });
 
+    it('should fail validation when type is redis and redis config is missing', async () => {
+      const config = plainToInstance(CacheConfig, {
+        type: CacheType.REDIS,
+      });
+      const errors = await validate(config);
+      const redisError = errors.find((e) => e.property === 'redis');
+      expect(redisError).toBeDefined();
+    });
+
+    it('should pass validation when type is memory and memory config is missing', async () => {
+      const config = plainToInstance(CacheConfig, {
+        type: CacheType.MEMORY,
+      });
+      const errors = await validate(config);
+      expect(errors).toHaveLength(0);
+    });
+
     it('should fail validation when redis url is missing', async () => {
       const config = plainToInstance(CacheConfig, {
         type: CacheType.REDIS,
