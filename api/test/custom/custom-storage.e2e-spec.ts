@@ -119,6 +119,20 @@ describe('AppModule with explicit storage option', () => {
     });
   });
 
+  describe('backend selection and validation', () => {
+    it('should validate the config of the storage backend selected by option', async () => {
+      await expect(
+        createTestApp({
+          moduleOptions: {
+            configPath: join(__dirname, '../config/cache-disabled'),
+            logger: NullLogger,
+            storage: StorageType.POSTGRES,
+          },
+        }),
+      ).rejects.toThrow(/postgres/);
+    });
+  });
+
   describe('storage isolation between test suites', () => {
     let app1: INestApplication;
     let app2: INestApplication;

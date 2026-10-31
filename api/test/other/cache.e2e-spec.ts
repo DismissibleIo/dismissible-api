@@ -5,9 +5,27 @@ import { createTestApp, cleanupTestData } from '../../src/app-test.factory';
 import { NullLogger } from '@dismissible/nestjs-logger';
 import { DISMISSIBLE_CACHE_ADAPTER, IDismissibleCache } from '@dismissible/nestjs-cache';
 import { CacheType } from '../../src/cache/cache.config';
+import { MemoryCacheAdapter } from '@dismissible/nestjs-memory-cache';
 import { RedisClientService } from '@dismissible/nestjs-redis-cache';
 
 describe('Cache E2E', () => {
+  describe('Cache selection', () => {
+    it('should select the cache backend from the config file', async () => {
+      const app = await createTestApp({
+        moduleOptions: {
+          configPath: join(__dirname, '../config/cache-memory'),
+          logger: NullLogger,
+        },
+      });
+
+      try {
+        expect(app.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+      } finally {
+        await app.close();
+      }
+    });
+  });
+
   describe('Cache disabled (null cache)', () => {
     let app: INestApplication;
 
