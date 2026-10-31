@@ -35,30 +35,8 @@ interface TestResult {
   };
   errors: number;
   timeouts: number;
+  non2xx: number;
   duration: number;
-}
-
-type RequestConfig = { method: string; path: string };
-type SetRequestsFn = (requests: RequestConfig[]) => void;
-
-interface AutocannonClient {
-  setRequests: SetRequestsFn;
-}
-
-function createPathCycler(paths: string[]): (client: AutocannonClient) => void {
-  let pathCounter = 0;
-
-  return (client: AutocannonClient) => {
-    let connectionIndex = pathCounter++;
-
-    client.setRequests([{ method: 'GET', path: paths[connectionIndex % paths.length] }]);
-
-    const originalSetRequests = client.setRequests.bind(client);
-    client.setRequests = function (_requests: RequestConfig[]) {
-      connectionIndex = (connectionIndex + 1) % paths.length;
-      return originalSetRequests([{ method: 'GET', path: paths[connectionIndex] }]);
-    };
-  };
 }
 
 function getConfig(): PerformanceConfig {
@@ -102,6 +80,10 @@ function formatDuration(ms: number): string {
   return `${formatNumber(ms / 1000)} s`;
 }
 
+function hasFailures(result: TestResult): boolean {
+  return result.errors > 0 || result.timeouts > 0 || result.non2xx > 0;
+}
+
 function printResults(result: TestResult): void {
   console.log('\n' + '='.repeat(80));
   console.log(`Phase: ${result.phase}`);
@@ -127,13 +109,16 @@ function printResults(result: TestResult): void {
   console.log(`  Min:       ${formatBytes(result.throughput.min)}/s`);
   console.log(`  Max:       ${formatBytes(result.throughput.max)}/s`);
 
-  if (result.errors > 0 || result.timeouts > 0) {
+  if (hasFailures(result)) {
     console.log('\n⚠️  Errors:');
     if (result.errors > 0) {
       console.log(`  Errors:    ${result.errors.toLocaleString()}`);
     }
     if (result.timeouts > 0) {
       console.log(`  Timeouts:  ${result.timeouts.toLocaleString()}`);
+    }
+    if (result.non2xx > 0) {
+      console.log(`  Non-2xx:   ${result.non2xx.toLocaleString()}`);
     }
   }
 
@@ -528,12 +513,13 @@ function generateHTMLReport(results: TestResult[], config: PerformanceConfig): s
         </div>
         
         ${
-          result.errors > 0 || result.timeouts > 0
+          hasFailures(result)
             ? `
         <div class="error-section">
           <h3>⚠️ Errors</h3>
           ${result.errors > 0 ? `<p><strong>Errors:</strong> ${result.errors.toLocaleString()}</p>` : ''}
           ${result.timeouts > 0 ? `<p><strong>Timeouts:</strong> ${result.timeouts.toLocaleString()}</p>` : ''}
+          ${result.non2xx > 0 ? `<p><strong>Non-2xx:</strong> ${result.non2xx.toLocaleString()}</p>` : ''}
         </div>
         `
             : ''
@@ -684,7 +670,7 @@ async function runPhase(
       url: baseUrl.origin,
       connections: config.connections,
       duration: config.duration,
-      setupClient: createPathCycler(paths) as autocannon.SetupClientFunction,
+      requests: paths.map((path) => ({ method: 'GET', path })),
     },
     (err, _result) => {
       if (err) {
@@ -720,6 +706,7 @@ async function runPhase(
         },
         errors: result.errors,
         timeouts: result.timeouts,
+        non2xx: result.non2xx,
         duration: result.duration,
       };
       resolve(testResult);
@@ -787,6 +774,11 @@ async function main(): Promise<void> {
     const savedPath = saveHTMLReport(htmlReport, outputPath);
 
     console.log(`\n📄 HTML report saved to: ${savedPath}`);
+
+    if ([createResult, getResult].some(hasFailures)) {
+      throw new Error('Some requests failed, see the results above');
+    }
+
     console.log('✅ Performance test completed successfully!');
   } catch (error) {
     console.error('❌ Performance test failed:', error);

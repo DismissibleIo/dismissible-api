@@ -65,16 +65,9 @@ export class PostgresStorageAdapter implements IDismissibleStorage {
   async create(item: DismissibleItemDto): Promise<DismissibleItemDto> {
     this.logger.debug('PostgreSQL storage create', { userId: item.userId, itemId: item.id });
 
-    const created = await this.prisma.dismissibleItem.create({
-      data: {
-        id: item.id,
-        userId: item.userId,
-        createdAt: item.createdAt,
-        dismissedAt: item.dismissedAt ?? null,
-      },
-    });
+    const [created] = await this.createMany([item]);
 
-    return this.mapToDto(created);
+    return created;
   }
 
   async createMany(items: DismissibleItemDto[]): Promise<DismissibleItemDto[]> {
@@ -84,20 +77,30 @@ export class PostgresStorageAdapter implements IDismissibleStorage {
       return [];
     }
 
-    await this.prisma.dismissibleItem.createMany({
+    const { count } = await this.prisma.dismissibleItem.createMany({
       data: items.map((item) => ({
         id: item.id,
         userId: item.userId,
         createdAt: item.createdAt,
         dismissedAt: item.dismissedAt ?? null,
       })),
+      skipDuplicates: true,
     });
 
-    this.logger.debug('PostgreSQL storage createMany complete', { created: items.length });
+    this.logger.debug('PostgreSQL storage createMany complete', { created: count });
 
     // Prisma createMany doesn't return the created records, so we return the input items
     // The items already have all the data we need since they were constructed by the factory
-    return items;
+    if (count === items.length) {
+      return items;
+    }
+
+    // A concurrent request created some of the items first, so those stored items win
+    const stored = await this.getMany(
+      items[0].userId,
+      items.map((item) => item.id),
+    );
+    return items.map((item) => stored.get(item.id) ?? item);
   }
 
   async update(item: DismissibleItemDto): Promise<DismissibleItemDto> {

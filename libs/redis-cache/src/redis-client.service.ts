@@ -65,6 +65,7 @@ export class RedisClientService implements OnModuleInit, OnModuleDestroy {
       this.logger.debug('Connected to Redis server');
     } catch (error) {
       this.logger.error('Failed to connect to Redis server', error);
+      this.client.disconnect();
 
       // Extract meaningful error message
       let errorMessage = 'Unknown error';

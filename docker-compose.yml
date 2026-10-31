@@ -13,7 +13,7 @@ services:
       DISMISSIBLE_SWAGGER_ENABLED: true
 
       # Storage Type
-      DISMISSIBLE_STORAGE_TYPE: dynamodb
+      DISMISSIBLE_STORAGE_TYPE: ${DISMISSIBLE_STORAGE_TYPE:-dynamodb}
 
       # Postgres Storage
       DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING: postgresql://postgres:postgres@dismissible-postgres:5432/dismissible
@@ -27,7 +27,7 @@ services:
 
       # Cache Configuration
       # Set to 'redis' to enable Redis cache, 'memory' for memory cache, or leave empty for no cache
-      DISMISSIBLE_CACHE_TYPE: redis
+      DISMISSIBLE_CACHE_TYPE: ${DISMISSIBLE_CACHE_TYPE-redis}
       # Redis Cache
       DISMISSIBLE_CACHE_REDIS_URL: redis://dismissible-redis:6379
       DISMISSIBLE_CACHE_REDIS_KEY_PREFIX: ''

@@ -50,6 +50,11 @@ describe('TransformNumber', () => {
     expect(config.value).toBeNull();
   });
 
+  it('should treat an empty string as not set', () => {
+    const config = plainToInstance(TestConfig, { value: '' });
+    expect(config.value).toBeUndefined();
+  });
+
   it('should return NaN for non-numeric strings', () => {
     const config = plainToInstance(TestConfig, { value: 'not-a-number' });
     expect(config.value).toBeNaN();

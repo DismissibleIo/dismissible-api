@@ -48,14 +48,19 @@ export class DynamoDBStorageAdapter implements IDismissibleStorage {
   async create(item: DismissibleItemDto): Promise<DismissibleItemDto> {
     this.logger.debug('DynamoDB storage create', { userId: item.userId, itemId: item.id });
 
-    await this.dynamoDB.create({
+    const created = await this.dynamoDB.create({
       userId: item.userId,
       id: item.id,
       createdAt: item.createdAt.toISOString(),
       dismissedAt: item.dismissedAt?.toISOString() ?? null,
     });
 
-    return item;
+    if (created) {
+      return item;
+    }
+
+    // A concurrent request created the item first, so the stored item wins
+    return (await this.get(item.userId, item.id)) ?? item;
   }
 
   async createMany(items: DismissibleItemDto[]): Promise<DismissibleItemDto[]> {
@@ -65,18 +70,12 @@ export class DynamoDBStorageAdapter implements IDismissibleStorage {
       return [];
     }
 
-    const dynamoItems = items.map((item) => ({
-      userId: item.userId,
-      id: item.id,
-      createdAt: item.createdAt.toISOString(),
-      dismissedAt: item.dismissedAt?.toISOString() ?? null,
-    }));
-
-    await this.dynamoDB.createMany(dynamoItems);
+    // BatchWriteItem cannot be conditional and would overwrite items created concurrently
+    const createdItems = await Promise.all(items.map((item) => this.create(item)));
 
     this.logger.debug('DynamoDB storage createMany complete', { created: items.length });
 
-    return items;
+    return createdItems;
   }
 
   async update(item: DismissibleItemDto): Promise<DismissibleItemDto> {

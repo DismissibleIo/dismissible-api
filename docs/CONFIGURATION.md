@@ -274,7 +274,7 @@ cache:
   type: ${DISMISSIBLE_CACHE_TYPE:-}
   redis:
     url: ${DISMISSIBLE_CACHE_REDIS_URL:-}
-    keyPrefix: ${DISMISSIBLE_CACHE_REDIS_KEY_PREFIX:-"dismissible:cache:"}
+    keyPrefix: ${DISMISSIBLE_CACHE_REDIS_KEY_PREFIX:-dismissible:cache:}
     ttlMs: ${DISMISSIBLE_CACHE_REDIS_TTL_MS:-}
     enableReadyCheck: ${DISMISSIBLE_CACHE_REDIS_ENABLE_READY_CHECK:-}
     maxRetriesPerRequest: ${DISMISSIBLE_CACHE_REDIS_MAX_RETRIES:-}

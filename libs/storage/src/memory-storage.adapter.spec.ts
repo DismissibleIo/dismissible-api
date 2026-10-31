@@ -61,6 +61,25 @@ describe('MemoryStorageAdapter', () => {
     });
   });
 
+  describe('create when the item already exists', () => {
+    it('should keep the stored item', async () => {
+      const stored = await adapter.create({
+        id: 'existing-item',
+        userId: 'existing-user',
+        createdAt: new Date('2024-01-15T09:00:00.000Z'),
+      });
+
+      const [created, createdMany] = [
+        await adapter.create({ ...stored, createdAt: new Date('2024-01-15T10:00:00.000Z') }),
+        await adapter.createMany([{ ...stored, createdAt: new Date('2024-01-15T10:00:00.000Z') }]),
+      ];
+
+      expect(created).toEqual(stored);
+      expect(createdMany).toEqual([stored]);
+      expect(await adapter.get('existing-user', 'existing-item')).toEqual(stored);
+    });
+  });
+
   describe('create', () => {
     it('should create and store a new item', async () => {
       const item = itemFactory.create({

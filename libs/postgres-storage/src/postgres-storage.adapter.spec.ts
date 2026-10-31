@@ -12,7 +12,6 @@ describe('PostgresStorageAdapter', () => {
   let mockDismissibleItem: {
     findUnique: jest.Mock;
     findMany: jest.Mock;
-    create: jest.Mock;
     createMany: jest.Mock;
     update: jest.Mock;
   };
@@ -25,7 +24,6 @@ describe('PostgresStorageAdapter', () => {
     mockDismissibleItem = {
       findUnique: jest.fn(),
       findMany: jest.fn(),
-      create: jest.fn(),
       createMany: jest.fn(),
       update: jest.fn(),
     };
@@ -89,13 +87,7 @@ describe('PostgresStorageAdapter', () => {
         userId: 'user-123',
         createdAt: new Date('2024-01-15T10:30:00.000Z'),
       };
-      const dbItem = {
-        id: 'item-456',
-        userId: 'user-123',
-        createdAt: new Date('2024-01-15T10:30:00.000Z'),
-        dismissedAt: null,
-      };
-      mockDismissibleItem.create.mockResolvedValue(dbItem);
+      mockDismissibleItem.createMany.mockResolvedValue({ count: 1 });
 
       const result = await adapter.create(item);
 
@@ -105,18 +97,44 @@ describe('PostgresStorageAdapter', () => {
         createdAt: new Date('2024-01-15T10:30:00.000Z'),
         dismissedAt: undefined,
       });
-      expect(mockDismissibleItem.create).toHaveBeenCalledWith({
-        data: {
-          id: 'item-456',
-          userId: 'user-123',
-          createdAt: new Date('2024-01-15T10:30:00.000Z'),
-          dismissedAt: null,
-        },
+      expect(mockDismissibleItem.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            id: 'item-456',
+            userId: 'user-123',
+            createdAt: new Date('2024-01-15T10:30:00.000Z'),
+            dismissedAt: null,
+          },
+        ],
+        skipDuplicates: true,
       });
       expect(mockLogger.debug).toHaveBeenCalledWith('PostgreSQL storage create', {
         userId: 'user-123',
         itemId: 'item-456',
       });
+    });
+  });
+
+  describe('create when the item already exists', () => {
+    it('should return the stored item', async () => {
+      const dismissedAt = new Date('2024-01-15T09:30:00.000Z');
+      mockDismissibleItem.createMany.mockResolvedValue({ count: 0 });
+      mockDismissibleItem.findMany.mockResolvedValue([
+        {
+          id: 'item-456',
+          userId: 'user-123',
+          createdAt: new Date('2024-01-15T09:00:00.000Z'),
+          dismissedAt,
+        },
+      ]);
+
+      const result = await adapter.create({
+        id: 'item-456',
+        userId: 'user-123',
+        createdAt: new Date('2024-01-15T10:30:00.000Z'),
+      });
+
+      expect(result.dismissedAt).toEqual(dismissedAt);
     });
   });
 
@@ -247,7 +265,26 @@ describe('PostgresStorageAdapter', () => {
             dismissedAt: null,
           },
         ],
+        skipDuplicates: true,
       });
+      expect(mockDismissibleItem.findMany).not.toHaveBeenCalled();
+    });
+
+    it('should return the stored item when a concurrent request created it first', async () => {
+      const storedCreatedAt = new Date('2024-01-15T09:00:00.000Z');
+      const items: DismissibleItemDto[] = [
+        { id: 'item-1', userId: 'user-123', createdAt: new Date('2024-01-15T10:30:00.000Z') },
+        { id: 'item-2', userId: 'user-123', createdAt: new Date('2024-01-15T10:30:00.000Z') },
+      ];
+      mockDismissibleItem.createMany.mockResolvedValue({ count: 1 });
+      mockDismissibleItem.findMany.mockResolvedValue([
+        { id: 'item-1', userId: 'user-123', createdAt: storedCreatedAt, dismissedAt: null },
+        { id: 'item-2', userId: 'user-123', createdAt: items[1].createdAt, dismissedAt: null },
+      ]);
+
+      const result = await adapter.createMany(items);
+
+      expect(result.map((item) => item.createdAt)).toEqual([storedCreatedAt, items[1].createdAt]);
     });
 
     it('should return empty array when creating empty array', async () => {
