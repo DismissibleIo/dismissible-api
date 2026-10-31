@@ -19,6 +19,7 @@ import { StorageConfig, StorageType } from '../../src/storage/storage.config';
 
 const switchConfigPath = join(__dirname, '../config/backend-switch');
 const validationConfigPath = join(__dirname, '../config/backend-validation');
+const missingSectionsConfigPath = join(__dirname, '../config/backend-missing-sections');
 
 class CustomFeatureConfig {
   @IsDefined()
@@ -187,6 +188,26 @@ describe('Backend selection', () => {
 
       expect(testApp.get(DISMISSIBLE_STORAGE_ADAPTER)).toBeInstanceOf(MemoryStorageAdapter);
       expect(testApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+    });
+
+    it('should boot the memory cache with its defaults when it has no settings', async () => {
+      process.env.DISMISSIBLE_CACHE_TYPE = 'memory';
+
+      const testApp = await createApp({ configPath: missingSectionsConfigPath });
+
+      expect(testApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+      const response = await request(testApp.getHttpServer())
+        .get('/v1/users/defaults-user/items/defaults-item')
+        .expect(200);
+      expect(response.body.data.itemId).toBe('defaults-item');
+    });
+
+    it('should reject the redis cache when it has no settings', async () => {
+      process.env.DISMISSIBLE_CACHE_TYPE = 'redis';
+
+      await expect(createApp({ configPath: missingSectionsConfigPath })).rejects.toThrow(
+        /Configuration is not valid[\s\S]*cache\.redis/,
+      );
     });
 
     it.each([

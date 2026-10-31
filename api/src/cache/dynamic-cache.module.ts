@@ -21,7 +21,7 @@ export class DynamicCacheModule {
         });
       case CacheType.MEMORY:
         return MemoryCacheModule.forRootAsync({
-          useFactory: (config: CacheConfig) => config.memory,
+          useFactory: (config: CacheConfig) => config.memory || {},
           inject: [CacheConfig],
         });
       default:
