@@ -24,6 +24,7 @@
     "test:e2e:api:memory": "nx test-e2e:memory api",
     "test:e2e:api:postgres": "nx test-e2e:postgres api",
     "test:e2e:api:dynamodb": "nx test-e2e:dynamodb api",
+    "test:e2e:api:custom": "nx test-e2e:custom api",
     "test:e2e:api:all": "nx test-e2e:all api",
     "test:e2e:lib:dismissible:all": "nx test-e2e:all dismissible",
     "test:perf": "ts-node api/scripts/performance-test.ts",
