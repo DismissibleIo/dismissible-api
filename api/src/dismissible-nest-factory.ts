@@ -1,28 +1,17 @@
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { AppModule } from './app.module';
+import { AppModule, AppModuleOptions } from './app.module';
 import { ServerConfig } from './server/server.config';
 import { configureApp } from './app.setup';
-import { DefaultAppConfig } from './config/default-app.config';
-import { DISMISSIBLE_LOGGER, IDismissibleLogger } from '@dismissible/nestjs-logger';
-import { Type, DynamicModule } from '@nestjs/common';
-import { IDismissibleLifecycleHook } from '@dismissible/nestjs-hooks';
-import { StorageType } from './storage/storage.config';
+import { DISMISSIBLE_LOGGER } from '@dismissible/nestjs-logger';
 
 export interface IDismissibleNestApplication {
   getNestApplication(): INestApplication;
   start(): Promise<void>;
 }
 
-export interface IDismissibleNestFactoryOptions {
-  configPath?: string;
-  schema?: new () => DefaultAppConfig;
-  logger?: Type<IDismissibleLogger>;
-  imports?: DynamicModule[];
-  hooks?: Type<IDismissibleLifecycleHook>[];
-  storage?: StorageType;
-}
+export type IDismissibleNestFactoryOptions = AppModuleOptions;
 
 class DismissibleNestApplication implements IDismissibleNestApplication {
   constructor(private readonly app: NestFastifyApplication) {}

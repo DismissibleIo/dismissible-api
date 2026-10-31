@@ -660,19 +660,24 @@ function saveHTMLReport(html: string, outputPath: string | null): string {
   return finalPath;
 }
 
-async function runCreatePhase(
-  config: PerformanceConfig,
-  itemIds: string[],
-  userIds: string[],
-): Promise<TestResult> {
-  const baseUrl = new URL(config.apiUrl);
+function buildItemPaths(count: number, itemIds: string[], userIds: string[]): string[] {
   const paths: string[] = [];
 
-  for (let i = 0; i < config.createCount; i++) {
+  for (let i = 0; i < count; i++) {
     const userId = userIds[i % userIds.length];
     const itemId = itemIds[i];
     paths.push(`/v1/users/${userId}/items/${itemId}`);
   }
+
+  return paths;
+}
+
+async function runPhase(
+  config: PerformanceConfig,
+  phase: string,
+  paths: string[],
+): Promise<TestResult> {
+  const baseUrl = new URL(config.apiUrl);
 
   const instance = autocannon(
     {
@@ -683,7 +688,7 @@ async function runCreatePhase(
     },
     (err, _result) => {
       if (err) {
-        console.error('Error during create phase:', err);
+        console.error(`Error during ${phase} phase:`, err);
         throw err;
       }
     },
@@ -692,7 +697,7 @@ async function runCreatePhase(
   return new Promise((resolve, reject) => {
     instance.on('done', (result) => {
       const testResult: TestResult = {
-        phase: 'Create Items',
+        phase,
         requests: {
           total: result.requests.total,
           average: result.requests.average,
@@ -726,71 +731,21 @@ async function runCreatePhase(
   });
 }
 
+async function runCreatePhase(
+  config: PerformanceConfig,
+  itemIds: string[],
+  userIds: string[],
+): Promise<TestResult> {
+  return runPhase(config, 'Create Items', buildItemPaths(config.createCount, itemIds, userIds));
+}
+
 async function runGetPhase(
   config: PerformanceConfig,
   itemIds: string[],
   userIds: string[],
 ): Promise<TestResult> {
-  const baseUrl = new URL(config.apiUrl);
-  const paths: string[] = [];
-
   const itemsToGet = Math.min(config.getCount, itemIds.length);
-  for (let i = 0; i < itemsToGet; i++) {
-    const userId = userIds[i % userIds.length];
-    const itemId = itemIds[i];
-    paths.push(`/v1/users/${userId}/items/${itemId}`);
-  }
-
-  const instance = autocannon(
-    {
-      url: baseUrl.origin,
-      connections: config.connections,
-      duration: config.duration,
-      setupClient: createPathCycler(paths) as autocannon.SetupClientFunction,
-    },
-    (err, _result) => {
-      if (err) {
-        console.error('Error during get phase:', err);
-        throw err;
-      }
-    },
-  );
-
-  return new Promise((resolve, reject) => {
-    instance.on('done', (result) => {
-      const testResult: TestResult = {
-        phase: 'Get Items',
-        requests: {
-          total: result.requests.total,
-          average: result.requests.average,
-          min: result.requests.min,
-          max: result.requests.max,
-        },
-        latency: {
-          average: result.latency.average,
-          min: result.latency.min,
-          max: result.latency.max,
-          p50: result.latency.p50,
-          p90: result.latency.p90,
-          p99: result.latency.p99,
-          p99_9: result.latency.p99_9,
-        },
-        throughput: {
-          average: result.throughput.average,
-          min: result.throughput.min,
-          max: result.throughput.max,
-        },
-        errors: result.errors,
-        timeouts: result.timeouts,
-        duration: result.duration,
-      };
-      resolve(testResult);
-    });
-
-    instance.on('error', (err) => {
-      reject(err);
-    });
-  });
+  return runPhase(config, 'Get Items', buildItemPaths(itemsToGet, itemIds, userIds));
 }
 
 async function main(): Promise<void> {

@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Mock } from 'ts-jest-mocker';
 import { DISMISSIBLE_LOGGER } from '@dismissible/nestjs-logger';
 import { configureAppWithHelmet } from './helmet.factory';
@@ -10,7 +10,7 @@ jest.mock('@fastify/helmet', () => ({
 }));
 
 describe('configureAppWithHelmet', () => {
-  let mockApp: Mock<INestApplication>;
+  let mockApp: Mock<NestFastifyApplication>;
   let mockGet: jest.Mock;
   let mockRegister: jest.Mock;
   let mockLogger: {
