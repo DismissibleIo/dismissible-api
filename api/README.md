@@ -61,9 +61,12 @@ This is an extension of `NestFactory.create()`, but also wires up all our config
 ```typescript
 interface IDismissibleNestFactoryOptions {
   configPath?: string; // Path to config files
-  schema?: new () => DefaultAppConfig; // Config validation schema
+  schema?: new () => AppConfig; // Config validation schema
   logger?: Type<IDismissibleLogger>; // Custom logger implementation
   imports?: DynamicModule[]; // Additional modules to import
+  hooks?: Type<IDismissibleLifecycleHook>[]; // Additional lifecycle hooks
+  storage?: StorageType; // Overrides `storage.type` from the config file
+  cache?: CacheType; // Overrides `cache.type` from the config file
 }
 ```
 
