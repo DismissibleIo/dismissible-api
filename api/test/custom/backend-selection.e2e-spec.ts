@@ -20,6 +20,9 @@ import { StorageConfig, StorageType } from '../../src/storage/storage.config';
 const switchConfigPath = join(__dirname, '../config/backend-switch');
 const validationConfigPath = join(__dirname, '../config/backend-validation');
 const missingSectionsConfigPath = join(__dirname, '../config/backend-missing-sections');
+const cacheMemoryConfigPath = join(__dirname, '../config/cache-memory');
+const cacheDisabledConfigPath = join(__dirname, '../config/cache-disabled');
+const shippedConfigPath = join(__dirname, '../../config');
 
 class CustomFeatureConfig {
   @IsDefined()
@@ -166,6 +169,57 @@ describe('Backend selection', () => {
     });
   });
 
+  describe('configuration agreement', () => {
+    it('should inject the backends selected by option', async () => {
+      process.env.DISMISSIBLE_STORAGE_TYPE = 'dynamodb';
+      process.env.DISMISSIBLE_CACHE_TYPE = 'redis';
+
+      const testApp = await createApp({
+        configPath: switchConfigPath,
+        schema: CustomAppConfig,
+        storage: StorageType.MEMORY,
+        cache: CacheType.MEMORY,
+      });
+
+      expect(testApp.get(DISMISSIBLE_STORAGE_ADAPTER)).toBeInstanceOf(MemoryStorageAdapter);
+      expect(testApp.get(StorageConfig).type).toBe('memory');
+      expect(testApp.get(CustomAppConfig).storage.type).toBe('memory');
+      expect(testApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+      expect(testApp.get(CacheConfig).type).toBe('memory');
+      expect(testApp.get(CustomAppConfig).cache?.type).toBe('memory');
+    });
+
+    it('should select the backends named by the config file alone', async () => {
+      const testApp = await createApp({ configPath: cacheMemoryConfigPath });
+
+      expect(testApp.get(DISMISSIBLE_STORAGE_ADAPTER)).toBeInstanceOf(MemoryStorageAdapter);
+      expect(testApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+      expect(testApp.get(CacheConfig).type).toBe('memory');
+    });
+
+    it('should prefer a literal config file backend over the environment variables', async () => {
+      process.env.DISMISSIBLE_STORAGE_TYPE = 'postgres';
+      process.env.DISMISSIBLE_CACHE_TYPE = 'redis';
+
+      const testApp = await createApp({ configPath: cacheMemoryConfigPath });
+
+      expect(testApp.get(DISMISSIBLE_STORAGE_ADAPTER)).toBeInstanceOf(MemoryStorageAdapter);
+      expect(testApp.get(StorageConfig).type).toBe('memory');
+      expect(testApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+      expect(testApp.get(CacheConfig).type).toBe('memory');
+    });
+
+    it('should add a cache selected by option to a config file without a cache', async () => {
+      const testApp = await createApp({
+        configPath: cacheDisabledConfigPath,
+        cache: CacheType.MEMORY,
+      });
+
+      expect(testApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+      expect(testApp.get(CacheConfig).type).toBe('memory');
+    });
+  });
+
   describe('custom schema', () => {
     it('should keep custom schema fields when options switch both backends', async () => {
       const testApp = await createApp({
@@ -189,6 +243,51 @@ describe('Backend selection', () => {
       expect(testApp.get(DISMISSIBLE_STORAGE_ADAPTER)).toBeInstanceOf(MemoryStorageAdapter);
       expect(testApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
     });
+
+    it('should validate the storage backend selected by option', async () => {
+      await expect(
+        createApp({ configPath: validationConfigPath, storage: StorageType.POSTGRES }),
+      ).rejects.toThrow(/storage\.postgres/);
+    });
+
+    it('should validate the cache backend selected by option', async () => {
+      await expect(
+        createApp({ configPath: missingSectionsConfigPath, cache: CacheType.REDIS }),
+      ).rejects.toThrow(/cache\.redis/);
+    });
+
+    it('should not validate the backends that options switched away from', async () => {
+      process.env.DISMISSIBLE_STORAGE_TYPE = 'postgres';
+      process.env.DISMISSIBLE_CACHE_TYPE = 'redis';
+
+      const testApp = await createApp({
+        configPath: validationConfigPath,
+        storage: StorageType.MEMORY,
+        cache: CacheType.MEMORY,
+      });
+
+      expect(testApp.get(DISMISSIBLE_STORAGE_ADAPTER)).toBeInstanceOf(MemoryStorageAdapter);
+      expect(testApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+    });
+
+    it.each([
+      ['DISMISSIBLE_CACHE_TYPE', 'redis', 'DISMISSIBLE_CACHE_REDIS_URL', /cache\.redis\.url/],
+      [
+        'DISMISSIBLE_STORAGE_TYPE',
+        'postgres',
+        'DISMISSIBLE_STORAGE_POSTGRES_CONNECTION_STRING',
+        /storage\.postgres\.connectionString/,
+      ],
+    ])(
+      'should reject the shipped config when %s=%s and %s is not set',
+      async (typeVariable, type, settingVariable, expectedError) => {
+        process.env.DISMISSIBLE_CORS_ORIGINS = 'http://localhost:3000';
+        process.env[typeVariable] = type;
+        delete process.env[settingVariable];
+
+        await expect(createApp({ configPath: shippedConfigPath })).rejects.toThrow(expectedError);
+      },
+    );
 
     it('should boot the memory cache with its defaults when it has no settings', async () => {
       process.env.DISMISSIBLE_CACHE_TYPE = 'memory';

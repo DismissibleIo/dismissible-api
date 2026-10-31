@@ -10,10 +10,12 @@ import {
   DismissibleNestFactory,
   IDismissibleNestApplication,
 } from '../../src/dismissible-nest-factory';
-import { StorageType } from '../../src/storage/storage.config';
+import { CacheConfig, CacheType } from '../../src/cache/cache.config';
+import { StorageConfig, StorageType } from '../../src/storage/storage.config';
 
 const switchConfigPath = join(__dirname, '../config/backend-switch');
 const validationConfigPath = join(__dirname, '../config/backend-validation');
+const cacheMemoryConfigPath = join(__dirname, '../config/cache-memory');
 
 class CustomFeatureConfig {
   @IsDefined()
@@ -69,6 +71,38 @@ describe('DismissibleNestFactory', () => {
     const nestApp = app.getNestApplication();
     expect(nestApp.get(DISMISSIBLE_STORAGE_ADAPTER)).toBeInstanceOf(MemoryStorageAdapter);
     expect(nestApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+  });
+
+  it('should select and inject the backends named by the options', async () => {
+    process.env.DISMISSIBLE_STORAGE_TYPE = 'dynamodb';
+    process.env.DISMISSIBLE_CACHE_TYPE = 'redis';
+
+    app = await DismissibleNestFactory.create({
+      configPath: switchConfigPath,
+      schema: CustomAppConfig,
+      logger: NullLogger,
+      storage: StorageType.MEMORY,
+      cache: CacheType.MEMORY,
+    });
+
+    const nestApp = app.getNestApplication();
+    expect(nestApp.get(DISMISSIBLE_STORAGE_ADAPTER)).toBeInstanceOf(MemoryStorageAdapter);
+    expect(nestApp.get(StorageConfig).type).toBe('memory');
+    expect(nestApp.get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(MemoryCacheAdapter);
+    expect(nestApp.get(CacheConfig).type).toBe('memory');
+  });
+
+  it('should select the backends named by the config file alone', async () => {
+    delete process.env.DISMISSIBLE_CACHE_TYPE;
+
+    app = await DismissibleNestFactory.create({
+      configPath: cacheMemoryConfigPath,
+      logger: NullLogger,
+    });
+
+    expect(app.getNestApplication().get(DISMISSIBLE_CACHE_ADAPTER)).toBeInstanceOf(
+      MemoryCacheAdapter,
+    );
   });
 
   it('should expose custom schema fields', async () => {

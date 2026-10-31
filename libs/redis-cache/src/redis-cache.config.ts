@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean, IsNotEmpty } from 'class-validator';
 import { TransformNumber, TransformBoolean } from '@dismissible/nestjs-validation';
 
 /**
@@ -8,6 +8,7 @@ export const DISMISSIBLE_REDIS_CACHE_CONFIG = Symbol('DISMISSIBLE_REDIS_CACHE_CO
 
 export class RedisCacheConfig {
   @IsString()
+  @IsNotEmpty()
   public readonly url: string;
 
   @IsString()
